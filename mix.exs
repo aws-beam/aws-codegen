@@ -27,6 +27,6 @@ defmodule AWS.CodeGen.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [{:poison, "~> 1.4.0"}]
   end
 end
