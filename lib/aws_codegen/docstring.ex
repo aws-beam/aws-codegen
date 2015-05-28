@@ -20,7 +20,6 @@ defmodule AWS.CodeGen.Docstring do
   """
   def html_to_markdown(text) do
     convert_links(text)
-    |> convert_fullname
     |> String.replace("<a>", "`")
     |> String.replace("</a>", "`")
     |> String.replace("<b>", "**")
@@ -28,7 +27,7 @@ defmodule AWS.CodeGen.Docstring do
     |> String.replace("<code>", "`")
     |> String.replace("</code>", "`")
     |> String.replace("<fullname>", "")
-    |> String.replace("</fullname>", "")
+    |> String.replace("</fullname>", "\n\n")
     |> String.replace("<i>", "*")
     |> String.replace("</i>", "*")
     |> String.replace("<p>", "")
@@ -61,10 +60,6 @@ defmodule AWS.CodeGen.Docstring do
   defp convert_links(text) do
     Regex.replace(~r{<a href="(.+?)">(.+?)</a>}, text, "[\\2](\\1)",
                   global: true)
-  end
-
-  defp convert_fullname(text) do
-    Regex.replace(~r{<fullname>(.+?)</fullname>}, text, "", global: true)
   end
 
   defp break_line(text, max_length) do

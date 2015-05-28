@@ -16,9 +16,9 @@ defmodule AWS.CodeGen.DocstringTest do
     assert "Hello, `world`!" == Docstring.html_to_markdown(text)
   end
 
-  test "html_to_markdown/1 strips <fullname> tags and text" do
+  test "html_to_markdown/1 strips <fullname> tags and renders text as a paragraph" do
     text = "<fullname>Hello, world!</fullname>"
-    assert "" == Docstring.html_to_markdown(text)
+    assert "Hello, world!\n\n" == Docstring.html_to_markdown(text)
   end
 
   test "html_to_markdown/1 converts <p> tags to newline-separated paragraphs" do
