@@ -1,0 +1,22 @@
+#!/bin/bash
+
+mix compile
+mix run generate.exs CloudHSM ../../awslabs/aws-sdk-go/apis/cloudhsm/2014-05-30.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/cloudhsm.ex
+mix run generate.exs CloudTrail ../../awslabs/aws-sdk-go/apis/cloudtrail/2013-11-01.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/cloudtrail.ex
+#mix run generate.exs CognitoIdentity ../../awslabs/aws-sdk-go/apis/cognito-identity/2014-06-30.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/cognito_identity.ex
+mix run generate.exs CodeDeploy ../../awslabs/aws-sdk-go/apis/codedeploy/2014-10-06.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/codedeploy.ex
+mix run generate.exs Config ../../awslabs/aws-sdk-go/apis/config/2014-11-12.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/config.ex
+mix run generate.exs DataPipeline ../../awslabs/aws-sdk-go/apis/datapipeline/2012-10-29.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/datapipeline.ex
+mix run generate.exs DirectConnect ../../awslabs/aws-sdk-go/apis/directconnect/2012-10-25.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/directconnect.ex
+mix run generate.exs DynamoDB ../../awslabs/aws-sdk-go/apis/dynamodb/2012-08-10.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/dynamodb.ex
+mix run generate.exs ECS ../../awslabs/aws-sdk-go/apis/ecs/2014-11-13.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/ecs.ex
+mix run generate.exs EMR ../../awslabs/aws-sdk-go/apis/emr/2009-03-31.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/emr.ex
+mix run generate.exs Kinesis ../../awslabs/aws-sdk-go/apis/kinesis/2013-12-02.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/kinesis.ex
+mix run generate.exs KMS ../../awslabs/aws-sdk-go/apis/kms/2014-11-01.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/kms.ex
+mix run generate.exs Logs ../../awslabs/aws-sdk-go/apis/logs/2014-03-28.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/logs.ex
+mix run generate.exs OpsWorks ../../awslabs/aws-sdk-go/apis/opsworks/2013-02-18.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/opsworks.ex
+#mix run generate.exs Route53 ../../awslabs/aws-sdk-go/apis/route53domains/2014-05-15.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/route53.ex
+mix run generate.exs SSM ../../awslabs/aws-sdk-go/apis/ssm/2014-11-06.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/ssm.ex
+mix run generate.exs Support ../../awslabs/aws-sdk-go/apis/support/2013-04-15.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/support.ex
+mix run generate.exs StorageGateway ../../awslabs/aws-sdk-go/apis/storagegateway/2013-06-30.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/storagegateway.ex
+mix run generate.exs SWF ../../awslabs/aws-sdk-go/apis/swf/2012-01-25.normal.json priv/json-service.ex.eex > ../aws-elixir/lib/aws/swf.ex
