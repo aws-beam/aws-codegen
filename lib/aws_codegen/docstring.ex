@@ -1,4 +1,8 @@
 defmodule AWS.CodeGen.Docstring do
+  @doc """
+  Tranform HTML text into Markdown suitable for inclusion in a docstring
+  heredoc in generated code.
+  """
   def format(text) do
     html_to_markdown(text)
     |> split_paragraphs
@@ -6,6 +10,9 @@ defmodule AWS.CodeGen.Docstring do
     |> Enum.join("\n\n")
   end
 
+  @doc """
+  Transform HTML tags into Markdown.
+  """
   def html_to_markdown(text) do
     convert_links(text)
     |> convert_fullname
@@ -27,6 +34,29 @@ defmodule AWS.CodeGen.Docstring do
     |> String.replace("</li>", "")
   end
 
+  @doc """
+  Split a block of text into a list of strings, each of which represent a
+  paragraph.
+  """
+  def split_paragraphs(text) do
+    String.split(text, "\n")
+    |> Enum.map(&(String.strip(&1)))
+    |> Enum.reject(&(&1 == ""))
+  end
+
+  @doc """
+  Split a paragraph into individual lines, where each line is less than the
+  specified maximum length.  Indent each line by two spaces to make it
+  suitable for inclusion in a docstring heredoc in generated code.
+  """
+  def justify_line(text, max_length \\ 75) do
+    break_line(text, max_length)
+    |> Enum.map(&(String.strip(&1)))
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.map(&("  #{&1}"))
+    |> Enum.join("\n")
+  end
+
   defp convert_links(text) do
     Regex.replace(~r{<a href="(.+?)">(.+?)</a>}, text, "[\\2](\\1)",
                   global: true)
@@ -34,20 +64,6 @@ defmodule AWS.CodeGen.Docstring do
 
   defp convert_fullname(text) do
     Regex.replace(~r{<fullname>(.+?)</fullname>}, text, "", global: true)
-  end
-
-  def split_paragraphs(text) do
-    String.split(text, "\n")
-    |> Enum.map(&(String.strip(&1)))
-    |> Enum.reject(&(&1 == ""))
-  end
-
-  def justify_line(text, max_length \\ 75) do
-    break_line(text, max_length)
-    |> Enum.map(&(String.strip(&1)))
-    |> Enum.reject(&(&1 == ""))
-    |> Enum.map(&("  #{&1}"))
-    |> Enum.join("\n")
   end
 
   defp break_line(text, max_length) do
