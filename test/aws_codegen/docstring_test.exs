@@ -53,11 +53,6 @@ defmodule AWS.CodeGen.DocstringTest do
     assert "**Hello, world!**" == Docstring.html_to_markdown(text)
   end
 
-  test "html_to_markdown/1 replaces <ul> and <li> tags with Markdown lists" do
-    text = "<ul><li>Hello, world!</li></ul>"
-    assert "* Hello, world!\n" == Docstring.html_to_markdown(text)
-  end
-
   test "split_paragraphs/1 converts an empty paragraph to an empty list" do
     assert [] == Docstring.split_paragraphs("")
   end

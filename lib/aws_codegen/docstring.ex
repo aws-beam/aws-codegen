@@ -12,6 +12,11 @@ defmodule AWS.CodeGen.Docstring do
 
   @doc """
   Transform HTML tags into Markdown.
+
+  `UL` and `LI` tags are left unchanged because the simple conversion logic
+  here doesn't handle nesting correctly.  Markdown lists would be nicer to
+  read in text-format, but Pandoc correctly renders HTML lists in the ExDoc
+  output.
   """
   def html_to_markdown(text) do
     convert_links(text)
@@ -28,10 +33,6 @@ defmodule AWS.CodeGen.Docstring do
     |> String.replace("</i>", "*")
     |> String.replace("<p>", "")
     |> String.replace("</p>", "\n\n")
-    |> String.replace("<ul>", "")
-    |> String.replace("</ul>", "\n")
-    |> String.replace("<li>", "* ")
-    |> String.replace("</li>", "")
   end
 
   @doc """
