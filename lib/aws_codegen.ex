@@ -2,27 +2,28 @@ defmodule AWS.CodeGen do
   alias AWS.CodeGen.Docstring
 
   defmodule Action do
-    defstruct name: nil,
+    defstruct docstring: nil,
               function_name: nil,
-              docstring: nil
+              name: nil
   end
 
   defmodule Service do
-    defstruct api_version: nil,
-              abbreviation: nil,
-              endpoint_prefix: nil,
-              protocol: nil,
-              json_version: nil,
+    defstruct abbreviation: nil,
+              actions: [],
               docstring: nil,
-              actions: []
+              endpoint_prefix: nil,
+              json_version: nil,
+              module_name: nil,
+              protocol: nil,
+              target_prefix: nil
   end
 
   @doc """
   Load JSON from the file `path` and convert it to a context that can be used
   to generate code for an AWS service.
   """
-  def load_context(path) do
-    File.read!(path) |> Poison.Parser.parse! |> build_context
+  def load_context(module_name, path) do
+    File.read!(path) |> Poison.Parser.parse! |> build_context(module_name)
   end
 
   @doc """
@@ -32,22 +33,22 @@ defmodule AWS.CodeGen do
     EEx.eval_file(template_path, [context: context])
   end
 
-  defp build_context(data) do
+  defp build_context(data, module_name) do
     actions = collect_actions(data)
-    %Service{api_version: data["metadata"]["apiVersion"],
-             abbreviation: data["metadata"]["serviceAbbreviation"],
-             endpoint_prefix: data["metadata"]["endpointPrefix"],
-             protocol: data["metadata"]["json"],
-             json_version: data["metadata"]["jsonVersion"],
+    %Service{actions: actions,
              docstring: Docstring.format(data["documentation"]),
-             actions: actions}
+             endpoint_prefix: data["metadata"]["endpointPrefix"],
+             json_version: data["metadata"]["jsonVersion"],
+             module_name: module_name,
+             protocol: data["metadata"]["json"],
+             target_prefix: data["metadata"]["targetPrefix"]}
   end
 
   defp collect_actions(data) do
     Enum.map(data["operations"], fn({_action, metadata}) ->
-      %Action{name: metadata["name"],
+      %Action{docstring: Docstring.format(metadata["documentation"]),
               function_name: AWS.CodeGen.Name.to_snake_case(metadata["name"]),
-              docstring: Docstring.format(metadata["documentation"])}
+              name: metadata["name"]}
     end)
   end
 end
