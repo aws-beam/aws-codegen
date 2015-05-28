@@ -27,6 +27,8 @@ defmodule AWS.CodeGen.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [{:poison, "~> 1.4.0"}]
+    [{:earmark, "~> 0.1.17", only: :dev},
+     {:ex_doc, "~> 0.7.3", only: :dev},
+     {:poison, "~> 1.4.0"}]
   end
 end

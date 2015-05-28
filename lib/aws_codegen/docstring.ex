@@ -1,85 +1,79 @@
 defmodule AWS.CodeGen.Docstring do
-  def reflow(text) do
-    split_paragraphs(text)
-    |> justify_paragraphs
-    |> indent_paragraphs
-    |> join_paragraphs
+  def format(text) do
+    html_to_markdown(text)
+    |> split_paragraphs
+    |> Enum.map(&(justify_line(&1)))
+    |> Enum.join("\n\n")
   end
 
-  defp split_paragraphs(text) do
-    String.replace(text, "<code>", "`")
+  def html_to_markdown(text) do
+    convert_tags(text)
+    |> convert_fullname
+    |> String.replace("<a>", "`")
+    |> String.replace("</a>", "`")
+    |> String.replace("<b>", "**")
+    |> String.replace("</b>", "**")
+    |> String.replace("<code>", "`")
     |> String.replace("</code>", "`")
     |> String.replace("<fullname>", "")
     |> String.replace("</fullname>", "")
+    |> String.replace("<i>", "*")
+    |> String.replace("</i>", "*")
     |> String.replace("<p>", "")
     |> String.replace("</p>", "\n\n")
-    |> String.split("\n")
+    |> String.replace("<ul>", "")
+    |> String.replace("</ul>", "\n")
+    |> String.replace("<li>", "* ")
+    |> String.replace("</li>", "")
+  end
+
+  defp convert_tags(text) do
+    Regex.replace(~r{<a href="(.+?)">(.+?)</a>}, text, "[\\2](\\1)",
+                  global: true)
+  end
+
+  defp convert_fullname(text) do
+    Regex.replace(~r{<fullname>(.+?)</fullname>}, text, "", global: true)
+  end
+
+  def split_paragraphs(text) do
+    String.split(text, "\n")
     |> Enum.map(&(String.strip(&1)))
+    |> Enum.reject(&(&1 == ""))
   end
 
-  defp justify_paragraphs(paragraphs) do
-    Enum.map(paragraphs, &justify_paragraph/1)
+  def justify_line(text, max_length \\ 75) do
+    break_line(text, max_length)
+    |> Enum.map(&(String.strip(&1)))
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.map(&("  #{&1}"))
+    |> Enum.join("\n")
   end
 
-  defp justify_paragraph(text) do
-    String.to_char_list(text)
-    |> Enum.with_index
-    |> Enum.reverse
-    |> justify_paragraph([])
-    |> List.flatten
-    |> List.to_string
-  end
-
-  defp justify_paragraph([], acc) do
-    Enum.join(acc, "\n")
-  end
-
-  defp justify_paragraph(text, acc) do
-    index = find_split_index(text)
-    Enum.split(text, index)
-  end
-
-  defp find_split_index([{char, index}|tail]) do
-    if index < 76 && char == ?  do
-      index
-    else
-      find_split_index([{char, index}|tail] = tail)
-    end
-  end
-
-  # defp justify_paragraphs(paragraphs) do
-  #   Enum.map(paragraphs, &justify_paragraph/1)
-  # end
-
-  # defp justify_paragraph(text) do
-  #   justify_paragraph(text, length(text), [])
-  # end
-
-  # defp justify_paragraph(text, length, acc) when length < 76 do
-  #   [acc | String.strip(text)]
-  # end
-
-  # defp justify_paragraph(text, length, acc) do
-  #   index = find_split_index(text)
-  #   {text, remaining} = String.split_at(text, index)
-  #   justify_paragraph(remaining, length(remaining), [acc | String.strip(text)])
-  # end
-
-  # defp find_split_index(text) do
-  #   find_split_index(text, 0, 0)
-  # end
-
-  # defp find_split_index(text, last_split_index, index) do
-  #   cond do
-  #     text[index]
-  #   end
-  # end
-
-  defp indent_paragraphs(paragraphs) do
-    paragraphs
-  end
-
-  defp join_paragraphs(paragraphs) do
-    paragraphs
+  defp break_line(text, max_length) do
+    {lines, current} = List.foldl(String.split(text), {[], ""},
+      fn word, {lines, current} ->
+        if String.length(current) + 1 + String.length(word) > max_length do
+          if current == "" do
+            # The current word is the first on the current line, and is longer
+            # than our max_length, so append it as a new line.
+            {lines ++ [word], current}
+          else
+            # The current word exceeds the max length, so append the last
+            # line, and start a new one with the current word.
+            {lines ++ [current], word}
+          end
+        else
+          if current == "" do
+            # The current word is the first on the current line, so append it
+            # as a new line.
+            {lines, word}
+          else
+            # Append the current word to the current line.
+            {lines, "#{current} #{word}"}
+          end
+        end
+      end)
+    List.flatten(lines ++ [current])
   end
 end

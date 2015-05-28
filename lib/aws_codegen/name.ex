@@ -1,4 +1,7 @@
 defmodule AWS.CodeGen.Name do
+  @doc """
+  Convert `CamelCase` or `nerdyCaps` to `snake_case`.
+  """
   def to_snake_case(text) do
     String.to_char_list(text)
     |> Enum.map_join(&char_to_snake_case/1)

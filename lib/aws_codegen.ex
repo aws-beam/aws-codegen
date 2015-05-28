@@ -1,9 +1,10 @@
 defmodule AWS.CodeGen do
+  alias AWS.CodeGen.Docstring
+
   defmodule Action do
     defstruct name: nil,
               function_name: nil,
-              documentation: nil,
-              docstring: "implement docstring"
+              docstring: nil
   end
 
   defmodule Service do
@@ -12,8 +13,7 @@ defmodule AWS.CodeGen do
               endpoint_prefix: nil,
               protocol: nil,
               json_version: nil,
-              documentation: nil,
-              docstring: "implement docstring",
+              docstring: nil,
               actions: []
   end
 
@@ -32,9 +32,6 @@ defmodule AWS.CodeGen do
     EEx.eval_file(template_path, [context: context])
   end
 
-  @doc """
-  Build a Service context struct from raw JSON data about an AWS service.
-  """
   defp build_context(data) do
     actions = collect_actions(data)
     %Service{api_version: data["metadata"]["apiVersion"],
@@ -42,19 +39,15 @@ defmodule AWS.CodeGen do
              endpoint_prefix: data["metadata"]["endpointPrefix"],
              protocol: data["metadata"]["json"],
              json_version: data["metadata"]["jsonVersion"],
-             documentation: data["documentation"],
+             docstring: Docstring.format(data["documentation"]),
              actions: actions}
   end
 
-  @doc """
-  Collect actions from the raw JSON data and transform them into Action
-  context structs.
-  """
   defp collect_actions(data) do
     Enum.map(data["operations"], fn({_action, metadata}) ->
       %Action{name: metadata["name"],
               function_name: AWS.CodeGen.Name.to_snake_case(metadata["name"]),
-              documentation: metadata["documentation"]}
+              docstring: Docstring.format(metadata["documentation"])}
     end)
   end
 end
