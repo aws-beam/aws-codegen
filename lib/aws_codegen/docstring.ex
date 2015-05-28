@@ -7,7 +7,7 @@ defmodule AWS.CodeGen.Docstring do
   end
 
   def html_to_markdown(text) do
-    convert_tags(text)
+    convert_links(text)
     |> convert_fullname
     |> String.replace("<a>", "`")
     |> String.replace("</a>", "`")
@@ -27,7 +27,7 @@ defmodule AWS.CodeGen.Docstring do
     |> String.replace("</li>", "")
   end
 
-  defp convert_tags(text) do
+  defp convert_links(text) do
     Regex.replace(~r{<a href="(.+?)">(.+?)</a>}, text, "[\\2](\\1)",
                   global: true)
   end
