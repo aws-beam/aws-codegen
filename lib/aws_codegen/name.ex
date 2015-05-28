@@ -3,7 +3,9 @@ defmodule AWS.CodeGen.Name do
   Convert `CamelCase` or `nerdyCaps` to `snake_case`.
   """
   def to_snake_case(text) do
-    String.to_char_list(text)
+    String.replace(text, "iSCSI", "Iscsi")
+    |> String.replace("VTL", "Vtl")
+    |> String.to_char_list
     |> Enum.map_join(&char_to_snake_case/1)
     |> String.lstrip(?_)
   end
