@@ -48,18 +48,8 @@ defmodule AWS.CodeGen.DocstringTest do
     assert "*Hello, world!*" == Docstring.html_to_markdown(text)
   end
 
-  test "html_to_markdown/1 replaces <note> tags with asterisks" do
-    text = "<note>Hello, world!</note>"
-    assert "*Hello, world!*" == Docstring.html_to_markdown(text)
-  end
-
   test "html_to_markdown/1 replaces <b> tags with double-asterisks" do
     text = "<b>Hello, world!</b>"
-    assert "**Hello, world!**" == Docstring.html_to_markdown(text)
-  end
-
-  test "html_to_markdown/1 replaces <important> tags with double-asterisks" do
-    text = "<important>Hello, world!</important>"
     assert "**Hello, world!**" == Docstring.html_to_markdown(text)
   end
 
