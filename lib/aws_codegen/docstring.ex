@@ -32,6 +32,8 @@ defmodule AWS.CodeGen.Docstring do
     |> String.replace("</i>", "*")
     |> String.replace("<important>", "**")
     |> String.replace("</important>", "**")
+    |> String.replace("<note>", "*")
+    |> String.replace("</note>", "*")
     |> String.replace("<p>", "")
     |> String.replace("</p>", "\n\n")
   end
