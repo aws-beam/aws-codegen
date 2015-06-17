@@ -4,7 +4,8 @@ defmodule AWS.CodeGen.Docstring do
   heredoc in generated code.
   """
   def format(text) do
-    html_to_markdown(text)
+    text
+    |> html_to_markdown
     |> split_paragraphs
     |> Enum.map(&(justify_line(&1)))
     |> Enum.join("\n\n")
@@ -19,7 +20,8 @@ defmodule AWS.CodeGen.Docstring do
   output.
   """
   def html_to_markdown(text) do
-    convert_links(text)
+    text
+    |> convert_links
     |> String.replace("<a>", "`")
     |> String.replace("</a>", "`")
     |> String.replace("<b>", "**")
@@ -39,7 +41,8 @@ defmodule AWS.CodeGen.Docstring do
   paragraph.
   """
   def split_paragraphs(text) do
-    String.split(text, "\n")
+    text
+    |> String.split("\n")
     |> Enum.map(&(String.strip(&1)))
     |> Enum.reject(&(&1 == ""))
   end
@@ -50,7 +53,8 @@ defmodule AWS.CodeGen.Docstring do
   suitable for inclusion in a docstring heredoc in generated code.
   """
   def justify_line(text, max_length \\ 75) do
-    break_line(text, max_length)
+    text
+    |> break_line(max_length)
     |> Enum.map(&(String.strip(&1)))
     |> Enum.reject(&(&1 == ""))
     |> Enum.map(&("  #{&1}"))
