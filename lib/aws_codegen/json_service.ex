@@ -1,4 +1,4 @@
-defmodule AWS.CodeGen do
+defmodule AWS.CodeGen.JSONService do
   alias AWS.CodeGen.Docstring
 
   defmodule Action do
@@ -19,8 +19,8 @@ defmodule AWS.CodeGen do
   end
 
   @doc """
-  Load JSON from the file `api_spec_path` and convert it to a context that can be
-  used to generate code for an AWS service.
+  Load JSON from the `api_spec_path` and `doc_spec_path` files and convert
+  them into a context that can be used to generate code for an AWS service.
   """
   def load_context(module_name, api_spec_path, doc_spec_path) do
     api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!

@@ -5,79 +5,79 @@ TEMPLATE_PATH=priv/json-service.ex.eex
 OUTPUT_PATH=../aws-elixir/lib/aws
 
 mix compile
-mix run generate.exs CloudHSM \
+mix run generate-json-service.exs CloudHSM \
     $SPEC_PATH/cloudhsm/2014-05-30/api-2.json \
     $SPEC_PATH/cloudhsm/2014-05-30/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/cloud_hsm.ex
-mix run generate.exs CloudTrail \
+mix run generate-json-service.exs CloudTrail \
     $SPEC_PATH/cloudtrail/2013-11-01/api-2.json \
     $SPEC_PATH/cloudtrail/2013-11-01/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/cloud_trail.ex
-mix run generate.exs CognitoIdentity \
+mix run generate-json-service.exs CognitoIdentity \
     $SPEC_PATH/cognito-identity/2014-06-30/api-2.json \
     $SPEC_PATH/cognito-identity/2014-06-30/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/cognito_identity.ex
-mix run generate.exs CodeDeploy \
+mix run generate-json-service.exs CodeDeploy \
     $SPEC_PATH/codedeploy/2014-10-06/api-2.json \
     $SPEC_PATH/codedeploy/2014-10-06/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/code_deploy.ex
-mix run generate.exs Config \
+mix run generate-json-service.exs Config \
     $SPEC_PATH/config/2014-11-12/api-2.json \
     $SPEC_PATH/config/2014-11-12/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/config.ex
-mix run generate.exs DataPipeline \
+mix run generate-json-service.exs DataPipeline \
     $SPEC_PATH/datapipeline/2012-10-29/api-2.json \
     $SPEC_PATH/datapipeline/2012-10-29/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/data_pipeline.ex
-mix run generate.exs DirectConnect \
+mix run generate-json-service.exs DirectConnect \
     $SPEC_PATH/directconnect/2012-10-25/api-2.json \
     $SPEC_PATH/directconnect/2012-10-25/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/direct_connect.ex
-mix run generate.exs DynamoDB \
+mix run generate-json-service.exs DynamoDB \
     $SPEC_PATH/dynamodb/2012-08-10/api-2.json \
     $SPEC_PATH/dynamodb/2012-08-10/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/dynamodb.ex
-mix run generate.exs ECS \
+mix run generate-json-service.exs ECS \
     $SPEC_PATH/ecs/2014-11-13/api-2.json \
     $SPEC_PATH/ecs/2014-11-13/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/ecs.ex
-mix run generate.exs EMR \
+mix run generate-json-service.exs EMR \
     $SPEC_PATH/elasticmapreduce/2009-03-31/api-2.json \
     $SPEC_PATH/elasticmapreduce/2009-03-31/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/emr.ex
-mix run generate.exs Kinesis \
+mix run generate-json-service.exs Kinesis \
     $SPEC_PATH/kinesis/2013-12-02/api-2.json \
     $SPEC_PATH/kinesis/2013-12-02/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/kinesis.ex
-mix run generate.exs KMS \
+mix run generate-json-service.exs KMS \
     $SPEC_PATH/kms/2014-11-01/api-2.json \
     $SPEC_PATH/kms/2014-11-01/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/kms.ex
-mix run generate.exs Logs \
+mix run generate-json-service.exs Logs \
     $SPEC_PATH/logs/2014-03-28/api-2.json \
     $SPEC_PATH/logs/2014-03-28/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/logs.ex
-mix run generate.exs OpsWorks \
+mix run generate-json-service.exs OpsWorks \
     $SPEC_PATH/opsworks/2013-02-18/api-2.json \
     $SPEC_PATH/opsworks/2013-02-18/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/ops_works.ex
-mix run generate.exs Route53Domains \
+mix run generate-json-service.exs Route53Domains \
     $SPEC_PATH/route53domains/2014-05-15/api-2.json \
     $SPEC_PATH/route53domains/2014-05-15/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/route53_domains.ex
-mix run generate.exs SSM \
+mix run generate-json-service.exs SSM \
     $SPEC_PATH/ssm/2014-11-06/api-2.json \
     $SPEC_PATH/ssm/2014-11-06/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/ssm.ex
-mix run generate.exs Support \
+mix run generate-json-service.exs Support \
     $SPEC_PATH/support/2013-04-15/api-2.json \
     $SPEC_PATH/support/2013-04-15/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/support.ex
-mix run generate.exs StorageGateway \
+mix run generate-json-service.exs StorageGateway \
     $SPEC_PATH/storagegateway/2013-06-30/api-2.json \
     $SPEC_PATH/storagegateway/2013-06-30/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/storage_gateway.ex
-mix run generate.exs SWF \
+mix run generate-json-service.exs SWF \
     $SPEC_PATH/swf/2012-01-25/api-2.json \
     $SPEC_PATH/swf/2012-01-25/docs-2.json \
     $TEMPLATE_PATH > $OUTPUT_PATH/swf.ex
