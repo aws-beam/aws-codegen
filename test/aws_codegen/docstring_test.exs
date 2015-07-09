@@ -2,8 +2,8 @@ defmodule AWS.CodeGen.DocstringTest do
   use ExUnit.Case
   alias AWS.CodeGen.Docstring
 
-  test "format/1 returns an empty string when :nil is provided" do
-    assert "" == Docstring.format(:nil)
+  test "format/1 returns an empty string when nil is provided" do
+    assert "" == Docstring.format(nil)
   end
 
   test "format/1 is effectively a no-op when an empty string is provided" do
