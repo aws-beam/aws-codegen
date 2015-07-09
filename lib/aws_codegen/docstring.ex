@@ -12,6 +12,13 @@ defmodule AWS.CodeGen.Docstring do
   end
 
   @doc """
+  Convert :nil to an empty string.
+  """
+  def html_to_markdown(:nil) do
+    ""
+  end
+
+  @doc """
   Transform HTML tags into Markdown.
 
   `UL` and `LI` tags are left unchanged because the simple conversion logic

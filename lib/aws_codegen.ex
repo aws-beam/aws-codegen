@@ -19,11 +19,13 @@ defmodule AWS.CodeGen do
   end
 
   @doc """
-  Load JSON from the file `path` and convert it to a context that can be used
-  to generate code for an AWS service.
+  Load JSON from the file `api_spec_path` and convert it to a context that can be
+  used to generate code for an AWS service.
   """
-  def load_context(module_name, path) do
-    File.read!(path) |> Poison.Parser.parse! |> build_context(module_name)
+  def load_context(module_name, api_spec_path, doc_spec_path) do
+    api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!
+    doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!
+    build_context(module_name, api_spec, doc_spec)
   end
 
   @doc """
@@ -33,22 +35,22 @@ defmodule AWS.CodeGen do
     EEx.eval_file(template_path, [context: context])
   end
 
-  defp build_context(data, module_name) do
-    actions = collect_actions(data)
+  defp build_context(module_name, api_spec, doc_spec) do
+    actions = collect_actions(api_spec, doc_spec)
     %Service{actions: actions,
-             docstring: Docstring.format(data["documentation"]),
-             endpoint_prefix: data["metadata"]["endpointPrefix"],
-             json_version: data["metadata"]["jsonVersion"],
+             docstring: Docstring.format(doc_spec["service"]),
+             endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
+             json_version: api_spec["metadata"]["jsonVersion"],
              module_name: module_name,
-             protocol: data["metadata"]["json"],
-             target_prefix: data["metadata"]["targetPrefix"]}
+             protocol: api_spec["metadata"]["json"],
+             target_prefix: api_spec["metadata"]["targetPrefix"]}
   end
 
-  defp collect_actions(data) do
-    Enum.map(data["operations"], fn({_action, metadata}) ->
-      %Action{docstring: Docstring.format(metadata["documentation"]),
-              function_name: AWS.CodeGen.Name.to_snake_case(metadata["name"]),
-              name: metadata["name"]}
+  defp collect_actions(api_spec, doc_spec) do
+    Enum.map(api_spec["operations"], fn({operation, _metadata}) ->
+      %Action{docstring: Docstring.format(doc_spec["operations"][operation]),
+              function_name: AWS.CodeGen.Name.to_snake_case(operation),
+              name: operation}
     end)
   end
 end
