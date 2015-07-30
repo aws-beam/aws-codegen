@@ -17,4 +17,8 @@ defmodule AWS.CodeGen.NameTest do
   test "to_snake_case/1 special cases VTL" do
     assert "describe_vtl_devices" = Name.to_snake_case("DescribeVTLDevices")
   end
+
+  test "to_snake_case/1 special cases UUID" do
+    assert "uuid" = Name.to_snake_case("UUID")
+  end
 end

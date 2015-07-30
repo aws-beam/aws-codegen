@@ -1,12 +1,6 @@
 defmodule AWS.CodeGen.JSONService do
   alias AWS.CodeGen.Docstring
 
-  defmodule Action do
-    defstruct docstring: nil,
-              function_name: nil,
-              name: nil
-  end
-
   defmodule Service do
     defstruct abbreviation: nil,
               actions: [],
@@ -18,9 +12,16 @@ defmodule AWS.CodeGen.JSONService do
               target_prefix: nil
   end
 
+  defmodule Action do
+    defstruct docstring: nil,
+              function_name: nil,
+              name: nil
+  end
+
   @doc """
-  Load JSON from the `api_spec_path` and `doc_spec_path` files and convert
-  them into a context that can be used to generate code for an AWS service.
+  Load JSON API service and documentation specifications from the
+  `api_spec_path` and `doc_spec_path` files and convert them into a context
+  that can be used to generate code for an AWS service.
   """
   def load_context(module_name, api_spec_path, doc_spec_path) do
     api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!
