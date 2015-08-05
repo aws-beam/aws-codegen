@@ -110,6 +110,7 @@ defmodule AWS.CodeGen.RestJSONService do
               request_header_parameters: collect_request_header_parameters(api_spec, operation),
               response_header_parameters: collect_response_header_parameters(api_spec, operation)}
     end)
+    |> Enum.sort(fn(a, b) -> a.function_name < b.function_name end)
   end
 
   defp collect_url_parameters(api_spec, operation) do

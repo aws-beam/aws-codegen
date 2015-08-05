@@ -53,5 +53,6 @@ defmodule AWS.CodeGen.JSONService do
               function_name: AWS.CodeGen.Name.to_snake_case(operation),
               name: operation}
     end)
+    |> Enum.sort(fn(a, b) -> a.function_name < b.function_name end)
   end
 end
