@@ -10,25 +10,21 @@ defmodule AWS.<%= context.module_name %> do
 <%= action.docstring %>
   """<%= if action.method == "GET" do %>
   def <%= action.function_name %>(client<%= AWS.CodeGen.RestJSONService.function_parameters(action) %>, options \\ []) do
-    parameters = %{}<%= for parameter <- action.url_parameters do %>
-    if <%= parameter.code_name %> != nil do
-      parameters = Map.merge(parameters, %{"<%= parameter.name %>" => <%= parameter.code_name %>})
-    end<% end %>
-    query_string = URI.encode_query(parameters)
-    url = "<%= AWS.CodeGen.RestJSONService.Action.url(action) %>?#{query_string}"
+    url = "<%= AWS.CodeGen.RestJSONService.Action.url(action) %>"
     headers = []<%= for parameter <- action.request_header_parameters do %>
     if !is_nil(<%= parameter.code_name %>) do
       headers = [{"<%= parameter.name %>", <%= parameter.code_name %>}|headers]
-    end<%= end %>
+    end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
     case request(client, :get, url, headers, nil, options, <%= inspect(action.success_status_code) %>) do
       {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
         if !is_nil(response.headers["<%= parameter.name %>"]) do
-          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.name %>"]
+          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.name %>"]}
         end<%= end %>
         {:ok, body, response}
       result ->
         result
-    end
+    end<% else %>
+    request(client, :get, url, headers, nil, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% else %>
   def <%= action.function_name %>(client<%= AWS.CodeGen.RestJSONService.function_parameters(action) %>, input, options \\ []) do
     url = "<%= AWS.CodeGen.RestJSONService.Action.url(action) %>"
@@ -36,13 +32,17 @@ defmodule AWS.<%= context.module_name %> do
     if Dict.has_key?(input, "<%= parameter.name %>") do
       headers = [{"<%= parameter.name %>", input["<%= parameter.name %>"]}|headers]
       input = Dict.delete(input, "<%= parameter.name %>")
-    end<%= end %>
-    case request(client, :get, url, headers, nil, options, <%= inspect(action.success_status_code) %>) do
-      {:ok, body, response} ->
+    end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
+    case request(client, <%= AWS.CodeGen.RestJSONService.Action.method(action) %>, url, headers, input, options, <%= inspect(action.success_status_code) %>) do
+      {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
+        if !is_nil(response.headers["<%= parameter.name %>"]) do
+          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.name %>"]}
+        end<%= end %>
         {:ok, body, response}
       result ->
         result
-    end
+    end<% else %>
+    request(client, <%= AWS.CodeGen.RestJSONService.Action.method(action) %>, url, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% end %><% end %>
 
   defp request(client, method, url, headers, input, options, success_status_code) do

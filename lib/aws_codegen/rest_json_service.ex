@@ -30,8 +30,8 @@ defmodule AWS.CodeGen.RestJSONService do
     def url(action) do
       Enum.reduce(action.url_parameters, action.request_uri,
         fn(parameter, acc) ->
-          name = Enum.join([~S(#{), parameter.code_name, ~S(})])
-          String.replace(acc, "{#{parameter.name}}", name)
+          name = Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
+          String.replace(acc, "{#{parameter.name}}", "#{name}")
         end)
     end
   end
