@@ -64,8 +64,27 @@ defmodule AWS.CodeGen.RestJSONService do
   into the code template.
   """
   def function_parameters(action) do
-    Enum.join(Enum.map(action.url_parameters,
-                       fn(parameter) -> ", #{parameter.code_name}" end))
+    Enum.join([join_parameters(action.url_parameters),
+               join_header_parameters(action)])
+  end
+
+  defp join_header_parameters(action) do
+    if action.method == "GET" do
+      join_parameters(action.request_header_parameters, nil)
+    else
+      ""
+    end
+  end
+
+  defp join_parameters(parameters, default \\ :undefined) do
+    Enum.join(Enum.map(parameters,
+          fn(parameter) ->
+            if default == :undefined do
+              ", #{parameter.code_name}"
+            else
+              ", #{parameter.code_name} \\\\ #{inspect(default)}"
+            end
+          end))
   end
 
   defp build_context(module_name, api_spec, doc_spec) do
