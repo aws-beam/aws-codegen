@@ -1,0 +1,95 @@
+# WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
+# See https://github.com/jkakar/aws-codegen for more details.
+
+defmodule AWS.<%= context.module_name %> do
+  @moduledoc """
+<%= context.docstring %>
+  """<%= for action <- context.actions do %>
+
+  @doc """
+<%= action.docstring %>
+  """<%= if action.method == "GET" do %>
+  def <%= action.function_name %>(client<%= AWS.CodeGen.RestJSONService.function_parameters(action) %>, options \\ []) do
+    url = "<%= AWS.CodeGen.RestJSONService.Action.url(action) %>"
+    headers = []<%= for parameter <- action.request_header_parameters do %>
+    if !is_nil(<%= parameter.code_name %>) do
+      headers = [{"<%= parameter.name %>", <%= parameter.code_name %>}|headers]
+    end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
+    case request(client, :get, url, headers, nil, options, <%= inspect(action.success_status_code) %>) do
+      {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
+        if !is_nil(response.headers["<%= parameter.name %>"]) do
+          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.name %>"]}
+        end<%= end %>
+        {:ok, body, response}
+      result ->
+        result
+    end<% else %>
+    request(client, :get, url, headers, nil, options, <%= inspect(action.success_status_code) %>)<% end %>
+  end<% else %>
+  def <%= action.function_name %>(client<%= AWS.CodeGen.RestJSONService.function_parameters(action) %>, input, options \\ []) do
+    url = "<%= AWS.CodeGen.RestJSONService.Action.url(action) %>"
+    headers = []<%= for parameter <- action.request_header_parameters do %>
+    if Dict.has_key?(input, "<%= parameter.name %>") do
+      headers = [{"<%= parameter.name %>", input["<%= parameter.name %>"]}|headers]
+      input = Dict.delete(input, "<%= parameter.name %>")
+    end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
+    case request(client, <%= AWS.CodeGen.RestJSONService.Action.method(action) %>, url, headers, input, options, <%= inspect(action.success_status_code) %>) do
+      {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
+        if !is_nil(response.headers["<%= parameter.name %>"]) do
+          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.name %>"]}
+        end<%= end %>
+        {:ok, body, response}
+      result ->
+        result
+    end<% else %>
+    request(client, <%= AWS.CodeGen.RestJSONService.Action.method(action) %>, url, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
+  end<% end %><% end %>
+
+  defp request(client, method, url, headers, input, options, success_status_code) do
+    client = %{client | service: "<%= context.endpoint_prefix %>"}
+    host = "<%= context.endpoint_prefix %>.#{client.region}.#{client.endpoint}"
+    url = "https://#{host}#{url}"
+    headers = Enum.concat([{"Host", host},
+                           {"Content-Type", "application/x-amz-json-1.1"}],
+                          headers)
+    payload = encode_payload(input)
+    headers = AWS.Request.sign_v4(client, method, url, headers, payload)
+    perform_request(method, url, payload, headers, options, success_status_code)
+  end
+
+  defp perform_request(method, url, payload, headers, options, nil) do
+    case HTTPoison.request(method, url, payload, headers, options) do
+      {:ok, response=%HTTPoison.Response{status_code: 200, body: body}} ->
+        {:ok, Poison.Parser.parse!(body), response}
+      {:ok, response=%HTTPoison.Response{status_code: 202, body: body}} ->
+        {:ok, Poison.Parser.parse!(body), response}
+      {:ok, response=%HTTPoison.Response{status_code: 204, body: body}} ->
+        {:ok, Poison.Parser.parse!(body), response}
+      {:ok, _response=%HTTPoison.Response{body: body}} ->
+        reason = Poison.Parser.parse!(body)["message"]
+        {:error, reason}
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, %HTTPoison.Error{reason: reason}}
+    end
+  end
+
+  defp perform_request(method, url, payload, headers, options, success_status_code) do
+    case HTTPoison.request(method, url, payload, headers, options) do
+      {:ok, response=%HTTPoison.Response{status_code: ^success_status_code, body: body}} ->
+        {:ok, Poison.Parser.parse!(body), response}
+      {:ok, _response=%HTTPoison.Response{body: body}} ->
+        reason = Poison.Parser.parse!(body)["message"]
+        {:error, reason}
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, %HTTPoison.Error{reason: reason}}
+    end
+  end
+
+  defp encode_payload(input) do
+    if input != nil do
+      Poison.Encoder.encode(input, [])
+    else
+      ""
+    end
+  end
+end

@@ -5,6 +5,7 @@ defmodule AWS.CodeGen.Name do
   def to_snake_case(text) do
     String.replace(text, "iSCSI", "Iscsi")
     |> String.replace("VTL", "Vtl")
+    |> String.replace("UUID", "Uuid")
     |> String.to_char_list
     |> Enum.map_join(&char_to_snake_case/1)
     |> String.lstrip(?_)

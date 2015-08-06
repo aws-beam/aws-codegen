@@ -12,9 +12,9 @@ defmodule AWS.CodeGen.Docstring do
   end
 
   @doc """
-  Convert :nil to an empty string.
+  Convert nil to an empty string.
   """
-  def html_to_markdown(:nil) do
+  def html_to_markdown(nil) do
     ""
   end
 
