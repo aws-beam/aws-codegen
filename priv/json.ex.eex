@@ -1,7 +1,7 @@
 # WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
 # See https://github.com/jkakar/aws-codegen for more details.
 
-defmodule AWS.<%= context.module_name %> do
+defmodule <%= context.module_name %> do
   @moduledoc """
 <%= context.docstring %>
   """
