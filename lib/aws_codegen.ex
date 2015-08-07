@@ -36,8 +36,8 @@ defmodule AWS.CodeGen do
 
   def generate(spec_base_path, template_base_path, output_base_path) do
     tasks = Enum.map(@services, fn({type, module_name, spec_path, output_filename}) ->
-      api_spec_path = spec_path(spec_base_path, spec_path, "api-2.json")
-      doc_spec_path = spec_path(spec_base_path, spec_path, "docs-2.json")
+      api_spec_path = make_spec_path(spec_base_path, spec_path, "api-2.json")
+      doc_spec_path = make_spec_path(spec_base_path, spec_path, "docs-2.json")
       output_path = Path.join(output_base_path, output_filename)
       args = [type, module_name, api_spec_path, doc_spec_path,
               template_base_path, output_path]
@@ -65,7 +65,7 @@ defmodule AWS.CodeGen do
     File.write(output_path, code)
   end
 
-  defp spec_path(spec_base_path, spec_path, filename) do
+  defp make_spec_path(spec_base_path, spec_path, filename) do
     spec_base_path |> Path.join(spec_path) |> Path.join(filename)
   end
 end
