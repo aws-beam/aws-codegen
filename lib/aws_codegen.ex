@@ -34,31 +34,31 @@ defmodule AWS.CodeGen do
     {:rest_json, "AWS.Transcoder", "elastictranscoder/2012-09-25", "transcoder.ex"},
   ]
 
-  def generate(spec_base_path, template_base_path, output_base_path) do
-    tasks = Enum.map(@services, fn({type, module_name, spec_path, output_filename}) ->
+  def generate(language, spec_base_path, template_base_path, output_base_path) do
+    tasks = Enum.map(@services, fn({protocol, module_name, spec_path, output_filename}) ->
       api_spec_path = make_spec_path(spec_base_path, spec_path, "api-2.json")
       doc_spec_path = make_spec_path(spec_base_path, spec_path, "docs-2.json")
       output_path = Path.join(output_base_path, output_filename)
-      args = [type, module_name, api_spec_path, doc_spec_path,
+      args = [language, protocol, module_name, api_spec_path, doc_spec_path,
               template_base_path, output_path]
       Task.async(AWS.CodeGen, :generate_code, args)
     end)
     Enum.each(tasks, fn(task) -> Task.await(task) end)
   end
 
-  def generate_code(:json, module_name, api_spec_path, doc_spec_path,
+  def generate_code(language, :json, module_name, api_spec_path, doc_spec_path,
                     template_base_path, output_path) do
     template_path = Path.join(template_base_path, "json.ex.eex")
-    context = AWS.CodeGen.JSONService.load_context(module_name, api_spec_path,
-                                                   doc_spec_path)
+    context = AWS.CodeGen.JSONService.load_context(language, module_name,
+                                                   api_spec_path, doc_spec_path)
     code = AWS.CodeGen.JSONService.render(context, template_path)
     File.write(output_path, code)
   end
 
-  def generate_code(:rest_json, module_name, api_spec_path, doc_spec_path,
-                    template_base_path, output_path) do
+  def generate_code(language, :rest_json, module_name, api_spec_path,
+                    doc_spec_path, template_base_path, output_path) do
     template_path = Path.join(template_base_path, "rest_json.ex.eex")
-    context = AWS.CodeGen.RestJSONService.load_context(module_name,
+    context = AWS.CodeGen.RestJSONService.load_context(language, module_name,
                                                        api_spec_path,
                                                        doc_spec_path)
     code = AWS.CodeGen.RestJSONService.render(context, template_path)

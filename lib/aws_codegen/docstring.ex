@@ -1,14 +1,26 @@
 defmodule AWS.CodeGen.Docstring do
   @doc """
   Tranform HTML text into Markdown suitable for inclusion in a docstring
-  heredoc in generated code.
+  heredoc in generated Elixir code.
   """
-  def format(text) do
+  def format(:elixir, text) do
     text
     |> html_to_markdown
     |> split_paragraphs
     |> Enum.map(&(justify_line(&1)))
     |> Enum.join("\n\n")
+  end
+
+  @doc """
+  Tranform HTML text into Markdown suitable for inclusion in a docstring
+  heredoc in generated Erlang code.
+  """
+  def format(:erlang, text) do
+    text
+    |> html_to_edoc
+    |> split_paragraphs
+    |> Enum.map(&(justify_line(&1, 74, "%% ")))
+    |> Enum.join("\n%% \n")
   end
 
   @doc """
@@ -44,6 +56,24 @@ defmodule AWS.CodeGen.Docstring do
   end
 
   @doc """
+  Convert nil to an empty string.
+  """
+  def html_to_edoc(nil) do
+    ""
+  end
+
+  @doc """
+  Transform HTML tags into edoc.
+
+  `P` tags are replaced with newlines and other tags are left unchanged.
+  """
+  def html_to_edoc(text) do
+    text
+    |> String.replace("<p>", "")
+    |> String.replace("</p>", "\n\n")
+  end
+
+  @doc """
   Split a block of text into a list of strings, each of which represent a
   paragraph.
   """
@@ -59,12 +89,12 @@ defmodule AWS.CodeGen.Docstring do
   specified maximum length.  Indent each line by two spaces to make it
   suitable for inclusion in a docstring heredoc in generated code.
   """
-  def justify_line(text, max_length \\ 75) do
+  def justify_line(text, max_length \\ 75, indent \\ "  ") do
     text
     |> break_line(max_length)
     |> Enum.map(&(String.strip(&1)))
     |> Enum.reject(&(&1 == ""))
-    |> Enum.map(&("  #{&1}"))
+    |> Enum.map(&("#{indent}#{&1}"))
     |> Enum.join("\n")
   end
 
