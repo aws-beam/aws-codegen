@@ -35,7 +35,31 @@ defmodule AWS.CodeGen do
   ]
 
   @erlang_services [
+    {:json, "aws_cloud_hsm", "cloudhsm/2014-05-30", "aws_cloud_hsm.erl"},
+    {:json, "aws_cloud_trail", "cloudtrail/2013-11-01", "aws_cloud_trail.erl"},
+    {:json, "aws_code_commit", "codecommit/2015-04-13", "aws_code_commit.erl"},
+    {:json, "aws_code_deploy", "codedeploy/2014-10-06", "aws_code_deploy.erl"},
+    {:json, "aws_code_pipeline", "codepipeline/2015-07-09", "aws_code_pipeline.erl"},
+    {:json, "aws_cognito", "cognito-identity/2014-06-30", "aws_cognito.erl"},
+    {:json, "aws_config", "config/2014-11-12", "aws_config.erl"},
+    {:json, "aws_data_pipeline", "datapipeline/2012-10-29", "aws_data_pipeline.erl"},
+    {:json, "aws_device_farm", "devicefarm/2015-06-23", "aws_device_farm.erl"},
+    {:json, "aws_direct_connect", "directconnect/2012-10-25", "aws_direct_connect.erl"},
+    {:json, "aws_directory_service", "ds/2015-04-16", "aws_directory_service.erl"},
+    {:json, "aws_dynamodb", "dynamodb/2012-08-10", "aws_dynamodb.erl"},
+    {:json, "aws_dynamodb_streams", "streams.dynamodb/2012-08-10", "aws_dynamodb_streams.erl"},
+    {:json, "aws_ecs", "ecs/2014-11-13", "aws_ecs.erl"},
+    {:json, "aws_emr", "elasticmapreduce/2009-03-31", "aws_emr.erl"},
     {:json, "aws_kinesis", "kinesis/2013-12-02", "aws_kinesis.erl"},
+    {:json, "aws_kms", "kms/2014-11-01", "aws_kms.erl"},
+    {:json, "aws_logs", "logs/2014-03-28", "aws_logs.erl"},
+    {:json, "aws_ops_works", "opsworks/2013-02-18", "aws_ops_works.erl"},
+    {:json, "aws_route53_domains", "route53domains/2014-05-15", "aws_route53_domains.erl"},
+    {:json, "aws_ssm", "ssm/2014-11-06", "aws_ssm.erl"},
+    {:json, "aws_storage_gateway", "storagegateway/2013-06-30", "aws_storage_gateway.erl"},
+    {:json, "aws_support", "support/2013-04-15", "aws_support.erl"},
+    {:json, "aws_swf", "swf/2012-01-25", "aws_swf.erl"},
+    {:json, "aws_workspaces", "workspaces/2015-04-08", "aws_workspaces.erl"},
   ]
 
   def generate(language, spec_base_path, template_base_path, output_base_path) do

@@ -3,6 +3,7 @@ defmodule AWS.CodeGen.JSONService do
 
   defmodule Service do
     defstruct abbreviation: nil,
+              exports: [],
               actions: [],
               docstring: nil,
               endpoint_prefix: nil,
@@ -39,7 +40,9 @@ defmodule AWS.CodeGen.JSONService do
 
   defp build_context(language, module_name, api_spec, doc_spec) do
     actions = collect_actions(language, api_spec, doc_spec)
-    %Service{actions: actions,
+    exports = collect_exports(language, api_spec, doc_spec)
+    %Service{exports: exports,
+             actions: actions,
              docstring: Docstring.format(language, doc_spec["service"]),
              endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
              json_version: api_spec["metadata"]["jsonVersion"],
@@ -56,5 +59,16 @@ defmodule AWS.CodeGen.JSONService do
               name: operation}
     end)
     |> Enum.sort(fn(a, b) -> a.function_name < b.function_name end)
+  end
+
+  defp collect_exports(:elixir, _, _) do
+    []
+  end
+
+  defp collect_exports(:erlang, api_spec, doc_spec) do
+    Enum.map(api_spec["operations"], fn({operation, _metadata}) ->
+      "#{AWS.CodeGen.Name.to_snake_case(operation)}/3"
+    end)
+    |> Enum.sort(fn(a, b) -> a < b end)
   end
 end

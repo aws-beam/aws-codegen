@@ -16,7 +16,7 @@ defmodule AWS.CodeGen.Docstring do
   heredoc in generated Erlang code.
   """
   def format(:erlang, text) do
-    text
+    "@doc #{text}"
     |> html_to_edoc
     |> split_paragraphs
     |> Enum.map(&(justify_line(&1, 74, "%% ")))
