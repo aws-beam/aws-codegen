@@ -26,13 +26,6 @@ defmodule AWS.CodeGen.Docstring do
   end
 
   @doc """
-  Convert nil to an empty string.
-  """
-  def html_to_markdown(nil) do
-    ""
-  end
-
-  @doc """
   Transform HTML tags into Markdown.
 
   `UL` and `LI` tags are left unchanged because the simple conversion logic
@@ -40,6 +33,7 @@ defmodule AWS.CodeGen.Docstring do
   read in text-format, but Pandoc correctly renders HTML lists in the ExDoc
   output.
   """
+  def html_to_markdown(nil), do: ""
   def html_to_markdown(text) do
     text
     |> convert_links
@@ -58,17 +52,11 @@ defmodule AWS.CodeGen.Docstring do
   end
 
   @doc """
-  Convert nil to an empty string.
-  """
-  def html_to_edoc(nil) do
-    ""
-  end
-
-  @doc """
   Transform HTML tags into edoc.
 
   `P` tags are replaced with newlines and other tags are left unchanged.
   """
+  def html_to_edoc(nil), do: ""
   def html_to_edoc(text) do
     text
     |> String.replace("</fullname>", "</fullname>\n\n")
