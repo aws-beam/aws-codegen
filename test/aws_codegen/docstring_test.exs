@@ -15,7 +15,7 @@ defmodule AWS.CodeGen.DocstringTest do
   test "format/2 converts tags to Markdown and indents the text by 2 spaces" do
     text = "<p>Hello,</p> <p><code>world</code></p>!"
     assert "  Hello,\n\n  `world`\n\n  !" == Docstring.format(:elixir, text)
-    assert "%% Hello,\n%%\n%% <code>world</code>\n%%\n%% !" == Docstring.format(:erlang, text)
+    assert "%% @doc Hello,\n%%\n%% <code>world</code>\n%%\n%% !" == Docstring.format(:erlang, text)
   end
 
   test "html_to_edoc/1 renders <fullname> tags as distinct paragraphs" do

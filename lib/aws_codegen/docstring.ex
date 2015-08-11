@@ -15,6 +15,8 @@ defmodule AWS.CodeGen.Docstring do
   Tranform HTML text into Markdown suitable for inclusion in a docstring
   heredoc in generated Erlang code.
   """
+  def format(:erlang, nil), do: ""
+  def format(:erlang, ""), do: ""
   def format(:erlang, text) do
     "@doc #{text}"
     |> html_to_edoc
