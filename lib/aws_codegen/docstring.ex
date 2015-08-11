@@ -20,7 +20,7 @@ defmodule AWS.CodeGen.Docstring do
     |> html_to_edoc
     |> split_paragraphs
     |> Enum.map(&(justify_line(&1, 74, "%% ")))
-    |> Enum.join("\n%% \n")
+    |> Enum.join("\n%%\n")
   end
 
   @doc """
@@ -69,6 +69,7 @@ defmodule AWS.CodeGen.Docstring do
   """
   def html_to_edoc(text) do
     text
+    |> String.replace("</fullname>", "</fullname>\n\n")
     |> String.replace("<p>", "")
     |> String.replace("</p>", "\n\n")
   end

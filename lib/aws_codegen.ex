@@ -1,5 +1,5 @@
 defmodule AWS.CodeGen do
-  @services [
+  @elixir_services [
     {:json, "AWS.CloudHSM", "cloudhsm/2014-05-30", "cloud_hsm.ex"},
     {:json, "AWS.CloudTrail", "cloudtrail/2013-11-01", "cloud_trail.ex"},
     {:json, "AWS.CodeCommit", "codecommit/2015-04-13", "code_commit.ex"},
@@ -34,8 +34,12 @@ defmodule AWS.CodeGen do
     {:rest_json, "AWS.Transcoder", "elastictranscoder/2012-09-25", "transcoder.ex"},
   ]
 
+  @erlang_services [
+    {:json, "aws_kinesis", "kinesis/2013-12-02", "aws_kinesis.erl"},
+  ]
+
   def generate(language, spec_base_path, template_base_path, output_base_path) do
-    tasks = Enum.map(@services, fn({protocol, module_name, spec_path, output_filename}) ->
+    tasks = Enum.map(api_specs(language), fn({protocol, module_name, spec_path, output_filename}) ->
       api_spec_path = make_spec_path(spec_base_path, spec_path, "api-2.json")
       doc_spec_path = make_spec_path(spec_base_path, spec_path, "docs-2.json")
       output_path = Path.join(output_base_path, output_filename)
@@ -44,6 +48,14 @@ defmodule AWS.CodeGen do
       Task.async(AWS.CodeGen, :generate_code, args)
     end)
     Enum.each(tasks, fn(task) -> Task.await(task) end)
+  end
+
+  def api_specs(:elixir) do
+    @elixir_services
+  end
+
+  def api_specs(:erlang) do
+    @erlang_services
   end
 
   def generate_code(language, :json, module_name, api_spec_path, doc_spec_path,
