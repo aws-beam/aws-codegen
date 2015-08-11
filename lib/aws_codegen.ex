@@ -60,21 +60,37 @@ defmodule AWS.CodeGen do
 
   def generate_code(language, :json, module_name, api_spec_path, doc_spec_path,
                     template_base_path, output_path) do
-    template_path = Path.join(template_base_path, "json.ex.eex")
+    template_path = Path.join(template_base_path, json_spec_template(language))
     context = AWS.CodeGen.JSONService.load_context(language, module_name,
                                                    api_spec_path, doc_spec_path)
     code = AWS.CodeGen.JSONService.render(context, template_path)
     File.write(output_path, code)
   end
 
+  defp json_spec_template(:elixir) do
+    "json.ex.eex"
+  end
+
+  defp json_spec_template(:erlang) do
+    "json.erl.eex"
+  end
+
   def generate_code(language, :rest_json, module_name, api_spec_path,
                     doc_spec_path, template_base_path, output_path) do
-    template_path = Path.join(template_base_path, "rest_json.ex.eex")
+    template_path = Path.join(template_base_path, rest_json_spec_template(language))
     context = AWS.CodeGen.RestJSONService.load_context(language, module_name,
                                                        api_spec_path,
                                                        doc_spec_path)
     code = AWS.CodeGen.RestJSONService.render(context, template_path)
     File.write(output_path, code)
+  end
+
+  defp rest_json_spec_template(:elixir) do
+    "rest_json.ex.eex"
+  end
+
+  defp rest_json_spec_template(:erlang) do
+    "rest_json.erl.eex"
   end
 
   defp make_spec_path(spec_base_path, spec_path, filename) do
