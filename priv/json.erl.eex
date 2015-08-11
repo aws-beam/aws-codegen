@@ -4,7 +4,7 @@
 <%= if context.docstring != "%% @doc" do %><%= context.docstring %><%= end %>
 -module(<%= context.module_name %>).
 
--export([<%= Enum.join(context.exports, ",\n         ") %>]).
+-export([<%= Enum.map(context.actions, fn(action) -> "#{action.function_name}/#{action.arity}" end) |> Enum.join(",\n         ") %>]).
 
 -include_lib("hackney/include/hackney_lib.hrl").
 
