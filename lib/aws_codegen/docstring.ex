@@ -1,9 +1,9 @@
 defmodule AWS.CodeGen.Docstring do
   @doc """
   Tranform HTML text into Markdown suitable for inclusion in a docstring
-  heredoc in generated code.
+  heredoc in generated Elixir code.
   """
-  def format(text) do
+  def format(:elixir, text) do
     text
     |> html_to_markdown
     |> split_paragraphs
@@ -12,10 +12,17 @@ defmodule AWS.CodeGen.Docstring do
   end
 
   @doc """
-  Convert nil to an empty string.
+  Tranform HTML text into Markdown suitable for inclusion in a docstring
+  heredoc in generated Erlang code.
   """
-  def html_to_markdown(nil) do
-    ""
+  def format(:erlang, nil), do: ""
+  def format(:erlang, ""), do: ""
+  def format(:erlang, text) do
+    "@doc #{text}"
+    |> html_to_edoc
+    |> split_paragraphs
+    |> Enum.map(&(justify_line(&1, 74, "%% ")))
+    |> Enum.join("\n%%\n")
   end
 
   @doc """
@@ -26,6 +33,7 @@ defmodule AWS.CodeGen.Docstring do
   read in text-format, but Pandoc correctly renders HTML lists in the ExDoc
   output.
   """
+  def html_to_markdown(nil), do: ""
   def html_to_markdown(text) do
     text
     |> convert_links
@@ -39,6 +47,19 @@ defmodule AWS.CodeGen.Docstring do
     |> String.replace("</fullname>", "\n\n")
     |> String.replace("<i>", "*")
     |> String.replace("</i>", "*")
+    |> String.replace("<p>", "")
+    |> String.replace("</p>", "\n\n")
+  end
+
+  @doc """
+  Transform HTML tags into edoc.
+
+  `P` tags are replaced with newlines and other tags are left unchanged.
+  """
+  def html_to_edoc(nil), do: ""
+  def html_to_edoc(text) do
+    text
+    |> String.replace("</fullname>", "</fullname>\n\n")
     |> String.replace("<p>", "")
     |> String.replace("</p>", "\n\n")
   end
@@ -59,12 +80,12 @@ defmodule AWS.CodeGen.Docstring do
   specified maximum length.  Indent each line by two spaces to make it
   suitable for inclusion in a docstring heredoc in generated code.
   """
-  def justify_line(text, max_length \\ 75) do
+  def justify_line(text, max_length \\ 75, indent \\ "  ") do
     text
     |> break_line(max_length)
     |> Enum.map(&(String.strip(&1)))
     |> Enum.reject(&(&1 == ""))
-    |> Enum.map(&("  #{&1}"))
+    |> Enum.map(&("#{indent}#{&1}"))
     |> Enum.join("\n")
   end
 

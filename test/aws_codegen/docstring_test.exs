@@ -2,17 +2,25 @@ defmodule AWS.CodeGen.DocstringTest do
   use ExUnit.Case
   alias AWS.CodeGen.Docstring
 
-  test "format/1 returns an empty string when nil is provided" do
-    assert "" == Docstring.format(nil)
+  test "format/2 returns an empty string when nil is provided" do
+    assert "" == Docstring.format(:elixir, nil)
+    assert "" == Docstring.format(:erlang, nil)
   end
 
-  test "format/1 is effectively a no-op when an empty string is provided" do
-    assert "" == Docstring.format("")
+  test "format/2 is effectively a no-op when an empty string is provided" do
+    assert "" == Docstring.format(:elixir, "")
+    assert "" == Docstring.format(:erlang, "")
   end
 
-  test "format/1 converts tags to Markdown and indents the text by 2 spaces" do
+  test "format/2 converts tags to Markdown and indents the text by 2 spaces" do
     text = "<p>Hello,</p> <p><code>world</code></p>!"
-    assert "  Hello,\n\n  `world`\n\n  !" == Docstring.format(text)
+    assert "  Hello,\n\n  `world`\n\n  !" == Docstring.format(:elixir, text)
+    assert "%% @doc Hello,\n%%\n%% <code>world</code>\n%%\n%% !" == Docstring.format(:erlang, text)
+  end
+
+  test "html_to_edoc/1 renders <fullname> tags as distinct paragraphs" do
+    text = "<fullname>Hello, world!</fullname>"
+    assert "<fullname>Hello, world!</fullname>\n\n" == Docstring.html_to_edoc(text)
   end
 
   test "html_to_markdown/1 replaces <code> tags with backticks" do

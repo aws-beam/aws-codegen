@@ -13,7 +13,8 @@ defmodule AWS.CodeGen.JSONService do
   end
 
   defmodule Action do
-    defstruct docstring: nil,
+    defstruct arity: nil,
+              docstring: nil,
               function_name: nil,
               name: nil
   end
@@ -21,12 +22,13 @@ defmodule AWS.CodeGen.JSONService do
   @doc """
   Load JSON API service and documentation specifications from the
   `api_spec_path` and `doc_spec_path` files and convert them into a context
-  that can be used to generate code for an AWS service.
+  that can be used to generate code for an AWS service.  `language` must be
+  `:elixir` or `:erlang`.
   """
-  def load_context(module_name, api_spec_path, doc_spec_path) do
+  def load_context(language, module_name, api_spec_path, doc_spec_path) do
     api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!
     doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!
-    build_context(module_name, api_spec, doc_spec)
+    build_context(language, module_name, api_spec, doc_spec)
   end
 
   @doc """
@@ -36,10 +38,10 @@ defmodule AWS.CodeGen.JSONService do
     EEx.eval_file(template_path, [context: context])
   end
 
-  defp build_context(module_name, api_spec, doc_spec) do
-    actions = collect_actions(api_spec, doc_spec)
+  defp build_context(language, module_name, api_spec, doc_spec) do
+    actions = collect_actions(language, api_spec, doc_spec)
     %Service{actions: actions,
-             docstring: Docstring.format(doc_spec["service"]),
+             docstring: Docstring.format(language, doc_spec["service"]),
              endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
              json_version: api_spec["metadata"]["jsonVersion"],
              module_name: module_name,
@@ -47,9 +49,11 @@ defmodule AWS.CodeGen.JSONService do
              target_prefix: api_spec["metadata"]["targetPrefix"]}
   end
 
-  defp collect_actions(api_spec, doc_spec) do
+  defp collect_actions(language, api_spec, doc_spec) do
     Enum.map(api_spec["operations"], fn({operation, _metadata}) ->
-      %Action{docstring: Docstring.format(doc_spec["operations"][operation]),
+      %Action{arity: 3,
+              docstring: Docstring.format(language,
+                                          doc_spec["operations"][operation]),
               function_name: AWS.CodeGen.Name.to_snake_case(operation),
               name: operation}
     end)

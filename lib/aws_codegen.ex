@@ -1,5 +1,5 @@
 defmodule AWS.CodeGen do
-  @services [
+  @elixir_services [
     {:json, "AWS.CloudHSM", "cloudhsm/2014-05-30", "cloud_hsm.ex"},
     {:json, "AWS.CloudTrail", "cloudtrail/2013-11-01", "cloud_trail.ex"},
     {:json, "AWS.CodeCommit", "codecommit/2015-04-13", "code_commit.ex"},
@@ -34,35 +34,87 @@ defmodule AWS.CodeGen do
     {:rest_json, "AWS.Transcoder", "elastictranscoder/2012-09-25", "transcoder.ex"},
   ]
 
-  def generate(spec_base_path, template_base_path, output_base_path) do
-    tasks = Enum.map(@services, fn({type, module_name, spec_path, output_filename}) ->
+  @erlang_services [
+    {:json, "aws_cloud_hsm", "cloudhsm/2014-05-30", "aws_cloud_hsm.erl"},
+    {:json, "aws_cloud_trail", "cloudtrail/2013-11-01", "aws_cloud_trail.erl"},
+    {:json, "aws_code_commit", "codecommit/2015-04-13", "aws_code_commit.erl"},
+    {:json, "aws_code_deploy", "codedeploy/2014-10-06", "aws_code_deploy.erl"},
+    {:json, "aws_code_pipeline", "codepipeline/2015-07-09", "aws_code_pipeline.erl"},
+    {:json, "aws_cognito", "cognito-identity/2014-06-30", "aws_cognito.erl"},
+    {:json, "aws_config", "config/2014-11-12", "aws_config.erl"},
+    {:json, "aws_data_pipeline", "datapipeline/2012-10-29", "aws_data_pipeline.erl"},
+    {:json, "aws_device_farm", "devicefarm/2015-06-23", "aws_device_farm.erl"},
+    {:json, "aws_direct_connect", "directconnect/2012-10-25", "aws_direct_connect.erl"},
+    {:json, "aws_directory_service", "ds/2015-04-16", "aws_directory_service.erl"},
+    {:json, "aws_dynamodb", "dynamodb/2012-08-10", "aws_dynamodb.erl"},
+    {:json, "aws_dynamodb_streams", "streams.dynamodb/2012-08-10", "aws_dynamodb_streams.erl"},
+    {:json, "aws_ecs", "ecs/2014-11-13", "aws_ecs.erl"},
+    {:json, "aws_emr", "elasticmapreduce/2009-03-31", "aws_emr.erl"},
+    {:json, "aws_kinesis", "kinesis/2013-12-02", "aws_kinesis.erl"},
+    {:json, "aws_kms", "kms/2014-11-01", "aws_kms.erl"},
+    {:json, "aws_logs", "logs/2014-03-28", "aws_logs.erl"},
+    {:json, "aws_ops_works", "opsworks/2013-02-18", "aws_ops_works.erl"},
+    {:json, "aws_route53_domains", "route53domains/2014-05-15", "aws_route53_domains.erl"},
+    {:json, "aws_ssm", "ssm/2014-11-06", "aws_ssm.erl"},
+    {:json, "aws_storage_gateway", "storagegateway/2013-06-30", "aws_storage_gateway.erl"},
+    {:json, "aws_support", "support/2013-04-15", "aws_support.erl"},
+    {:json, "aws_swf", "swf/2012-01-25", "aws_swf.erl"},
+    {:json, "aws_workspaces", "workspaces/2015-04-08", "aws_workspaces.erl"},
+  ]
+
+  def generate(language, spec_base_path, template_base_path, output_base_path) do
+    tasks = Enum.map(api_specs(language), fn({protocol, module_name, spec_path, output_filename}) ->
       api_spec_path = make_spec_path(spec_base_path, spec_path, "api-2.json")
       doc_spec_path = make_spec_path(spec_base_path, spec_path, "docs-2.json")
       output_path = Path.join(output_base_path, output_filename)
-      args = [type, module_name, api_spec_path, doc_spec_path,
+      args = [language, protocol, module_name, api_spec_path, doc_spec_path,
               template_base_path, output_path]
       Task.async(AWS.CodeGen, :generate_code, args)
     end)
     Enum.each(tasks, fn(task) -> Task.await(task) end)
   end
 
-  def generate_code(:json, module_name, api_spec_path, doc_spec_path,
+  def api_specs(:elixir) do
+    @elixir_services
+  end
+
+  def api_specs(:erlang) do
+    @erlang_services
+  end
+
+  def generate_code(language, :json, module_name, api_spec_path, doc_spec_path,
                     template_base_path, output_path) do
-    template_path = Path.join(template_base_path, "json.ex.eex")
-    context = AWS.CodeGen.JSONService.load_context(module_name, api_spec_path,
-                                                   doc_spec_path)
+    template_path = Path.join(template_base_path, json_spec_template(language))
+    context = AWS.CodeGen.JSONService.load_context(language, module_name,
+                                                   api_spec_path, doc_spec_path)
     code = AWS.CodeGen.JSONService.render(context, template_path)
     File.write(output_path, code)
   end
 
-  def generate_code(:rest_json, module_name, api_spec_path, doc_spec_path,
-                    template_base_path, output_path) do
-    template_path = Path.join(template_base_path, "rest_json.ex.eex")
-    context = AWS.CodeGen.RestJSONService.load_context(module_name,
+  defp json_spec_template(:elixir) do
+    "json.ex.eex"
+  end
+
+  defp json_spec_template(:erlang) do
+    "json.erl.eex"
+  end
+
+  def generate_code(language, :rest_json, module_name, api_spec_path,
+                    doc_spec_path, template_base_path, output_path) do
+    template_path = Path.join(template_base_path, rest_json_spec_template(language))
+    context = AWS.CodeGen.RestJSONService.load_context(language, module_name,
                                                        api_spec_path,
                                                        doc_spec_path)
     code = AWS.CodeGen.RestJSONService.render(context, template_path)
     File.write(output_path, code)
+  end
+
+  defp rest_json_spec_template(:elixir) do
+    "rest_json.ex.eex"
+  end
+
+  defp rest_json_spec_template(:erlang) do
+    "rest_json.erl.eex"
   end
 
   defp make_spec_path(spec_base_path, spec_path, filename) do
