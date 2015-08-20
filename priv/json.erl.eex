@@ -4,7 +4,7 @@
 <%= if context.docstring != "%% @doc" do %><%= context.docstring %><%= end %>
 -module(<%= context.module_name %>).
 
--export([<%= Enum.map(context.actions, fn(action) -> "#{action.function_name}/#{action.arity}" end) |> Enum.join(",\n         ") %>]).
+-export([<%= Enum.map(context.actions, fn(action) -> ["#{action.function_name}/#{action.arity - 1}", "#{action.function_name}/#{action.arity}"] end) |> List.flatten |> Enum.join(",\n         ") %>]).
 
 -include_lib("hackney/include/hackney_lib.hrl").
 
@@ -13,8 +13,12 @@
 %%====================================================================
 <%= for action <- context.actions do %>
 <%= action.docstring %>
-<%= action.function_name %>(Client, Input, Options) ->
-  request(Client, <<"<%= action.name %>">>, Input, Options).
+<%= action.function_name %>(Client, Input)
+  when is_map(Client), is_map(Input) ->
+    <%= action.function_name %>(Client, Input, []).
+<%= action.function_name %>(Client, Input, Options)
+  when is_map(Client), is_map(Input), is_list(Options) ->
+    request(Client, <<"<%= action.name %>">>, Input, Options).
 <% end %>
 %%====================================================================
 %% Internal functions
@@ -22,7 +26,6 @@
 
 request(Client, Action, Input, Options) ->
     Client1 = Client#{service => <<"<%= context.endpoint_prefix %>">>},
-    Method = post,
     Host = aws_util:binary_join([<<"<%= context.endpoint_prefix %>.">>,
                                  maps:get(region, Client1),
                                  <<".">>,
@@ -33,8 +36,8 @@ request(Client, Action, Input, Options) ->
                {<<"Content-Type">>, <<"application/x-amz-json-<%= context.json_version %>">>},
                {<<"X-Amz-Target">>, << <<"<%= context.target_prefix %>.">>/binary, Action/binary>>}],
     Payload = jsx:encode(Input),
-    Headers1 = aws_request:sign_request(Client1, Method, URL, Headers, Payload),
-    Response = hackney:request(Method, URL, Headers1, Payload, Options),
+    Headers1 = aws_request:sign_request(Client1, <<"POST">>, URL, Headers, Payload),
+    Response = hackney:request(post, URL, Headers1, Payload, Options),
     handle_response(Response).
 
 handle_response({ok, 200, ResponseHeaders, Client}) ->
