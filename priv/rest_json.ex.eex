@@ -59,6 +59,8 @@ defmodule <%= context.module_name %> do
 
   defp perform_request(method, url, payload, headers, options, nil) do
     case HTTPoison.request(method, url, payload, headers, options) do
+      {:ok, response=%HTTPoison.Response{status_code: 200, body: ""}} ->
+        {:ok, response}
       {:ok, response=%HTTPoison.Response{status_code: 200, body: body}} ->
         {:ok, Poison.Parser.parse!(body), response}
       {:ok, response=%HTTPoison.Response{status_code: 202, body: body}} ->
