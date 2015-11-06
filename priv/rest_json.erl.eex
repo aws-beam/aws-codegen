@@ -1,0 +1,120 @@
+# WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
+# See https://github.com/jkakar/aws-codegen for more details.
+
+<%= if context.docstring != "%% @doc" do %><%= context.docstring %><%= end %>
+-module(<%= context.module_name %>).
+
+-export([<%= Enum.map(context.actions, fn(action) -> ["#{action.function_name}/#{action.arity - 1}", "#{action.function_name}/#{action.arity}"] end) |> List.flatten |> Enum.join(",\n         ") %>]).
+
+-include_lib("hackney/include/hackney_lib.hrl").
+
+%%====================================================================
+%% API
+%%====================================================================
+<%= for action <- context.actions do %>
+<%= action.docstring %><%= if action.method =="GET" do %>
+<%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>)
+  when is_map(Client), is_map(Input), is_list(HTTPOptions) ->
+    <%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>, []).
+<%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>, HTTPOptions)
+  when is_map(Client), is_map(Input), is_list(HTTPOptions) ->
+    URL = "<%= AWS.CodeGen.RestJSONService.Action.url(:erlang, action) %>"
+    Headers = []<%= for parameter <- action.request_header_parameters do %>
+    if !is_nil(<%= parameter.code_name %>) do
+      Headers = [{"<%= parameter.name %>", <%= parameter.code_name %>}|headers]
+    end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
+    case request(Client, get, URL, Headers, undefined, HTTPOptions, <%= inspect(action.success_status_code) %>) do
+      {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
+        if !is_nil(response.headers["<%= parameter.name %>"]) do
+          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.name %>"]}
+        end<%= end %>
+        {:ok, body, response}
+      result ->
+        result
+    end<% else %>
+    request(Client, get, URL, Headers, undefined, HTTPOptions, <%= inspect(action.success_status_code) %>)<% end %><% else %>
+<%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>, Input)
+  when is_map(Client), is_map(Input)) ->
+    <%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>, Input, []).
+<%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>, Input, HTTPOptions) ->
+  when is_map(Client), is_map(Input), is_list(HTTPOptions) ->
+    URL = "<%= AWS.CodeGen.RestJSONService.Action.url(:erlang, action) %>"
+    {Input1, Headers} = extract_request_headers(Input, [
+
+
+    Headers = []<%= for parameter <- action.request_header_parameters do %>
+    if Dict.has_key?(input, "<%= parameter.name %>") do
+      Headers = [{"<%= parameter.name %>", input["<%= parameter.name %>"]}|headers]
+      input = Dict.delete(input, "<%= parameter.name %>")
+    end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
+    case request(client, <%= AWS.CodeGen.RestJSONService.Action.method(:erlang, action) %>, url, headers, input, options, <%= inspect(action.success_status_code) %>) do
+      {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
+        if !is_nil(response.headers["<%= parameter.name %>"]) do
+          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.name %>"]}
+        end<%= end %>
+        {:ok, body, response}
+      result ->
+        result
+    end<% else %>
+    request(Client, <%= AWS.CodeGen.RestJSONService.Action.method(:erlang, action) %>, URL, Headers, Input, HTTPOptions, <%= inspect(action.success_status_code) %>)<% end %><% end %>
+<% end %>
+%%====================================================================
+%% Internal functions
+%%====================================================================
+
+extract_request_headers(Input, Names) ->
+    extract_request_headers(Input, [], Names).
+extract_request_headers(Input, Headers, []) ->
+    {Input, Headers}.
+extract_request_headers(Input, Headers, [Name|Rest]) ->
+    Headers1 = case maps:get(Name, Input, undefined) of
+                   undefined -> Headers;
+                   Value -> [{Name, Value}|Headers]
+               end,
+    extract_request_headers(maps:remove(Name, Input), Headers1, Rest).
+
+request(Client, Method, URL, Headers, Input, HTTPOptions, SuccessStatusCode) ->
+    Client1 = Client#{service => <<"<%= context.endpoint_prefix %>">>},
+    Host = aws_util:binary_join([<<"<%= context.endpoint_prefix %>.">>,
+                                 maps:get(region, Client1),
+                                 <<".">>,
+                                 maps:get(endpoint, Client1)],
+                                <<"">>),
+    URL = aws_util:binary_join([<<"https://">>, Host, <<"/">>], <<"">>),
+    Headers = [{<<"Host">>, Host},
+               {<<"Content-Type">>, <<"application/x-amz-json-<%= context.json_version %>">>},
+               {<<"X-Amz-Target">>, << <<"<%= context.target_prefix %>.">>/binary, Action/binary>>}],
+    Payload = enode_payload(Input),
+    Headers1 = aws_request:sign_request(Client1, <<"POST">>, URL, Headers, Payload),
+    perform_request(Method, URL, Payload, Headers1, HTTPOptions, SuccessStatusCode).
+
+perform_request(Method, URL, Payload, Headers, HTTPOptions, undefined) ->
+    case hackney:request(Method, URL, Headers, Payload, HTTPOptions) of
+        Response = {ok, 200, ResponseHeaders, Client} ->
+            {ok, Body} = hackney:body(Client),
+            {ok, jsx:decode(Body, [return_maps]), Response};
+        Response = {ok, 202, ResponseHeaders, Client} ->
+            {ok, Body} = hackney:body(Client),
+            {ok, jsx:decode(Body, [return_maps]), Response};
+        Response = {ok, 204, ResponseHeaders, Client} ->
+            {ok, Body} = hackney:body(Client),
+            {ok, jsx:decode(Body, [return_maps]), Response};
+        Response = {ok, _StatusCode, ResponseHeaders, Client} ->
+            {ok, Body} = hackney:body(Client),
+            Reason = maps:get(<<"__type">>, jsx:decode(Body, [return_maps])),
+            {error, Reason, {StatusCode, ResponseHeaders, Client}};
+        {error, Reason} ->
+            {error, Reason}
+    end;
+perform_request(Method, URL, Payload, Headers, HTTPOptions, SuccessStatusCode) ->
+    case hackney:request(Method, URL, Headers, Payload, HTTPOptions) of
+        Response = {ok, SuccessStatusCode, ResponseHeaders, Client} ->
+            {ok, Body} = hackney:body(Client),
+            {ok, jsx:decode(Body, [return_maps]), Response};
+        Response = {ok, _StatusCode, ResponseHeaders, Client} ->
+            {ok, Body} = hackney:body(Client),
+            Reason = maps:get(<<"__type">>, jsx:decode(Body, [return_maps])),
+            {error, Reason, {StatusCode, ResponseHeaders, Client}};
+        {error, Reason} ->
+            {error, Reason}
+    end.

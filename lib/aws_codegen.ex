@@ -60,6 +60,13 @@ defmodule AWS.CodeGen do
     {:json, "aws_support", "support/2013-04-15", "aws_support.erl"},
     {:json, "aws_swf", "swf/2012-01-25", "aws_swf.erl"},
     {:json, "aws_workspaces", "workspaces/2015-04-08", "aws_workspaces.erl"},
+    {:rest_json, "aws_cloud_search_domain", "cloudsearchdomain/2013-01-01", "aws_cloud_search_domain.erl"},
+    {:rest_json, "aws_cognito_sync", "cognito-sync/2014-06-30", "aws_cognito_sync.erl"},
+    {:rest_json, "aws_efs", "elasticfilesystem/2015-02-01", "aws_efs.erl"},
+    {:rest_json, "aws_glacier", "glacier/2012-06-01", "aws_glacier.erl"},
+    {:rest_json, "aws_lambda", "lambda/2015-03-31", "aws_lambda.erl"},
+    {:rest_json, "aws_mobile_analytics", "mobileanalytics/2014-06-05", "aws_mobile_analytics.erl"},
+    {:rest_json, "aws_transcoder", "elastictranscoder/2012-09-25", "aws_transcoder.erl"},
   ]
 
   def generate(language, spec_base_path, template_base_path, output_base_path) do

@@ -13,7 +13,8 @@ defmodule AWS.CodeGen.RestJSONService do
   end
 
   defmodule Action do
-    defstruct docstring: nil,
+    defstruct arity: nil,
+              docstring: nil,
               method: nil,
               request_uri: nil,
               success_status_code: nil,
@@ -23,16 +24,34 @@ defmodule AWS.CodeGen.RestJSONService do
               request_header_parameters: [],
               response_header_parameters: []
 
-    def method(action) do
+    def method(:elixir, action) do
       ":#{action.method |> String.downcase |> String.to_atom}"
     end
 
-    def url(action) do
+    def method(:erlang, action) do
+      "#{action.method |> String.downcase |> String.to_atom}"
+    end
+
+    def url(:elixir, action) do
       Enum.reduce(action.url_parameters, action.request_uri,
         fn(parameter, acc) ->
           name = Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
           String.replace(acc, "{#{parameter.name}}", "#{name}")
         end)
+    end
+
+    def url(:erlang, action) do
+      # Enum.reduce(action.url_parameters, action.request_uri,
+      #   fn(parameter, acc) ->
+      #     [head, tail] = String.split(
+      #   end)
+
+      # url = Enum.reduce(action.url_parameters, action.request_uri,
+      #   fn(parameter, acc) ->
+      #     name = Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
+      #     String.replace(acc, "{#{parameter.name}}", "#{name}")
+      #   end)
+      ""
     end
   end
 
@@ -64,7 +83,12 @@ defmodule AWS.CodeGen.RestJSONService do
   Render function parameter, if any, in a way that can be inserted directly
   into the code template.
   """
-  def function_parameters(action) do
+  def function_parameters(:elixir, action) do
+    Enum.join([join_parameters(action.url_parameters),
+               join_header_parameters(action)])
+  end
+
+  def function_parameters(:erlang, action) do
     Enum.join([join_parameters(action.url_parameters),
                join_header_parameters(action)])
   end
@@ -101,41 +125,43 @@ defmodule AWS.CodeGen.RestJSONService do
 
   defp collect_actions(language, api_spec, doc_spec) do
     Enum.map(api_spec["operations"], fn({operation, _metadata}) ->
-      %Action{docstring: Docstring.format(language,
+      url_parameters = collect_url_parameters(language, api_spec, operation)
+      %Action{arity: 3 + length(url_parameters),
+              docstring: Docstring.format(language,
                                           doc_spec["operations"][operation]),
               method: api_spec["operations"][operation]["http"]["method"],
               request_uri: api_spec["operations"][operation]["http"]["requestUri"],
               success_status_code: api_spec["operations"][operation]["http"]["responseCode"],
               function_name: AWS.CodeGen.Name.to_snake_case(operation),
               name: operation,
-              url_parameters: collect_url_parameters(api_spec, operation),
-              request_header_parameters: collect_request_header_parameters(api_spec, operation),
-              response_header_parameters: collect_response_header_parameters(api_spec, operation)}
+              url_parameters: url_parameters,
+              request_header_parameters: collect_request_header_parameters(language, api_spec, operation),
+              response_header_parameters: collect_response_header_parameters(language, api_spec, operation)}
     end)
     |> Enum.sort(fn(a, b) -> a.function_name < b.function_name end)
   end
 
-  defp collect_url_parameters(api_spec, operation) do
+  defp collect_url_parameters(language, api_spec, operation) do
     shape_name = api_spec["operations"][operation]["input"]["shape"]
     shape = api_spec["shapes"][shape_name]
-    Enum.filter_map(shape["members"], filter_fn("uri"), &build_parameter/1)
+    Enum.filter_map(shape["members"], filter_fn("uri"), build_parameter_fn(language))
   end
 
-  defp collect_request_header_parameters(api_spec, operation) do
-    collect_header_parameters(api_spec, operation, "input")
+  defp collect_request_header_parameters(language, api_spec, operation) do
+    collect_header_parameters(language, api_spec, operation, "input")
   end
 
-  defp collect_response_header_parameters(api_spec, operation) do
-    collect_header_parameters(api_spec, operation, "output")
+  defp collect_response_header_parameters(language, api_spec, operation) do
+    collect_header_parameters(language, api_spec, operation, "output")
   end
 
-  defp collect_header_parameters(api_spec, operation, data_type) do
+  defp collect_header_parameters(language, api_spec, operation, data_type) do
     shape_name = api_spec["operations"][operation][data_type]["shape"]
     shape = api_spec["shapes"][shape_name]
     case shape do
       nil -> []
       ^shape -> Enum.filter_map(shape["members"], filter_fn("header"),
-                                &build_parameter/1)
+                                build_parameter_fn(language))
     end
   end
 
@@ -148,8 +174,20 @@ defmodule AWS.CodeGen.RestJSONService do
     end
   end
 
-  defp build_parameter({name, _}) do
+  defp build_parameter_fn(language) do
+    case language do
+      :elixir -> &build_elixir_parameter/1
+      :erlang -> &build_erlang_parameter/1
+    end
+  end
+
+  defp build_elixir_parameter({name, _}) do
     %Parameter{code_name: AWS.CodeGen.Name.to_snake_case(name),
+               name: name}
+  end
+
+  defp build_erlang_parameter({name, _}) do
+    %Parameter{code_name: name,
                name: name}
   end
 end
