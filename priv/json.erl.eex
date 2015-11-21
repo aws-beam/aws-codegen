@@ -16,15 +16,15 @@
 <%= action.function_name %>(Client, Input)
   when is_map(Client), is_map(Input) ->
     <%= action.function_name %>(Client, Input, []).
-<%= action.function_name %>(Client, Input, HTTPOptions)
-  when is_map(Client), is_map(Input), is_list(HTTPOptions) ->
-    request(Client, <<"<%= action.name %>">>, Input, HTTPOptions).
+<%= action.function_name %>(Client, Input, Options)
+  when is_map(Client), is_map(Input), is_list(Options) ->
+    request(Client, <<"<%= action.name %>">>, Input, Options).
 <% end %>
 %%====================================================================
 %% Internal functions
 %%====================================================================
 
-request(Client, Action, Input, HTTPOptions) ->
+request(Client, Action, Input, Options) ->
     Client1 = Client#{service => <<"<%= context.endpoint_prefix %>">>},
     Host = aws_util:binary_join([<<"<%= context.endpoint_prefix %>.">>,
                                  maps:get(region, Client1),
@@ -37,7 +37,7 @@ request(Client, Action, Input, HTTPOptions) ->
                {<<"X-Amz-Target">>, << <<"<%= context.target_prefix %>.">>/binary, Action/binary>>}],
     Payload = jsx:encode(Input),
     Headers1 = aws_request:sign_request(Client1, <<"POST">>, URL, Headers, Payload),
-    Response = hackney:request(post, URL, Headers1, Payload, HTTPOptions),
+    Response = hackney:request(post, URL, Headers1, Payload, Options),
     handle_response(Response).
 
 handle_response({ok, 200, ResponseHeaders, Client}) ->
