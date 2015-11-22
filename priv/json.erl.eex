@@ -42,8 +42,13 @@ request(Client, Action, Input, Options) ->
 
 handle_response({ok, 200, ResponseHeaders, Client}) ->
     {ok, Body} = hackney:body(Client),
-    Result = jsx:decode(Body, [return_maps]),
-    {ok, Result, {200, ResponseHeaders, Client}};
+        case Body of
+            <<"">> ->
+                {ok, Response};
+            _ ->
+                Result = jsx:decode(Body, [return_maps]),
+                {ok, Result, {200, ResponseHeaders, Client}};
+        end;
 handle_response({ok, StatusCode, ResponseHeaders, Client}) ->
     {ok, Body} = hackney:body(Client),
     #{<<"__type">> := Exception,

@@ -92,7 +92,12 @@ perform_request(Method, URL, Payload, Headers, Options, undefined) ->
     case hackney:request(Method, URL, Headers, Payload, Options) of
         Response = {ok, 200, ResponseHeaders, Client} ->
             {ok, Body} = hackney:body(Client),
-            {ok, jsx:decode(Body, [return_maps]), Response};
+            case Body of
+                <<"">> ->
+                    {ok, Response};
+                _ ->
+                    {ok, jsx:decode(Body, [return_maps]), Response}
+            end;
         Response = {ok, 202, ResponseHeaders, Client} ->
             {ok, Body} = hackney:body(Client),
             {ok, jsx:decode(Body, [return_maps]), Response};
