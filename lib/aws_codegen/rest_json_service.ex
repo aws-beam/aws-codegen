@@ -40,7 +40,7 @@ defmodule AWS.CodeGen.RestJSONService do
         end)
     end
 
-    def url(:erlang, action) do
+    def url(:erlang, _action) do
       # Enum.reduce(action.url_parameters, action.request_uri,
       #   fn(parameter, acc) ->
       #     [head, tail] = String.split(
@@ -84,24 +84,24 @@ defmodule AWS.CodeGen.RestJSONService do
   into the code template.
   """
   def function_parameters(:elixir, action) do
-    Enum.join([join_parameters(action.url_parameters),
-               join_header_parameters(action)])
+    Enum.join([join_parameters(:elixir, action.url_parameters, :undefined),
+               join_header_parameters(:elixir, action)])
   end
 
   def function_parameters(:erlang, action) do
-    Enum.join([join_parameters(action.url_parameters),
-               join_header_parameters(action)])
+    Enum.join([join_parameters(:erlang, action.url_parameters, :undefined),
+               join_header_parameters(:erlang, action)])
   end
 
-  defp join_header_parameters(action) do
+  defp join_header_parameters(language, action) do
     if action.method == "GET" do
-      join_parameters(action.request_header_parameters, nil)
+      join_parameters(language, action.request_header_parameters, nil)
     else
       ""
     end
   end
 
-  defp join_parameters(parameters, default \\ :undefined) do
+  defp join_parameters(:elixir, parameters, default) do
     Enum.join(Enum.map(parameters,
           fn(parameter) ->
             if default == :undefined do
@@ -109,6 +109,14 @@ defmodule AWS.CodeGen.RestJSONService do
             else
               ", #{parameter.code_name} \\\\ #{inspect(default)}"
             end
+          end))
+  end
+
+  defp join_parameters(:erlang, parameters, _default) do
+    Enum.join(Enum.map(parameters,
+          fn(parameter) ->
+            {first, remainder} = String.split_at(parameter.code_name, 1)
+            ", #{String.capitalize(first) <> remainder}"
           end))
   end
 

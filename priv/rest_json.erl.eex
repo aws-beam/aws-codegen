@@ -18,11 +18,8 @@
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>, []).
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>, Options)
   when is_map(Client), is_map(Input), is_list(Options) ->
-    URL = "<%= AWS.CodeGen.RestJSONService.Action.url(:erlang, action) %>"
-    Headers = []<%= for parameter <- action.request_header_parameters do %>
-    if !is_nil(<%= parameter.code_name %>) do
-      Headers = [{"<%= parameter.name %>", <%= parameter.code_name %>}|headers]
-    end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
+    URL = "<%= AWS.CodeGen.RestJSONService.Action.url(:erlang, action) %>",
+    {_, Headers} = extract_request_headers(Input, Names),<%= if length(action.response_header_parameters) > 0 do %>
     case request(Client, get, URL, Headers, undefined, Options, <%= inspect(action.success_status_code) %>) do
       {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
         if !is_nil(response.headers["<%= parameter.name %>"]) do
@@ -31,32 +28,22 @@
         {:ok, body, response}
       result ->
         result
-    end<% else %>
+    end.<% else %>
     request(Client, get, URL, Headers, undefined, Options, <%= inspect(action.success_status_code) %>)<% end %><% else %>
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>, Input)
   when is_map(Client), is_map(Input) ->
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>, Input, []).
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestJSONService.function_parameters(:erlang, action) %>, Input, Options)
   when is_map(Client), is_map(Input), is_list(Options) ->
-    URL = "<%= AWS.CodeGen.RestJSONService.Action.url(:erlang, action) %>"
-    {Input1, Headers} = extract_request_headers(Input, [], Names)
-
-
-    Headers = []<%= for parameter <- action.request_header_parameters do %>
-    if Dict.has_key?(input, "<%= parameter.name %>") do
-      Headers = [{"<%= parameter.name %>", input["<%= parameter.name %>"]}|headers]
-      input = Dict.delete(input, "<%= parameter.name %>")
-    end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
-    case request(client, <%= AWS.CodeGen.RestJSONService.Action.method(:erlang, action) %>, url, headers, input, options, <%= inspect(action.success_status_code) %>) do
-      {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
-        if !is_nil(response.headers["<%= parameter.name %>"]) do
-          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.name %>"]}
-        end<%= end %>
-        {:ok, body, response}
-      result ->
-        result
-    end<% else %>
-    request(Client, <%= AWS.CodeGen.RestJSONService.Action.method(:erlang, action) %>, URL, Headers, Input, Options, <%= inspect(action.success_status_code) %>)<% end %><% end %>
+    URL = "<%= AWS.CodeGen.RestJSONService.Action.url(:erlang, action) %>",
+    Names = [<%= Enum.map(action.request_header_parameters, fn(x) -> "<<\"#{x.name}\">>" end) |> Enum.join(", ") %>],
+    {Input1, Headers} = extract_request_headers(Input, Names),
+    case request(Client, <%= AWS.CodeGen.RestJSONService.Action.method(:erlang, action) %>, URL, Headers, Input1, Options, <%= inspect(action.success_status_code) %>) do
+      {ok, Body, Response} ->
+          {ok, extract_response_headers(Body, Response, Names), Response};
+      Result ->
+          Result
+    end.<% end %>
 <% end %>
 %%====================================================================
 %% Internal functions
@@ -65,13 +52,20 @@
 extract_request_headers(Input, Names) ->
     extract_request_headers(Input, [], Names).
 extract_request_headers(Input, Headers, []) ->
-    {Input, Headers}.
+    {Input, Headers};
 extract_request_headers(Input, Headers, [Name|Rest]) ->
     Headers1 = case maps:get(Name, Input, undefined) of
                    undefined -> Headers;
                    Value -> [{Name, Value}|Headers]
                end,
     extract_request_headers(maps:remove(Name, Input), Headers1, Rest).
+
+
+%% Headers = ["acceptRanges", "archiveDescription", "checksum", "contentRange", "contentType"],
+%% Mappings = [{H, V} || H <- Headers,
+%%                       V <- [maps:get(Response, H, undefined)],
+%%                       undefined =/= V],
+%% maps:merge(maps:from_list(Mappings), Body)
 
 request(Client, Method, URL, Headers, Input, Options, SuccessStatusCode) ->
     Client1 = Client#{service => <<"<%= context.endpoint_prefix %>">>},
@@ -106,8 +100,9 @@ perform_request(Method, URL, Payload, Headers, Options, undefined) ->
             {ok, jsx:decode(Body, [return_maps]), Response};
         Response = {ok, _StatusCode, ResponseHeaders, Client} ->
             {ok, Body} = hackney:body(Client),
-            Reason = maps:get(<<"__type">>, jsx:decode(Body, [return_maps])),
-            {error, Reason, {StatusCode, ResponseHeaders, Client}};
+            #{<<"__type">> := Exception,
+              <<"message">> := Reason} = jsx:decode(Body, [return_maps]),
+            {error, {Exception, Reason}, {StatusCode, ResponseHeaders, Client}};
         {error, Reason} ->
             {error, Reason}
     end;
@@ -118,8 +113,9 @@ perform_request(Method, URL, Payload, Headers, Options, SuccessStatusCode) ->
             {ok, jsx:decode(Body, [return_maps]), Response};
         Response = {ok, _StatusCode, ResponseHeaders, Client} ->
             {ok, Body} = hackney:body(Client),
-            Reason = maps:get(<<"__type">>, jsx:decode(Body, [return_maps])),
-            {error, Reason, {StatusCode, ResponseHeaders, Client}};
+            #{<<"__type">> := Exception,
+              <<"message">> := Reason} = jsx:decode(Body, [return_maps]),
+            {error, {Exception, Reason}, {StatusCode, ResponseHeaders, Client}};
         {error, Reason} ->
             {error, Reason}
     end.
