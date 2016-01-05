@@ -46,7 +46,7 @@ defmodule <%= context.module_name %> do
   end<% end %><% end %>
 
   defp request(client, method, url, headers, input, options, success_status_code) do
-    client = %{client | service: "<%= context.endpoint_prefix %>"}
+    client = %{client | service: "<%= context.signing_name %>"}
     host = "<%= context.endpoint_prefix %>.#{client.region}.#{client.endpoint}"
     url = "https://#{host}#{url}"
     headers = Enum.concat([{"Host", host},

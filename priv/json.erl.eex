@@ -25,7 +25,7 @@
 %%====================================================================
 
 request(Client, Action, Input, Options) ->
-    Client1 = Client#{service => <<"<%= context.endpoint_prefix %>">>},
+    Client1 = Client#{service => <<"<%= context.signing_name %>">>},
     Host = aws_util:binary_join([<<"<%= context.endpoint_prefix %>.">>,
                                  maps:get(region, Client1),
                                  <<".">>,
