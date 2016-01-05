@@ -30,7 +30,6 @@
     {error, term()} when
     Result :: map() | undefined,
     Error :: {binary(), binary()}.
-
 request(Client, Action, Input, Options) ->
     Client1 = Client#{service => <<"<%= context.signing_name %>">>},
     Host = aws_util:binary_join([<<"<%= context.endpoint_prefix %>.">>,
