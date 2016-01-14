@@ -33,7 +33,11 @@ defmodule AWS.CodeGen.RestJSONService do
         fn(parameter, acc) ->
           name = Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
           String.replace(acc, "{#{parameter.name}}", "#{name}")
-        end)
+        end) |>
+      # FIXME(jkakar) This is only here because the invoke-async method
+      # defined for the Lambda API has an apparentyl spurious trailing slash
+      # in the JSON spec.
+      String.rstrip(?/)
     end
   end
 
