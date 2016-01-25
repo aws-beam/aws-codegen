@@ -13,10 +13,14 @@ defmodule <%= context.module_name %> do
     request(client, "<%= action.name %>", input, options)
   end
 <% end %>
+  @spec request(map(), binary(), map(), list()) ::
+    {:ok, Poison.Parser.t | nil, Poison.Response.t} |
+    {:error, Poison.Parser.t} |
+    {:error, HTTPoison.Error.t}
   defp request(client, action, input, options) do
     client = %{client | service: "<%= context.endpoint_prefix %>"}
-    host = "<%= context.endpoint_prefix %>.#{client.region}.#{client.endpoint}"
-    url = "https://#{host}/"
+    host = get_host("<%= context.endpoint_prefix %>", client)
+    url = get_url(host, client)
     headers = [{"Host", host},
                {"Content-Type", "application/x-amz-json-<%= context.json_version %>"},
                {"X-Amz-Target", "<%= context.target_prefix %>.#{action}"}]
@@ -24,7 +28,7 @@ defmodule <%= context.module_name %> do
     headers = AWS.Request.sign_v4(client, "POST", url, headers, payload)
     case HTTPoison.post(url, payload, headers, options) do
       {:ok, response=%HTTPoison.Response{status_code: 200, body: ""}} ->
-        {:ok, response}
+        {:ok, nil, response}
       {:ok, response=%HTTPoison.Response{status_code: 200, body: body}} ->
         {:ok, Poison.Parser.parse!(body), response}
       {:ok, _response=%HTTPoison.Response{body: body}} ->
@@ -34,4 +38,17 @@ defmodule <%= context.module_name %> do
         {:error, %HTTPoison.Error{reason: reason}}
     end
   end
+
+  defp get_host(endpoint_prefix, client) do
+    if client.region == "local" do
+      "localhost"
+    else
+      "#{endpoint_prefix}.#{client.region}.#{client.endpoint}"
+    end
+  end
+
+  defp get_url(host, %{:proto => proto, :port => port}) do
+    "#{proto}://#{host}:#{port}/"
+  end
+
 end

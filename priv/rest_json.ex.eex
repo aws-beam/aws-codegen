@@ -45,10 +45,10 @@ defmodule <%= context.module_name %> do
     request(client, <%= AWS.CodeGen.RestJSONService.Action.method(:elixir, action) %>, url, headers, input, http_options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% end %><% end %>
 
-  defp request(client, method, url, headers, input, http_options, success_status_code) do
-    client = %{client | service: "<%= context.endpoint_prefix %>"}
-    host = "<%= context.endpoint_prefix %>.#{client.region}.#{client.endpoint}"
-    url = "https://#{host}#{url}"
+  defp request(client, method, url, headers, input, options, success_status_code) do
+    client = %{client | service: "<%= context.signing_name %>"}
+    host = get_host("<%= context.endpoint_prefix %>", client)
+    url = get_url(host, url, client)
     headers = Enum.concat([{"Host", host},
                            {"Content-Type", "application/x-amz-json-1.1"}],
                           headers)
@@ -75,8 +75,10 @@ defmodule <%= context.module_name %> do
     end
   end
 
-  defp perform_request(method, url, payload, headers, http_options, success_status_code) do
-    case HTTPoison.request(method, url, payload, headers, http_options) do
+  defp perform_request(method, url, payload, headers, options, success_status_code) do
+    case HTTPoison.request(method, url, payload, headers, options) do
+      {:ok, response=%HTTPoison.Response{status_code: ^success_status_code, body: ""}} ->
+        {:ok, nil, response}
       {:ok, response=%HTTPoison.Response{status_code: ^success_status_code, body: body}} ->
         {:ok, Poison.Parser.parse!(body), response}
       {:ok, response=%HTTPoison.Response{body: body}} ->
@@ -85,6 +87,18 @@ defmodule <%= context.module_name %> do
       {:error, %HTTPoison.Error{reason: reason}} ->
         {:error, %HTTPoison.Error{reason: reason}}
     end
+  end
+
+  defp get_host(endpoint_prefix, client) do
+    if client.region == "local" do
+      "localhost"
+    else
+      "#{endpoint_prefix}.#{client.region}.#{client.endpoint}"
+    end
+  end
+
+  defp get_url(host, url, %{:proto => proto, :port => port}) do
+    "#{proto}://#{host}:#{port}#{url}/"
   end
 
   defp encode_payload(input) do

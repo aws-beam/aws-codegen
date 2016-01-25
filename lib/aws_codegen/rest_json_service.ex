@@ -5,6 +5,7 @@ defmodule AWS.CodeGen.RestJSONService do
     defstruct abbreviation: nil,
               actions: [],
               docstring: nil,
+              signing_name: nil,
               endpoint_prefix: nil,
               json_version: nil,
               module_name: nil,
@@ -37,7 +38,11 @@ defmodule AWS.CodeGen.RestJSONService do
         fn(parameter, acc) ->
           name = Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
           String.replace(acc, "{#{parameter.name}}", "#{name}")
-        end)
+        end) |>
+      # FIXME(jkakar) This is only here because the invoke-async method
+      # defined for the Lambda API has an apparentyl spurious trailing slash
+      # in the JSON spec.
+      String.rstrip(?/)
     end
 
     def url(:erlang, _action) do
@@ -122,8 +127,13 @@ defmodule AWS.CodeGen.RestJSONService do
 
   defp build_context(language, module_name, api_spec, doc_spec) do
     actions = collect_actions(language, api_spec, doc_spec)
+    signing_name = case api_spec["metadata"]["signingName"] do
+     :nil -> api_spec["metadata"]["endpointPrefix"];
+     sn   -> sn
+    end
     %Service{actions: actions,
              docstring: Docstring.format(language, doc_spec["service"]),
+             signing_name: signing_name,
              endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
              json_version: api_spec["metadata"]["jsonVersion"],
              module_name: module_name,
