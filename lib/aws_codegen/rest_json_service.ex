@@ -43,7 +43,8 @@ defmodule AWS.CodeGen.RestJSONService do
 
   defmodule Parameter do
     defstruct code_name: nil,
-              name: nil
+              name: nil,
+              location_name: nil
   end
 
   @doc """
@@ -158,8 +159,9 @@ defmodule AWS.CodeGen.RestJSONService do
     end
   end
 
-  defp build_parameter({name, _}) do
+  defp build_parameter({name, data}) do
     %Parameter{code_name: AWS.CodeGen.Name.to_snake_case(name),
-               name: name}
+               name: name,
+               location_name: data["locationName"]}
   end
 end
