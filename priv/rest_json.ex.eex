@@ -13,12 +13,12 @@ defmodule <%= context.module_name %> do
     url = "<%= AWS.CodeGen.RestJSONService.Action.url(action) %>"
     headers = []<%= for parameter <- action.request_header_parameters do %>
     if !is_nil(<%= parameter.code_name %>) do
-      headers = [{"<%= parameter.name %>", <%= parameter.code_name %>}|headers]
+      headers = [{"<%= parameter.location_name %>", <%= parameter.code_name %>}|headers]
     end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
     case request(client, :get, url, headers, nil, options, <%= inspect(action.success_status_code) %>) do
       {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
-        if !is_nil(response.headers["<%= parameter.name %>"]) do
-          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.name %>"]}
+        if !is_nil(response.headers["<%= parameter.location_name %>"]) do
+          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.location_name %>"]}
         end<%= end %>
         {:ok, body, response}
       result ->
@@ -30,13 +30,13 @@ defmodule <%= context.module_name %> do
     url = "<%= AWS.CodeGen.RestJSONService.Action.url(action) %>"
     headers = []<%= for parameter <- action.request_header_parameters do %>
     if Dict.has_key?(input, "<%= parameter.name %>") do
-      headers = [{"<%= parameter.name %>", input["<%= parameter.name %>"]}|headers]
+      headers = [{"<%= parameter.location_name %>", input["<%= parameter.name %>"]}|headers]
       input = Dict.delete(input, "<%= parameter.name %>")
     end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
     case request(client, <%= AWS.CodeGen.RestJSONService.Action.method(action) %>, url, headers, input, options, <%= inspect(action.success_status_code) %>) do
       {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
-        if !is_nil(response.headers["<%= parameter.name %>"]) do
-          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.name %>"]}
+        if !is_nil(response.headers["<%= parameter.location_name %>"]) do
+          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.location_name %>"]}
         end<%= end %>
         {:ok, body, response}
       result ->
