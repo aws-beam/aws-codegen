@@ -28,7 +28,6 @@ defmodule AWS.CodeGen do
     {:json, "AWS.SWF", "swf/2012-01-25", "swf.ex"},
     {:json, "AWS.WAF", "waf/2015-08-24", "waf.ex"},
     {:json, "AWS.Workspaces", "workspaces/2015-04-08", "workspaces.ex"},
-    {:rest_json, "AWS.CloudSearch.Domain", "cloudsearchdomain/2013-01-01", "cloud_search_domain.ex"},
     {:rest_json, "AWS.Cognito.Sync", "cognito-sync/2014-06-30", "cognito_sync.ex"},
     {:rest_json, "AWS.EFS", "elasticfilesystem/2015-02-01", "efs.ex"},
     {:rest_json, "AWS.Glacier", "glacier/2012-06-01", "glacier.ex"},
