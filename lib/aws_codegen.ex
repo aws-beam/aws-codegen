@@ -1,5 +1,6 @@
 defmodule AWS.CodeGen do
   @elixir_services [
+    {:json, "AWS.AutoScaling", "application-autoscaling/2016-02-06", "autoscaling.ex"},
     {:json, "AWS.CertificateManager", "acm/2015-12-08", "certificate_manager.ex"},
     {:json, "AWS.CloudHSM", "cloudhsm/2014-05-30", "cloud_hsm.ex"},
     {:json, "AWS.CloudTrail", "cloudtrail/2013-11-01", "cloud_trail.ex"},
@@ -15,6 +16,7 @@ defmodule AWS.CodeGen do
     {:json, "AWS.DeviceFarm", "devicefarm/2015-06-23", "device_farm.ex"},
     {:json, "AWS.DirectConnect", "directconnect/2012-10-25", "direct_connect.ex"},
     {:json, "AWS.DirectoryService", "ds/2015-04-16", "directory_service.ex"},
+    {:json, "AWS.Discovery", "discovery/2015-11-01", "discovery.ex"},
     {:json, "AWS.DynamoDB", "dynamodb/2012-08-10", "dynamodb.ex"},
     {:json, "AWS.DynamoDB.Streams", "streams.dynamodb/2012-08-10", "dynamodb_streams.ex"},
     {:json, "AWS.ECR", "ecr/2015-09-21", "ecr.ex"},
@@ -32,6 +34,7 @@ defmodule AWS.CodeGen do
     {:json, "AWS.OpsWorks", "opsworks/2013-02-18", "ops_works.ex"},
     {:json, "AWS.Route53.Domains", "route53domains/2014-05-15", "route53_domains.ex"},
     {:json, "AWS.SSM", "ssm/2014-11-06", "ssm.ex"},
+    {:json, "AWS.ServiceCatalog", "servicecatalog/2015-12-10", "service_catalog.ex"},
     {:json, "AWS.StorageGateway", "storagegateway/2013-06-30", "storage_gateway.ex"},
     {:json, "AWS.Support", "support/2013-04-15", "support.ex"},
     {:json, "AWS.SWF", "swf/2012-01-25", "swf.ex"},
@@ -49,6 +52,7 @@ defmodule AWS.CodeGen do
   ]
 
   @erlang_services [
+    {:json, "aws_autoscaling", "application-autoscaling/2016-02-06", "aws_autoscaling.erl"},
     {:json, "aws_certificate_manager", "acm/2015-12-08", "aws_certificate_manager.erl"},
     {:json, "aws_cloudwatch_events", "events/2015-10-07", "aws_cloudwatch_events.erl"},
     {:json, "aws_cloud_hsm", "cloudhsm/2014-05-30", "aws_cloud_hsm.erl"},
@@ -63,6 +67,7 @@ defmodule AWS.CodeGen do
     {:json, "aws_device_farm", "devicefarm/2015-06-23", "aws_device_farm.erl"},
     {:json, "aws_direct_connect", "directconnect/2012-10-25", "aws_direct_connect.erl"},
     {:json, "aws_directory_service", "ds/2015-04-16", "aws_directory_service.erl"},
+    {:json, "aws_discovery", "discovery/2015-11-01", "aws_discovery.erl"},
     {:json, "aws_dms", "dms/2016-01-01", "aws_dms.erl"},
     {:json, "aws_dynamodb", "dynamodb/2012-08-10", "aws_dynamodb.erl"},
     {:json, "aws_dynamodb_streams", "streams.dynamodb/2012-08-10", "aws_dynamodb_streams.erl"},
@@ -80,6 +85,7 @@ defmodule AWS.CodeGen do
     {:json, "aws_marketplace_metering", "meteringmarketplace/2016-01-14", "aws_marketplace_metering.erl"},
     {:json, "aws_ops_works", "opsworks/2013-02-18", "aws_ops_works.erl"},
     {:json, "aws_route53_domains", "route53domains/2014-05-15", "aws_route53_domains.erl"},
+    {:json, "aws_service_catalog", "servicecatalog/2015-12-10", "aws_service_catalog.erl"},
     {:json, "aws_ssm", "ssm/2014-11-06", "aws_ssm.erl"},
     {:json, "aws_storage_gateway", "storagegateway/2013-06-30", "aws_storage_gateway.erl"},
     {:json, "aws_support", "support/2013-04-15", "aws_support.erl"},
@@ -117,14 +123,6 @@ defmodule AWS.CodeGen do
     File.write(output_path, code)
   end
 
-  defp json_spec_template(:elixir) do
-    "json.ex.eex"
-  end
-
-  defp json_spec_template(:erlang) do
-    "json.erl.eex"
-  end
-
   def generate_code(language, :rest_json, module_name, api_spec_path,
                     doc_spec_path, template_base_path, output_path) do
     template_path = Path.join(template_base_path, rest_json_spec_template(language))
@@ -133,6 +131,14 @@ defmodule AWS.CodeGen do
                                                        doc_spec_path)
     code = AWS.CodeGen.RestJSONService.render(context, template_path)
     File.write(output_path, code)
+  end
+
+  defp json_spec_template(:elixir) do
+    "json.ex.eex"
+  end
+
+  defp json_spec_template(:erlang) do
+    "json.erl.eex"
   end
 
   defp rest_json_spec_template(:elixir) do
