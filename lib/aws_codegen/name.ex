@@ -4,6 +4,9 @@ defmodule AWS.CodeGen.Name do
   """
   def to_snake_case(text) do
     String.replace(text, "iSCSI", "Iscsi")
+    |> String.replace("BGP", "Bgp")
+    |> String.replace("CSV", "Csv")
+    |> String.replace("NFS", "Nfs")
     |> String.replace("VTL", "Vtl")
     |> String.replace("UUID", "Uuid")
     |> String.to_char_list
