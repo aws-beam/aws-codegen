@@ -98,7 +98,7 @@ defmodule <%= context.module_name %> do
   end
 
   defp get_url(host, url, %{:proto => proto, :port => port}) do
-    "#{proto}://#{host}:#{port}#{url}/"
+    "#{proto}://#{host}:#{port}#{url}<%= if !Enum.member?(context.options, :strip_trailing_slash_in_url) do %>/<% end %>"
   end
 
   defp encode_payload(input) do
