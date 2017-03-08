@@ -108,7 +108,7 @@ defmodule AWS.CodeGen.RestJSONService do
              json_version: api_spec["metadata"]["jsonVersion"],
              module_name: module_name,
              protocol: api_spec["metadata"]["json"],
-             target_prefix: api_spec["metadata"]["targetPrefix"]}
+             target_prefix: api_spec["metadata"]["targetPrefix"],
              options: options}
   end
 
