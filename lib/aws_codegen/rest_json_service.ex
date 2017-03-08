@@ -10,7 +10,8 @@ defmodule AWS.CodeGen.RestJSONService do
               json_version: nil,
               module_name: nil,
               protocol: nil,
-              target_prefix: nil
+              target_prefix: nil,
+              options: []
   end
 
   defmodule Action do
@@ -53,10 +54,10 @@ defmodule AWS.CodeGen.RestJSONService do
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
   """
-  def load_context(language, module_name, api_spec_path, doc_spec_path) do
+  def load_context(language, module_name, api_spec_path, doc_spec_path, options) do
     api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!
     doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!
-    build_context(language, module_name, api_spec, doc_spec)
+    build_context(language, module_name, api_spec, doc_spec, options)
   end
 
   @doc """
@@ -94,7 +95,7 @@ defmodule AWS.CodeGen.RestJSONService do
           end))
   end
 
-  defp build_context(language, module_name, api_spec, doc_spec) do
+  defp build_context(language, module_name, api_spec, doc_spec, options) do
     actions = collect_actions(language, api_spec, doc_spec)
     signing_name = case api_spec["metadata"]["signingName"] do
      :nil -> api_spec["metadata"]["endpointPrefix"];
@@ -108,6 +109,7 @@ defmodule AWS.CodeGen.RestJSONService do
              module_name: module_name,
              protocol: api_spec["metadata"]["json"],
              target_prefix: api_spec["metadata"]["targetPrefix"]}
+             options: options}
   end
 
   defp collect_actions(language, api_spec, doc_spec) do
