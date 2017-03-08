@@ -10,6 +10,18 @@ defmodule AWS.CodeGen.NameTest do
     assert "nerdy_caps" = Name.to_snake_case("nerdyCaps")
   end
 
+  test "to_snake_case/1 special cases BGP" do
+    assert "create_bgp_peer" = Name.to_snake_case("CreateBGPPeer")
+  end
+
+  test "to_snake_case/1 special cases CSV" do
+    assert "get_csv_header" = Name.to_snake_case("GetCSVHeader")
+  end
+
+  test "to_snake_case/1 special cases NFS" do
+    assert "create_nfs_peer" = Name.to_snake_case("CreateNFSPeer")
+  end
+
   test "to_snake_case/1 special cases iSCSI" do
     assert "create_cached_iscsi_volume" = Name.to_snake_case("CreateCachediSCSIVolume")
   end
