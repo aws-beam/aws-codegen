@@ -59,7 +59,7 @@ defmodule AWS.CodeGen do
     {:json, "AWS.Workspaces", "workspaces/2015-04-08", "workspaces.ex", []},
     {:rest_json, "AWS.APIGateway", "apigateway/2015-07-09", "api_gateway.ex", [:strip_trailing_slash_in_url]},
     {:rest_json, "AWS.Batch", "batch/2016-08-10", "batch.ex", []},
-    {:rest_json, "AWS.CloudDirectory", "clouddirectory/2016-05-10", "cloud_directory.ex", []},
+    {:rest_json, "AWS.CloudDirectory", "clouddirectory/2017-01-11", "cloud_directory.ex", []},
     {:rest_json, "AWS.Cognito.Sync", "cognito-sync/2014-06-30", "cognito_sync.ex", []},
     {:rest_json, "AWS.EFS", "elasticfilesystem/2015-02-01", "efs.ex", []},
     {:rest_json, "AWS.Glacier", "glacier/2012-06-01", "glacier.ex", []},
