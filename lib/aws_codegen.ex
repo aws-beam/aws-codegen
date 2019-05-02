@@ -53,6 +53,7 @@ defmodule AWS.CodeGen do
     {:json, "AWS.Support", "support/2013-04-15", "support.ex", []},
     {:json, "AWS.SMS", "sms/2016-10-24", "sms.ex", []},
     {:json, "AWS.SSM", "ssm/2014-11-06", "ssm.ex", []},
+    {:json, "AWS.STS", "sts/2011-06-15", "sts.ex", []},
     {:json, "AWS.SWF", "swf/2012-01-25", "swf.ex", []},
     {:json, "AWS.WAF", "waf/2015-08-24", "waf.ex", []},
     {:json, "AWS.WAF.Regional", "waf-regional/2016-11-28", "waf_regional.ex", []},
