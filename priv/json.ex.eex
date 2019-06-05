@@ -23,7 +23,8 @@ defmodule <%= context.module_name %> do
     url = get_url(host, client)
     headers = [{"Host", host},
                {"Content-Type", "application/x-amz-json-<%= context.json_version %>"},
-               {"X-Amz-Target", "<%= context.target_prefix %>.#{action}"}]
+               {"X-Amz-Target", "<%= context.target_prefix %>.#{action}"},
+               {"X-Amz-Security-Token", "<%= client.session_token %>"}]
     payload = Poison.Encoder.encode(input, [])
     headers = AWS.Request.sign_v4(client, "POST", url, headers, payload)
     case HTTPoison.post(url, payload, headers, options) do
