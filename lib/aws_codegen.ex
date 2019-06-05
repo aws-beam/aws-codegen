@@ -29,6 +29,7 @@ defmodule AWS.CodeGen do
     {:json, "AWS.GameLift", "gamelift/2015-10-01", "gamelift.ex", []},
     {:json, "AWS.Health", "health/2016-08-04", "health.ex", []},
     {:json, "AWS.Inspector", "inspector/2016-02-16", "inspector.ex", []},
+    {:json, "AWS.IAM", "iam/2010-05-08", "iam.ex", []},
     {:json, "AWS.Kinesis", "kinesis/2013-12-02", "kinesis.ex", []},
     {:json, "AWS.Kinesis.Analytics", "kinesisanalytics/2015-08-14", "kinesis_analytics.ex", []},
     {:json, "AWS.Kinesis.Firehose", "firehose/2015-08-04", "kinesis_firehose.ex", []},
