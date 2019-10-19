@@ -12,47 +12,77 @@ defmodule <%= context.module_name %> do
   def <%= action.function_name %>(client<%= AWS.CodeGen.RestJSONService.function_parameters(action) %>, options \\ []) do
     url = "<%= AWS.CodeGen.RestJSONService.Action.url(action) %>"
     headers = []<%= for parameter <- action.request_header_parameters do %>
-    if !is_nil(<%= parameter.code_name %>) do
-      headers = [{"<%= parameter.location_name %>", <%= parameter.code_name %>}|headers]
-    end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
+    headers = if !is_nil(<%= parameter.code_name %>) do
+      [{"<%= parameter.location_name %>", <%= parameter.code_name %>} | headers]
+    else
+      headers
+    end<% end %><%= if length(action.response_header_parameters) > 0 do %>
     case request(client, :get, url, headers, nil, options, <%= inspect(action.success_status_code) %>) do
-      {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
-        if !is_nil(response.headers["<%= parameter.location_name %>"]) do
-          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.location_name %>"]}
-        end<%= end %>
+      {:ok, body, response} ->
+        body =
+          [<%= for parameter <- action.response_header_parameters do %>
+            {"<%= parameter.location_name %>", "<%= parameter.name %>"},<% end %>
+          ]
+          |> Enum.reduce(body, fn {header_name, key}, acc ->
+            case response.headers[header_name] do
+              nil -> acc
+              value -> Map.put(acc, key, value)
+            end
+          end)
+        
         {:ok, body, response}
+
       result ->
         result
     end<% else %>
     request(client, :get, url, headers, nil, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% else %>
   def <%= action.function_name %>(client<%= AWS.CodeGen.RestJSONService.function_parameters(action) %>, input, options \\ []) do
-    url = "<%= AWS.CodeGen.RestJSONService.Action.url(action) %>"
-    headers = []<%= for parameter <- action.request_header_parameters do %>
-    if Dict.has_key?(input, "<%= parameter.name %>") do
-      headers = [{"<%= parameter.location_name %>", input["<%= parameter.name %>"]}|headers]
-      input = Dict.delete(input, "<%= parameter.name %>")
-    end<%= end %><%= if length(action.response_header_parameters) > 0 do %>
+    url = "<%= AWS.CodeGen.RestJSONService.Action.url(action) %>"<%= if length(action.request_header_parameters) > 0 do %>
+
+    {headers, input} =
+      [<%= for parameter <- action.request_header_parameters do %>
+        {"<%= parameter.name %>", "<%= parameter.location_name %>"},<% end %>
+      ]
+      |> AWS.Request.build_headers(input)
+    <% else %>
+    headers = []<% end %><%= if length(action.response_header_parameters) > 0 do %>
     case request(client, <%= AWS.CodeGen.RestJSONService.Action.method(action) %>, url, headers, input, options, <%= inspect(action.success_status_code) %>) do
-      {:ok, body, response} -><%= for parameter <- action.response_header_parameters do %>
-        if !is_nil(response.headers["<%= parameter.location_name %>"]) do
-          body = %{body | "<%= parameter.name %>" => response.headers["<%= parameter.location_name %>"]}
-        end<%= end %>
+      {:ok, body, response} ->
+        body =
+          [<%= for parameter <- action.response_header_parameters do %>
+            {"<%= parameter.location_name %>", "<%= parameter.name %>"},<% end %>
+          ]
+          |> Enum.reduce(body, fn {header_name, key}, acc ->
+            case response.headers[header_name] do
+              nil -> acc
+              value -> Map.put(acc, key, value)
+            end
+          end)
+        
         {:ok, body, response}
+
       result ->
         result
     end<% else %>
     request(client, <%= AWS.CodeGen.RestJSONService.Action.method(action) %>, url, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% end %><% end %>
 
+  @spec request(AWS.Client.t(), binary(), binary(), list(), map(), list(), pos_integer()) ::
+          {:ok, Poison.Parser.t() | nil, Poison.Response.t()}
+          | {:error, Poison.Parser.t()}
+          | {:error, HTTPoison.Error.t()}
   defp request(client, method, url, headers, input, options, success_status_code) do
     client = %{client | service: "<%= context.signing_name %>"}
     host = get_host("<%= context.endpoint_prefix %>", client)
     url = get_url(host, url, client)
-    headers = Enum.concat([{"Host", host},
-                           {"Content-Type", "application/x-amz-json-1.1"},
-                           {"X-Amz-Security-Token", "<%= client.session_token %>"}],
-                          headers)
+
+    headers = [
+      {"Host", host},
+      {"Content-Type", "application/x-amz-json-1.1"},
+      {"X-Amz-Security-Token", client.session_token} | headers
+    ]
+
     payload = encode_payload(input)
     headers = AWS.Request.sign_v4(client, method, url, headers, payload)
     perform_request(method, url, payload, headers, options, success_status_code)
@@ -60,17 +90,17 @@ defmodule <%= context.module_name %> do
 
   defp perform_request(method, url, payload, headers, options, nil) do
     case HTTPoison.request(method, url, payload, headers, options) do
-      {:ok, response=%HTTPoison.Response{status_code: 200, body: ""}} ->
+      {:ok, %HTTPoison.Response{status_code: 200, body: ""} = response} ->
         {:ok, response}
-      {:ok, response=%HTTPoison.Response{status_code: 200, body: body}} ->
-        {:ok, Poison.Parser.parse!(body), response}
-      {:ok, response=%HTTPoison.Response{status_code: 202, body: body}} ->
-        {:ok, Poison.Parser.parse!(body), response}
-      {:ok, response=%HTTPoison.Response{status_code: 204, body: body}} ->
-        {:ok, Poison.Parser.parse!(body), response}
-      {:ok, _response=%HTTPoison.Response{body: body}} ->
-        reason = Poison.Parser.parse!(body)["message"]
+
+      {:ok, %HTTPoison.Response{status_code: status_code, body: body} = response}
+      when status_code == 200 or status_code == 202 or status_code == 204->
+        {:ok, Poison.Parser.parse!(body, %{}), response}
+
+      {:ok, %HTTPoison.Response{body: body}} ->
+        reason = Poison.Parser.parse!(body, %{})["message"]
         {:error, reason}
+
       {:error, %HTTPoison.Error{reason: reason}} ->
         {:error, %HTTPoison.Error{reason: reason}}
     end
@@ -78,13 +108,16 @@ defmodule <%= context.module_name %> do
 
   defp perform_request(method, url, payload, headers, options, success_status_code) do
     case HTTPoison.request(method, url, payload, headers, options) do
-      {:ok, response=%HTTPoison.Response{status_code: ^success_status_code, body: ""}} ->
+      {:ok, %HTTPoison.Response{status_code: ^success_status_code, body: ""} = response} ->
         {:ok, nil, response}
-      {:ok, response=%HTTPoison.Response{status_code: ^success_status_code, body: body}} ->
-        {:ok, Poison.Parser.parse!(body), response}
-      {:ok, _response=%HTTPoison.Response{body: body}} ->
-        reason = Poison.Parser.parse!(body)["message"]
+
+      {:ok, %HTTPoison.Response{status_code: ^success_status_code, body: body} = response} ->
+        {:ok, Poison.Parser.parse!(body, %{}), response}
+
+      {:ok, %HTTPoison.Response{body: body}} ->
+        reason = Poison.Parser.parse!(body, %{})["message"]
         {:error, reason}
+
       {:error, %HTTPoison.Error{reason: reason}} ->
         {:error, %HTTPoison.Error{reason: reason}}
     end
@@ -103,10 +136,6 @@ defmodule <%= context.module_name %> do
   end
 
   defp encode_payload(input) do
-    if input != nil do
-      Poison.Encoder.encode(input, [])
-    else
-      ""
-    end
+    if input != nil, do: Poison.Encoder.encode(input, []), else: ""
   end
 end
