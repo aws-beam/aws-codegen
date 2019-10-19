@@ -36,9 +36,9 @@ defmodule AWS.CodeGen.RestJSONService do
           String.replace(acc, "{#{parameter.location_name}}", name)
         end) |>
       # FIXME(jkakar) This is only here because the invoke-async method
-      # defined for the Lambda API has an apparentyl spurious trailing slash
+      # defined for the Lambda API has an apparently spurious trailing slash
       # in the JSON spec.
-      String.rstrip(?/)
+      String.trim_trailing("/")
     end
   end
 
@@ -98,7 +98,7 @@ defmodule AWS.CodeGen.RestJSONService do
   defp build_context(language, module_name, api_spec, doc_spec, options) do
     actions = collect_actions(language, api_spec, doc_spec)
     signing_name = case api_spec["metadata"]["signingName"] do
-     :nil -> api_spec["metadata"]["endpointPrefix"];
+     nil -> api_spec["metadata"]["endpointPrefix"]
      sn   -> sn
     end
     %Service{actions: actions,
@@ -131,7 +131,10 @@ defmodule AWS.CodeGen.RestJSONService do
   defp collect_url_parameters(api_spec, operation) do
     shape_name = api_spec["operations"][operation]["input"]["shape"]
     shape = api_spec["shapes"][shape_name]
-    Enum.filter_map(shape["members"], filter_fn("uri"), &build_parameter/1)
+
+    shape["members"]
+    |> Enum.filter(filter_fn("uri"))
+    |> Enum.map(&build_parameter/1)
   end
 
   defp collect_request_header_parameters(api_spec, operation) do
@@ -145,10 +148,15 @@ defmodule AWS.CodeGen.RestJSONService do
   defp collect_header_parameters(api_spec, operation, data_type) do
     shape_name = api_spec["operations"][operation][data_type]["shape"]
     shape = api_spec["shapes"][shape_name]
+
     case shape do
-      nil -> []
-      ^shape -> Enum.filter_map(shape["members"], filter_fn("header"),
-                                &build_parameter/1)
+      nil ->
+        []
+
+      ^shape ->
+        shape["members"]
+        |> Enum.filter(filter_fn("header"))
+        |> Enum.map(&build_parameter/1)
     end
   end
 
