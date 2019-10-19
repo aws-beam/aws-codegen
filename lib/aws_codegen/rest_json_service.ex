@@ -32,8 +32,8 @@ defmodule AWS.CodeGen.RestJSONService do
     def url(action) do
       Enum.reduce(action.url_parameters, action.request_uri,
         fn(parameter, acc) ->
-          name = Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
-          String.replace(acc, "{#{parameter.location_name}}", name)
+        name = Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
+        String.replace(acc, "{#{parameter.location_name}}", name)
         end) |>
       # FIXME(jkakar) This is only here because the invoke-async method
       # defined for the Lambda API has an apparently spurious trailing slash
@@ -55,8 +55,8 @@ defmodule AWS.CodeGen.RestJSONService do
   `:elixir` or `:erlang`.
   """
   def load_context(language, module_name, api_spec_path, doc_spec_path, options) do
-    api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!
-    doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!
+    api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!(%{})
+    doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!(%{})
     build_context(language, module_name, api_spec, doc_spec, options)
   end
 
@@ -87,11 +87,11 @@ defmodule AWS.CodeGen.RestJSONService do
   defp join_parameters(parameters, default \\ :undefined) do
     Enum.join(Enum.map(parameters,
           fn(parameter) ->
-            if default == :undefined do
-              ", #{parameter.code_name}"
-            else
-              ", #{parameter.code_name} \\\\ #{inspect(default)}"
-            end
+          if default == :undefined do
+            ", #{parameter.code_name}"
+          else
+            ", #{parameter.code_name} \\\\ #{inspect(default)}"
+          end
           end))
   end
 
@@ -100,15 +100,15 @@ defmodule AWS.CodeGen.RestJSONService do
     signing_name = case api_spec["metadata"]["signingName"] do
      nil -> api_spec["metadata"]["endpointPrefix"]
      sn   -> sn
-    end
+      end
     %Service{actions: actions,
-             docstring: Docstring.format(language, doc_spec["service"]),
-             signing_name: signing_name,
-             endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
-             json_version: api_spec["metadata"]["jsonVersion"],
-             module_name: module_name,
-             protocol: api_spec["metadata"]["json"],
-             target_prefix: api_spec["metadata"]["targetPrefix"],
+      docstring: Docstring.format(language, doc_spec["service"]),
+      signing_name: signing_name,
+      endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
+      json_version: api_spec["metadata"]["jsonVersion"],
+      module_name: module_name,
+      protocol: api_spec["metadata"]["json"],
+      target_prefix: api_spec["metadata"]["targetPrefix"],
              options: options}
   end
 
@@ -116,13 +116,13 @@ defmodule AWS.CodeGen.RestJSONService do
     Enum.map(api_spec["operations"], fn({operation, _metadata}) ->
       %Action{docstring: Docstring.format(language,
                                           doc_spec["operations"][operation]),
-              method: api_spec["operations"][operation]["http"]["method"],
-              request_uri: api_spec["operations"][operation]["http"]["requestUri"],
-              success_status_code: api_spec["operations"][operation]["http"]["responseCode"],
-              function_name: AWS.CodeGen.Name.to_snake_case(operation),
-              name: operation,
-              url_parameters: collect_url_parameters(api_spec, operation),
-              request_header_parameters: collect_request_header_parameters(api_spec, operation),
+        method: api_spec["operations"][operation]["http"]["method"],
+        request_uri: api_spec["operations"][operation]["http"]["requestUri"],
+        success_status_code: api_spec["operations"][operation]["http"]["responseCode"],
+        function_name: AWS.CodeGen.Name.to_snake_case(operation),
+        name: operation,
+        url_parameters: collect_url_parameters(api_spec, operation),
+        request_header_parameters: collect_request_header_parameters(api_spec, operation),
               response_header_parameters: collect_response_header_parameters(api_spec, operation)}
     end)
     |> Enum.sort(fn(a, b) -> a.function_name < b.function_name end)
@@ -171,7 +171,7 @@ defmodule AWS.CodeGen.RestJSONService do
 
   defp build_parameter({name, data}) do
     %Parameter{code_name: AWS.CodeGen.Name.to_snake_case(name),
-               name: name,
+      name: name,
                location_name: data["locationName"]}
   end
 end
