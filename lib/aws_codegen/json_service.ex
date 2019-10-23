@@ -42,8 +42,8 @@ defmodule AWS.CodeGen.JSONService do
   defp build_context(language, module_name, api_spec, doc_spec) do
     actions = collect_actions(language, api_spec, doc_spec)
     signing_name = case api_spec["metadata"]["signingName"] do
-     :nil -> api_spec["metadata"]["endpointPrefix"];
-     sn   -> sn
+     nil -> api_spec["metadata"]["endpointPrefix"];
+     sn -> sn
     end
     %Service{actions: actions,
              docstring: Docstring.format(language, doc_spec["service"]),
