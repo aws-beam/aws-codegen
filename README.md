@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jkakar/aws-codegen.svg?branch=master)](https://travis-ci.org/jkakar/aws-codegen)
+[![Build Status](https://travis-ci.org/aws-beam/aws-codegen.svg?branch=master)](https://travis-ci.org/aws-beam/aws-codegen)
 
 Code generator for AWS clients in Elixir.
 
