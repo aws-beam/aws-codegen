@@ -1,7 +1,7 @@
 %% WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
 %% See https://github.com/jkakar/aws-codegen for more details.
 
-<%= if context.docstring != "%% @doc" do %><%= context.docstring %><%= end %>
+<%= if context.docstring != "%% @doc" do %><%= context.docstring %><% end %>
 -module(<%= context.module_name %>).
 
 -export([<%= Enum.map(context.actions, fn(action) -> ["#{action.function_name}/#{action.arity - 1}", "#{action.function_name}/#{action.arity}"] end) |> List.flatten |> Enum.join(",\n         ") %>]).
