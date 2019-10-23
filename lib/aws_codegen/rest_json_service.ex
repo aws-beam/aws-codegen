@@ -29,7 +29,7 @@ defmodule AWS.CodeGen.RestJSONService do
       ":#{action.method |> String.downcase |> String.to_atom}"
     end
 
-    def url(action) do
+    def url_path(action) do
       Enum.reduce(action.url_parameters, action.request_uri,
         fn(parameter, acc) ->
         name = Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
