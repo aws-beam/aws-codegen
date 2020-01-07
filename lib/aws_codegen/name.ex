@@ -9,9 +9,9 @@ defmodule AWS.CodeGen.Name do
     |> String.replace("NFS", "Nfs")
     |> String.replace("VTL", "Vtl")
     |> String.replace("UUID", "Uuid")
-    |> String.to_char_list
+    |> String.to_charlist()
     |> Enum.map_join(&char_to_snake_case/1)
-    |> String.lstrip(?_)
+    |> String.trim_leading("_")
   end
 
   defp char_to_snake_case(char) do

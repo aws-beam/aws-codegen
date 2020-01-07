@@ -66,7 +66,7 @@ defmodule AWS.CodeGen do
     {:rest_json, "AWS.EFS", "elasticfilesystem/2015-02-01", "efs.ex", []},
     {:rest_json, "AWS.Glacier", "glacier/2012-06-01", "glacier.ex", []},
     {:rest_json, "AWS.IoT", "iot/2015-05-28", "iot.ex", []},
-    {:rest_json, "AWS.IoT.DataPlane", "iot-data/2015-05-28", "iot_data.ex", []},
+    {:rest_json, "AWS.IoT.DataPlane", "iot-data/2015-05-28", "iot_data.ex", [:strip_trailing_slash_in_url]},
     {:rest_json, "AWS.Lambda", "lambda/2015-03-31", "lambda.ex", []},
     {:rest_json, "AWS.MobileAnalytics", "mobileanalytics/2014-06-05", "mobile_analytics.ex", []},
     {:rest_json, "AWS.Polly", "polly/2016-06-10", "polly.ex", []},

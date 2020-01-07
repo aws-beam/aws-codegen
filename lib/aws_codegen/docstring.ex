@@ -71,7 +71,7 @@ defmodule AWS.CodeGen.Docstring do
   def split_paragraphs(text) do
     text
     |> String.split("\n")
-    |> Enum.map(&(String.strip(&1)))
+    |> Enum.map(&(String.trim(&1)))
     |> Enum.reject(&(&1 == ""))
   end
 
@@ -83,7 +83,7 @@ defmodule AWS.CodeGen.Docstring do
   def justify_line(text, max_length \\ 75, indent \\ "  ") do
     text
     |> break_line(max_length)
-    |> Enum.map(&(String.strip(&1)))
+    |> Enum.map(&(String.trim(&1)))
     |> Enum.reject(&(&1 == ""))
     |> Enum.map(&("#{indent}#{&1}"))
     |> Enum.join("\n")

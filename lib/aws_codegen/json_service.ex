@@ -27,8 +27,8 @@ defmodule AWS.CodeGen.JSONService do
   `:elixir` or `:erlang`.
   """
   def load_context(language, module_name, api_spec_path, doc_spec_path) do
-    api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!
-    doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!
+    api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!(%{})
+    doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!(%{})
     build_context(language, module_name, api_spec, doc_spec)
   end
 
@@ -42,8 +42,8 @@ defmodule AWS.CodeGen.JSONService do
   defp build_context(language, module_name, api_spec, doc_spec) do
     actions = collect_actions(language, api_spec, doc_spec)
     signing_name = case api_spec["metadata"]["signingName"] do
-     :nil -> api_spec["metadata"]["endpointPrefix"];
-     sn   -> sn
+     nil -> api_spec["metadata"]["endpointPrefix"];
+     sn -> sn
     end
     %Service{actions: actions,
              docstring: Docstring.format(language, doc_spec["service"]),

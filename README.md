@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jkakar/aws-codegen.svg?branch=master)](https://travis-ci.org/jkakar/aws-codegen)
+[![Build Status](https://travis-ci.org/aws-beam/aws-codegen.svg?branch=master)](https://travis-ci.org/aws-beam/aws-codegen)
 
 Code generator for AWS clients in Elixir.
 
@@ -12,8 +12,8 @@ script for Elixir:
 ```bash
 export SPEC_PATH=../../aws/aws-sdk-go/models/apis
 export TEMPLATE_PATH=priv
-export OUTPUT_PATH=../aws-elixir/lib/aws
-mix run generate.exs elixir $SPEC_PATH $TEMPLATE_PATH $OUTPUT_PATH
+export ELIXIR_OUTPUT_PATH=../aws-elixir/lib/aws
+mix run generate.exs elixir $SPEC_PATH $TEMPLATE_PATH $ELIXIR_OUTPUT_PATH
 ```
 
 and for Erlang:
@@ -21,6 +21,6 @@ and for Erlang:
 ```bash
 export SPEC_PATH=../../aws/aws-sdk-go/models/apis
 export TEMPLATE_PATH=priv
-export OUTPUT_PATH=../aws-erlang/src
-mix run generate.exs erlang $SPEC_PATH $TEMPLATE_PATH $OUTPUT_PATH
+export ERLANG_OUTPUT_PATH=../aws-erlang/src
+mix run generate.exs erlang $SPEC_PATH $TEMPLATE_PATH $ERLANG_OUTPUT_PATH
 ```
