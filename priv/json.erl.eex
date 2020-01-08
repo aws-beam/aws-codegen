@@ -45,7 +45,7 @@ request(Client, Action, Input, Options) ->
         {<<"X-Amz-Target">>, << <<"<%= context.target_prefix %>.">>/binary, Action/binary>>}
         | Headers1
     ],
-    Payload = jsx:encode(Input),
+    Payload = jsone:encode(Input),
     Headers = aws_request:sign_request(Client1, <<"POST">>, URL, Headers2, Payload),
     Response = hackney:request(post, URL, Headers, Payload, Options),
     handle_response(Response).
@@ -55,12 +55,12 @@ handle_response({ok, 200, ResponseHeaders, Client}) ->
         {ok, <<>>} ->
             {ok, undefined, {200, ResponseHeaders, Client}};
         {ok, Body} ->
-            Result = jsx:decode(Body, [return_maps]),
+            Result = jsone:decode(Body),
             {ok, Result, {200, ResponseHeaders, Client}}
     end;
 handle_response({ok, StatusCode, ResponseHeaders, Client}) ->
     {ok, Body} = hackney:body(Client),
-    Error = jsx:decode(Body, [return_maps]),
+    Error = jsone:decode(Body),
     Exception = maps:get(<<"__type">>, Error, undefined),
     Reason = maps:get(<<"message">>, Error, undefined),
     {error, {Exception, Reason}, {StatusCode, ResponseHeaders, Client}};
