@@ -109,6 +109,7 @@ defmodule AWS.CodeGen do
     {:json, "aws_marketplace_metering", "meteringmarketplace/2016-01-14", "aws_marketplace_metering.erl", []},
     {:json, "aws_ops_works", "opsworks/2013-02-18", "aws_ops_works.erl", []},
     {:json, "aws_route53_domains", "route53domains/2014-05-15", "aws_route53_domains.erl", []},
+    {:json, "aws_secrets_manager", "secretsmanager/2017-10-17", "aws_secrets_manager.erl", []},
     {:json, "aws_service_catalog", "servicecatalog/2015-12-10", "aws_service_catalog.erl", []},
     {:json, "aws_ssm", "ssm/2014-11-06", "aws_ssm.erl", []},
     {:json, "aws_storage_gateway", "storagegateway/2013-06-30", "aws_storage_gateway.erl", []},
