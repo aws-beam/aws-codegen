@@ -63,6 +63,7 @@ defmodule AWS.CodeGen do
     {:rest_json, "AWS.Batch", "batch/2016-08-10", "batch.ex", []},
     {:rest_json, "AWS.CloudDirectory", "clouddirectory/2017-01-11", "cloud_directory.ex", []},
     {:rest_json, "AWS.Cognito.Sync", "cognito-sync/2014-06-30", "cognito_sync.ex", []},
+    {:rest_json, "AWS.Connect", "connect/2017-08-08", "connect.ex", []},
     {:rest_json, "AWS.EFS", "elasticfilesystem/2015-02-01", "efs.ex", []},
     {:rest_json, "AWS.Glacier", "glacier/2012-06-01", "glacier.ex", []},
     {:rest_json, "AWS.IoT", "iot/2015-05-28", "iot.ex", []},
