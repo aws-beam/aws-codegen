@@ -15,7 +15,8 @@ defmodule AWS.CodeGen.RestJSONService do
   end
 
   defmodule Action do
-    defstruct docstring: nil,
+    defstruct arity: nil,
+              docstring: nil,
               method: nil,
               request_uri: nil,
               success_status_code: nil,
@@ -23,22 +24,31 @@ defmodule AWS.CodeGen.RestJSONService do
               name: nil,
               url_parameters: [],
               request_header_parameters: [],
-              response_header_parameters: []
+              response_header_parameters: [],
+              language: nil
 
     def method(action) do
-      ":#{action.method |> String.downcase |> String.to_atom}"
+      result = action.method |> String.downcase |> String.to_atom
+      "#{if action.language == :elixir, do: ":", else: ""}#{result}"
     end
 
     def url_path(action) do
       Enum.reduce(action.url_parameters, action.request_uri,
         fn(parameter, acc) ->
-        name = Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
-        String.replace(acc, "{#{parameter.location_name}}", name)
+          name = if action.language == :elixir do
+              Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
+            else
+              Enum.join(["\", http_uri:encode(", parameter.code_name, "), \""])
+            end
+          # Some url parameters have a trailing "+" indicating they are
+          # multi-segment. This regex takes that into account.
+          {:ok, re} = Regex.compile("{#{parameter.location_name}\\+?}")
+          String.replace(acc, re, name)
         end) |>
-      # FIXME(jkakar) This is only here because the invoke-async method
-      # defined for the Lambda API has an apparently spurious trailing slash
-      # in the JSON spec.
-      String.trim_trailing("/")
+        # FIXME(jkakar) This is only here because the invoke-async method
+        # defined for the Lambda API has an apparently spurious trailing slash
+        # in the JSON spec.
+        String.trim_trailing("/")
     end
   end
 
@@ -84,14 +94,14 @@ defmodule AWS.CodeGen.RestJSONService do
     end
   end
 
-  defp join_parameters(parameters, default \\ :undefined) do
+  defp join_parameters(parameters, default \\ nil) do
     Enum.join(Enum.map(parameters,
           fn(parameter) ->
-          if default == :undefined do
-            ", #{parameter.code_name}"
-          else
-            ", #{parameter.code_name} \\\\ #{inspect(default)}"
-          end
+            if default == nil do
+              ", #{parameter.code_name}"
+            else
+              ", #{parameter.code_name} \\\\ #{inspect(default)}"
+            end
           end))
   end
 
@@ -114,38 +124,46 @@ defmodule AWS.CodeGen.RestJSONService do
 
   defp collect_actions(language, api_spec, doc_spec) do
     Enum.map(api_spec["operations"], fn({operation, _metadata}) ->
-      %Action{docstring: Docstring.format(language,
+      url_parameters = collect_url_parameters(language, api_spec, operation)
+      request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
+      method = api_spec["operations"][operation]["http"]["method"]
+      arity = length(url_parameters) + if(method == "GET", do: 2 + length(request_header_parameters), else: 3)
+      %Action{
+        arity: arity,
+        docstring: Docstring.format(language,
                                           doc_spec["operations"][operation]),
-        method: api_spec["operations"][operation]["http"]["method"],
+        method: method,
         request_uri: api_spec["operations"][operation]["http"]["requestUri"],
         success_status_code: api_spec["operations"][operation]["http"]["responseCode"],
         function_name: AWS.CodeGen.Name.to_snake_case(operation),
         name: operation,
-        url_parameters: collect_url_parameters(api_spec, operation),
-        request_header_parameters: collect_request_header_parameters(api_spec, operation),
-              response_header_parameters: collect_response_header_parameters(api_spec, operation)}
+        url_parameters: url_parameters,
+        request_header_parameters: request_header_parameters,
+        response_header_parameters: collect_response_header_parameters(language, api_spec, operation),
+        language: language
+      }
     end)
     |> Enum.sort(fn(a, b) -> a.function_name < b.function_name end)
   end
 
-  defp collect_url_parameters(api_spec, operation) do
+  defp collect_url_parameters(language, api_spec, operation) do
     shape_name = api_spec["operations"][operation]["input"]["shape"]
     shape = api_spec["shapes"][shape_name]
 
     shape["members"]
     |> Enum.filter(filter_fn("uri"))
-    |> Enum.map(&build_parameter/1)
+    |> Enum.map(fn x -> build_parameter(language, x) end)
   end
 
-  defp collect_request_header_parameters(api_spec, operation) do
-    collect_header_parameters(api_spec, operation, "input")
+  defp collect_request_header_parameters(language, api_spec, operation) do
+    collect_header_parameters(language, api_spec, operation, "input")
   end
 
-  defp collect_response_header_parameters(api_spec, operation) do
-    collect_header_parameters(api_spec, operation, "output")
+  defp collect_response_header_parameters(language, api_spec, operation) do
+    collect_header_parameters(language, api_spec, operation, "output")
   end
 
-  defp collect_header_parameters(api_spec, operation, data_type) do
+  defp collect_header_parameters(language, api_spec, operation, data_type) do
     shape_name = api_spec["operations"][operation][data_type]["shape"]
     shape = api_spec["shapes"][shape_name]
 
@@ -156,7 +174,7 @@ defmodule AWS.CodeGen.RestJSONService do
       ^shape ->
         shape["members"]
         |> Enum.filter(filter_fn("header"))
-        |> Enum.map(&build_parameter/1)
+        |> Enum.map(fn x -> build_parameter(language, x) end)
     end
   end
 
@@ -169,9 +187,15 @@ defmodule AWS.CodeGen.RestJSONService do
     end
   end
 
-  defp build_parameter({name, data}) do
-    %Parameter{code_name: AWS.CodeGen.Name.to_snake_case(name),
+  defp build_parameter(language, {name, data}) do
+    %Parameter{
+      code_name: if language == :elixir do
+        AWS.CodeGen.Name.to_snake_case(name)
+      else
+        AWS.CodeGen.Name.upcase_first(name)
+      end,
       name: name,
-               location_name: data["locationName"]}
+      location_name: data["locationName"]
+    }
   end
 end
