@@ -70,6 +70,7 @@ defmodule AWS.CodeGen do
     {:rest_json, "AWS.IoT.DataPlane", "iot-data/2015-05-28", "iot_data.ex", [:strip_trailing_slash_in_url]},
     {:rest_json, "AWS.Lambda", "lambda/2015-03-31", "lambda.ex", []},
     {:rest_json, "AWS.MobileAnalytics", "mobileanalytics/2014-06-05", "mobile_analytics.ex", []},
+    {:rest_json, "AWS.Pinpoint", "pinpoint/2016-12-01", "pinpoint.ex", []},
     {:rest_json, "AWS.Polly", "polly/2016-06-10", "polly.ex", []},
     {:rest_json, "AWS.LexRuntime", "runtime.lex/2016-11-28", "lex_runtime.ex", []},
     {:rest_json, "AWS.Transcoder", "elastictranscoder/2012-09-25", "transcoder.ex", []},
