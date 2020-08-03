@@ -116,6 +116,20 @@ defmodule AWS.CodeGen do
     {:json, "aws_swf", "swf/2012-01-25", "aws_swf.erl", []},
     {:json, "aws_waf", "waf/2015-08-24", "aws_waf.erl", []},
     {:json, "aws_workspaces", "workspaces/2015-04-08", "aws_workspaces.erl", []},
+    {:rest_json, "aws_api_gateway", "apigateway/2015-07-09", "aws_api_gateway.erl", [:strip_trailing_slash_in_url]},
+    {:rest_json, "aws_batch", "batch/2016-08-10", "aws_batch.erl", []},
+    {:rest_json, "aws_cloud_directory", "clouddirectory/2017-01-11", "aws_cloud_directory.erl", []},
+    {:rest_json, "aws_cognito_sync", "cognito-sync/2014-06-30", "aws_cognito_sync.erl", []},
+    {:rest_json, "aws_efs", "elasticfilesystem/2015-02-01", "aws_efs.erl", []},
+    {:rest_json, "aws_glacier", "glacier/2012-06-01", "aws_glacier.erl", []},
+    {:rest_json, "aws_iot", "iot/2015-05-28", "aws_iot.erl", []},
+    {:rest_json, "aws_iot_data", "iot-data/2015-05-28", "aws_iot_data.erl", [:strip_trailing_slash_in_url]},
+    {:rest_json, "aws_lambda", "lambda/2015-03-31", "aws_lambda.erl", []},
+    {:rest_json, "aws_mobile_analytics", "mobileanalytics/2014-06-05", "aws_mobile_analytics.erl", []},
+    {:rest_json, "aws_polly", "polly/2016-06-10", "aws_polly.erl", []},
+    {:rest_json, "aws_lex_runtime", "runtime.lex/2016-11-28", "aws_lex_runtime.erl", []},
+    {:rest_json, "aws_transcoder", "elastictranscoder/2012-09-25", "aws_transcoder.erl", []},
+    {:rest_json, "aws_xray", "xray/2016-04-12", "aws_xray.erl", []},
   ]
 
   def generate(language, spec_base_path, template_base_path, output_base_path) do
