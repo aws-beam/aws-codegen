@@ -26,7 +26,7 @@ defmodule AWS.CodeGen.JSONService do
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
   """
-  def load_context(language, module_name, api_spec_path, doc_spec_path) do
+  def load_context(language, module_name, api_spec_path, doc_spec_path, _options) do
     api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!(%{})
     doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!(%{})
     build_context(language, module_name, api_spec, doc_spec)
