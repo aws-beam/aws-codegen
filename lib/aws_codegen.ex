@@ -175,6 +175,13 @@ defmodule AWS.CodeGen do
           :elixir => "rest_json.ex.eex",
           :erlang => "rest_json.erl.eex"
         }
+      },
+      :query => %{
+        :module => AWS.CodeGen.QueryService,
+        :template => %{
+          :elixir => "query.ex.eex",
+          :erlang => "query.erl.eex"
+        }
       }
     }
   }

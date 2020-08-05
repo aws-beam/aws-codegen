@@ -51,7 +51,7 @@ defmodule AWS.CodeGen.JSONService do
              signing_name: signing_name,
              json_version: api_spec["metadata"]["jsonVersion"],
              module_name: module_name,
-             protocol: api_spec["metadata"]["json"],
+             protocol: api_spec["metadata"]["protocol"],
              target_prefix: api_spec["metadata"]["targetPrefix"]}
   end
 
