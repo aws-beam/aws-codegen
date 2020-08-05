@@ -1,4 +1,5 @@
 defmodule AWS.CodeGen do
+
   @elixir_services [
     {:json, "AWS.AppStream", "appstream/2016-12-01", "appstream.ex", []},
     {:json, "AWS.AutoScaling", "application-autoscaling/2016-02-06", "autoscaling.ex", []},
@@ -45,6 +46,7 @@ defmodule AWS.CodeGen do
     {:json, "AWS.Organizations", "organizations/2016-11-28", "organizations.ex", []},
     {:json, "AWS.Rekognition", "rekognition/2016-06-27", "rekognition.ex", []},
     {:json, "AWS.Route53.Domains", "route53domains/2014-05-15", "route53_domains.ex", []},
+    {:json, "AWS.SecretsManager", "secretsmanager/2017-10-17", "secrets_manager.ex", []},
     {:json, "AWS.ServiceCatalog", "servicecatalog/2015-12-10", "service_catalog.ex", []},
     {:json, "AWS.Shield", "shield/2016-06-02", "shield.ex", []},
     {:json, "AWS.Snowball", "snowball/2016-06-30", "snowball.ex", []},
@@ -122,6 +124,7 @@ defmodule AWS.CodeGen do
     {:json, "aws_organizations", "organizations/2016-11-28", "aws_organizations.erl", []},
     {:json, "aws_rekognition", "rekognition/2016-06-27", "aws_rekognition.erl", []},
     {:json, "aws_route53_domains", "route53domains/2014-05-15", "aws_route53_domains.erl", []},
+    {:json, "aws_secrets_manager", "secretsmanager/2017-10-17", "aws_secrets_manager.erl", []},
     {:json, "aws_service_catalog", "servicecatalog/2015-12-10", "aws_service_catalog.erl", []},
     {:json, "aws_shield", "shield/2016-06-02", "aws_shield.erl", []},
     {:json, "aws_snowball", "snowball/2016-06-30", "aws_snowball.erl", []},
@@ -139,12 +142,14 @@ defmodule AWS.CodeGen do
     {:rest_json, "aws_batch", "batch/2016-08-10", "aws_batch.erl", []},
     {:rest_json, "aws_cloud_directory", "clouddirectory/2017-01-11", "aws_cloud_directory.erl", []},
     {:rest_json, "aws_cognito_sync", "cognito-sync/2014-06-30", "aws_cognito_sync.erl", []},
+    {:rest_json, "aws_connect", "connect/2017-08-08", "aws_connect.erl", []},
     {:rest_json, "aws_efs", "elasticfilesystem/2015-02-01", "aws_efs.erl", []},
     {:rest_json, "aws_glacier", "glacier/2012-06-01", "aws_glacier.erl", []},
     {:rest_json, "aws_iot", "iot/2015-05-28", "aws_iot.erl", []},
     {:rest_json, "aws_iot_data", "iot-data/2015-05-28", "aws_iot_data.erl", [:strip_trailing_slash_in_url]},
     {:rest_json, "aws_lambda", "lambda/2015-03-31", "aws_lambda.erl", []},
     {:rest_json, "aws_mobile_analytics", "mobileanalytics/2014-06-05", "aws_mobile_analytics.erl", []},
+    {:rest_json, "aws_pinpoint", "pinpoint/2016-12-01", "aws_pinpoint.erl", []},
     {:rest_json, "aws_polly", "polly/2016-06-10", "aws_polly.erl", []},
     {:rest_json, "aws_lex_runtime", "runtime.lex/2016-11-28", "aws_lex_runtime.erl", []},
     {:rest_json, "aws_transcoder", "elastictranscoder/2012-09-25", "aws_transcoder.erl", []},
