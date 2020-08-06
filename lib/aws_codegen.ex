@@ -2,7 +2,7 @@ defmodule AWS.CodeGen do
 
   @elixir_services [
     {:json, "AWS.AppStream", "appstream/2016-12-01", "appstream.ex", []},
-    {:json, "AWS.AutoScaling", "application-autoscaling/2016-02-06", "autoscaling.ex", []},
+    {:json, "AWS.AppAutoScaling", "application-autoscaling/2016-02-06", "app_autoscaling.ex", []},
     {:json, "AWS.Budgets", "budgets/2016-10-20", "budgets.ex", []},
     {:json, "AWS.CertificateManager", "acm/2015-12-08", "certificate_manager.ex", []},
     {:json, "AWS.CloudHSM", "cloudhsm/2014-05-30", "cloud_hsm.ex", []},
@@ -54,7 +54,6 @@ defmodule AWS.CodeGen do
     {:json, "AWS.Support", "support/2013-04-15", "support.ex", []},
     {:json, "AWS.SMS", "sms/2016-10-24", "sms.ex", []},
     {:json, "AWS.SSM", "ssm/2014-11-06", "ssm.ex", []},
-    {:json, "AWS.STS", "sts/2011-06-15", "sts.ex", []},
     {:json, "AWS.SWF", "swf/2012-01-25", "swf.ex", []},
     {:json, "AWS.WAF", "waf/2015-08-24", "waf.ex", []},
     {:json, "AWS.WAF.Regional", "waf-regional/2016-11-28", "waf_regional.ex", []},
@@ -75,6 +74,25 @@ defmodule AWS.CodeGen do
     {:rest_json, "AWS.LexRuntime", "runtime.lex/2016-11-28", "lex_runtime.ex", []},
     {:rest_json, "AWS.Transcoder", "elastictranscoder/2012-09-25", "transcoder.ex", []},
     {:rest_json, "AWS.XRay", "xray/2016-04-12", "xray.ex", []},
+    {:query, "AWS.Autoscaling", "autoscaling/2011-01-01", "autoscaling.ex", []},
+    {:query, "AWS.CloudFormation", "cloudformation/2010-05-15", "cloud_formation.ex", []},
+    {:query, "AWS.CloudSearch", "cloudsearch/2013-01-01", "cloud_search.ex", []},
+    {:query, "AWS.DocDB", "docdb/2014-10-31", "doc_db.ex", []},
+    {:query, "AWS.ElastiCache", "elasticache/2015-02-02", "elasticache.ex", []},
+    {:query, "AWS.ElasticBeanstalk", "elasticbeanstalk/2010-12-01", "elastic_beanstalk.ex", []},
+    {:query, "AWS.ElasticLoadBalancing", "elasticloadbalancing/2012-06-01", "elastic_load_balancing.ex", []},
+    {:query, "AWS.ElasticLoadBalancingV2", "elasticloadbalancingv2/2015-12-01", "elastic_load_balancing_v2.ex", []},
+    {:query, "AWS.Email", "email/2010-12-01", "email.ex", []},
+    {:query, "AWS.IAM", "iam/2010-05-08", "iam.ex", []},
+    {:query, "AWS.ImportExport", "importexport/2010-06-01", "import_export.ex", []},
+    {:query, "AWS.Monitoring", "monitoring/2010-08-01", "monitoring.ex", []},
+    {:query, "AWS.Neptune", "neptune/2014-10-31", "neptune.ex", []},
+    {:query, "AWS.RDS", "rds/2014-10-31", "rds.ex", []},
+    {:query, "AWS.Redshift", "redshift/2012-12-01", "redshift.ex", []},
+    {:query, "AWS.SDB", "sdb/2009-04-15", "sdb.ex", []},
+    {:query, "AWS.SNS", "sns/2010-03-31", "sns.ex", []},
+    {:query, "AWS.SQS", "sqs/2012-11-05", "sqs.ex", []},
+    {:query, "AWS.STS", "sts/2011-06-15", "sts.ex", []},
   ]
 
   @erlang_services [
