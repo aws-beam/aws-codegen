@@ -1,0 +1,74 @@
+%% WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
+%% See https://github.com/aws-beam/aws-codegen for more details.
+
+<%= if context.docstring != "%% @doc" do %><%= context.docstring %><% end %>
+-module(<%= context.module_name %>).
+
+-export([<%= Enum.map(context.actions, fn(action) -> ["#{action.function_name}/#{action.arity - 1}", "#{action.function_name}/#{action.arity}"] end) |> List.flatten |> Enum.join(",\n         ") %>]).
+
+-include_lib("hackney/include/hackney_lib.hrl").
+
+%%====================================================================
+%% API
+%%====================================================================
+<%= for action <- context.actions do %>
+<%= action.docstring %>
+<%= action.function_name %>(Client, Input)
+  when is_map(Client), is_map(Input) ->
+    <%= action.function_name %>(Client, Input, []).
+<%= action.function_name %>(Client, Input, Options)
+  when is_map(Client), is_map(Input), is_list(Options) ->
+    request(Client, <<"<%= action.name %>">>, Input, Options).
+<% end %>
+%%====================================================================
+%% Internal functions
+%%====================================================================
+
+-spec request(aws_client:aws_client(), binary(), map(), list()) ->
+    {ok, Result, {integer(), list(), hackney:client()}} |
+    {error, Error, {integer(), list(), hackney:client()}} |
+    {error, term()} when
+    Result :: map() | undefined,
+    Error :: {binary(), binary()}.
+request(Client, Action, Input0, Options) ->
+    Client1 = Client#{service => <<"<%= context.signing_name %>">>},
+    Host = get_host(<<"<%= context.endpoint_prefix %>">>, Client1),
+    URL = get_url(Host, Client1),
+    Headers = [
+        {<<"Host">>, Host},
+        {<<"Content-Type">>, <<"application/x-www-form-urlencoded">>}
+    ],
+    Input = Input0#{ <<"Action">> => Action
+                   , <<"Version">> => <<"<%= context.api_version %>">>
+                   },
+    Payload = uri_string:compose_query(maps:to_list(Input)),
+    SignedHeaders = aws_request:sign_request(Client1, <<"POST">>, URL, Headers, Payload),
+    Response = hackney:request(post, URL, SignedHeaders, Payload, Options),
+    handle_response(Response).
+
+handle_response({ok, 200, ResponseHeaders, Client}) ->
+    case hackney:body(Client) of
+        {ok, <<>>} ->
+            {ok, undefined, {200, ResponseHeaders, Client}};
+        {ok, Body} ->
+            Result = aws_util:decode_xml(Body),
+            {ok, Result, {200, ResponseHeaders, Client}}
+    end;
+handle_response({ok, StatusCode, ResponseHeaders, Client}) ->
+    {ok, Body} = hackney:body(Client),
+    Error = aws_util:decode_xml(Body),
+    Exception = aws_util:get_in(['ErrorResponse', 'Error', 'Code'], Error),
+    Reason = aws_util:get_in(['ErrorResponse', 'Error', 'Message'], Error),
+    {error, {Exception, Reason}, {StatusCode, ResponseHeaders, Client}};
+handle_response({error, Reason}) ->
+    {error, Reason}.
+
+get_host(_EndpointPrefix, #{region := <<"local">>}) ->
+    <<"localhost">>;
+get_host(EndpointPrefix, #{region := Region, endpoint := Endpoint}) ->
+    aws_util:binary_join([EndpointPrefix, <<".">>, Region, <<".">>, Endpoint], <<"">>).
+
+get_url(Host, Client) ->
+    Proto = maps:get(proto, Client),
+    Port = maps:get(port, Client),
+    aws_util:binary_join([Proto, <<"://">>, Host, <<":">>, Port, <<"/">>], <<"">>).
