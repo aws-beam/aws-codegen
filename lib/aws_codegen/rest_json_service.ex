@@ -148,11 +148,15 @@ defmodule AWS.CodeGen.RestJSONService do
 
   defp collect_url_parameters(language, api_spec, operation) do
     shape_name = api_spec["operations"][operation]["input"]["shape"]
-    shape = api_spec["shapes"][shape_name]
+    if shape_name do
+      shape = api_spec["shapes"][shape_name]
 
-    shape["members"]
-    |> Enum.filter(filter_fn("uri"))
-    |> Enum.map(fn x -> build_parameter(language, x) end)
+      shape["members"]
+      |> Enum.filter(filter_fn("uri"))
+      |> Enum.map(fn x -> build_parameter(language, x) end)
+    else
+      []
+    end
   end
 
   defp collect_request_header_parameters(language, api_spec, operation) do

@@ -169,6 +169,10 @@ defmodule AWS.CodeGen do
     {:rest_json, "aws_lex_runtime", "runtime.lex/2016-11-28", "aws_lex_runtime.erl", []},
     {:rest_json, "aws_transcoder", "elastictranscoder/2012-09-25", "aws_transcoder.erl", []},
     {:rest_json, "aws_xray", "xray/2016-04-12", "aws_xray.erl", []},
+    {:rest_xml, "aws_cloudfront", "cloudfront/2020-05-31", "aws_cloudfront.erl", []},
+    {:rest_xml, "aws_route53", "route53/2013-04-01", "aws_route53.erl", []},
+    {:rest_xml, "aws_s3", "s3/2006-03-01", "aws_s3.erl", []},
+    {:rest_xml, "aws_s3control", "s3control/2018-08-20", "aws_s3control.erl", []},
     {:query, "aws_autoscaling", "autoscaling/2011-01-01", "aws_autoscaling.erl", []},
     {:query, "aws_cloudformation", "cloudformation/2010-05-15", "aws_cloudformation.erl", []},
     {:query, "aws_cloudsearch", "cloudsearch/2013-01-01", "aws_cloudsearch.erl", []},
@@ -215,6 +219,13 @@ defmodule AWS.CodeGen do
         :template => %{
           :elixir => "query.ex.eex",
           :erlang => "query.erl.eex"
+        }
+      },
+      :rest_xml => %{
+        :module => AWS.CodeGen.RestJSONService,
+        :template => %{
+          :elixir => "rest_xml.ex.eex",
+          :erlang => "rest_xml.erl.eex"
         }
       }
     }
