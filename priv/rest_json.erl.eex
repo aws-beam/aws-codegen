@@ -34,10 +34,10 @@
             {"<%= parameter.location_name %>", "<%= parameter.name %>"},<% end %><%= for parameter <- Enum.slice action.response_header_parameters, -1..-1 do %>
             {"<%= parameter.location_name %>", "<%= parameter.name %>"}
           <% end %>],
-        FoldFun = fun({Name, Key}, Acc) ->
-                      case lists:keyfind(Name, 1, ResponseHeaders) of
-                        false -> Acc;
-                        {_, Value} -> Acc#{Key => Value}
+        FoldFun = fun({Name_, Key_}, Acc_) ->
+                      case lists:keyfind(Name_, 1, ResponseHeaders) of
+                        false -> Acc_;
+                        {_, Value_} -> Acc_#{Key_ => Value_}
                       end
                   end,
         Body = lists:foldl(FoldFun, Body0, ResponseHeadersParams),
@@ -68,10 +68,10 @@
             {"<%= parameter.location_name %>", "<%= parameter.name %>"},<% end %><%= for parameter <- Enum.slice action.response_header_parameters, -1..-1 do %>
             {"<%= parameter.location_name %>", "<%= parameter.name %>"}
           <% end %>],
-        FoldFun = fun({Name, Key}, Acc) ->
-                      case lists:keyfind(Name, 1, ResponseHeaders) of
-                        false -> Acc;
-                        {_, Value} -> Acc#{Key => Value}
+        FoldFun = fun({Name_, Key_}, Acc_) ->
+                      case lists:keyfind(Name_, 1, ResponseHeaders) of
+                        false -> Acc_;
+                        {_, Value_} -> Acc_#{Key_ => Value_}
                       end
                   end,
         Body = lists:foldl(FoldFun, Body0, ResponseHeadersParams),
