@@ -149,7 +149,6 @@ defmodule AWS.CodeGen do
     {:json, "aws_support", "support/2013-04-15", "aws_support.erl", []},
     {:json, "aws_sms", "sms/2016-10-24", "aws_sms.erl", []},
     {:json, "aws_ssm", "ssm/2014-11-06", "aws_ssm.erl", []},
-    {:json, "aws_sts", "sts/2011-06-15", "aws_sts.erl", []},
     {:json, "aws_swf", "swf/2012-01-25", "aws_swf.erl", []},
     {:json, "aws_waf", "waf/2015-08-24", "aws_waf.erl", []},
     {:json, "aws_waf_regional", "waf-regional/2016-11-28", "aws_waf_regional.erl", []},
