@@ -46,12 +46,12 @@ response body.
 
 The following table attempts to capture the specifics of each protocol:
 
-|                         | json               | rest-json                        | query                               | rest-xml |
-|-------------------------|--------------------|----------------------------------|-------------------------------------|----------|
-| Methods                 | `POST`             | `GET`, `POST`, `PATCH`, `DELETE` | `POST`                              | TBD      |
-| Request `Content-Type`  | `application/json` | `application/json`               | `application/x-www-form-urlencoded` | TBD      |
-| URL Parameters          | No                 | Yes                              | No                                  | TBD      |
-| Header Parameters       | No                 | Yes                              | No                                  | TBD      |
-| Response `Content-Type` | `application/json` | `application/json`               | `text/xml`                          | TBD      |
+|                         | json               | rest-json                               | query                               | rest-xml                                |
+|-------------------------|--------------------|-----------------------------------------|-------------------------------------|-----------------------------------------|
+| Methods                 | `POST`             | `GET`, `POST`, `PATCH`, `PUT`, `DELETE` | `POST`                              | `GET`, `POST`, `PATCH`, `PUT`, `DELETE` |
+| Request `Content-Type`  | `application/json` | `application/json`                      | `application/x-www-form-urlencoded` | `text/xml`                              |
+| URL Parameters          | No                 | Yes                                     | No                                  | Yes                                     |
+| Header Parameters       | No                 | Yes                                     | No                                  | Yes                                     |
+| Response `Content-Type` | `application/json` | `application/json`                      | `text/xml`                          | `text/xml`                              |
 
 [aws-sdk-go]: https://github.com/aws/aws-sdk-go
