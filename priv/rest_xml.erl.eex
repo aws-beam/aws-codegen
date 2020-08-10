@@ -22,8 +22,8 @@
     SuccessStatusCode = <%= if is_nil(action.success_status_code), do: "undefined", else: inspect(action.success_status_code) %>,
     <%= if length(action.request_header_parameters) > 0 do %> Headers0 =
       [<%= for parameter <- Enum.drop(action.request_header_parameters, -1) do %>
-        {"<%= parameter.location_name %>", <%= parameter.code_name %>},<% end %><%= for parameter <- Enum.slice action.request_header_parameters, -1..-1 do %>
-        {"<%= parameter.location_name %>", <%= parameter.code_name %>}
+        {<<"<%= parameter.location_name %>">>, <%= parameter.code_name %>},<% end %><%= for parameter <- Enum.slice action.request_header_parameters, -1..-1 do %>
+        {<<"<%= parameter.location_name %>">>, <%= parameter.code_name %>}
       <% end %>],
     Headers = [H || {_, V} = H <- Headers0, V =/= undefined],
     <% else %>Headers = [],<% end %><%= if length(action.response_header_parameters) > 0 do %>
@@ -31,8 +31,8 @@
       {ok, Body0, {_, ResponseHeaders, _} = Response} ->
         ResponseHeadersParams =
           [<%= for parameter <- Enum.drop action.response_header_parameters, -1 do %>
-            {"<%= parameter.location_name %>", "<%= parameter.name %>"},<% end %><%= for parameter <- Enum.slice action.response_header_parameters, -1..-1 do %>
-            {"<%= parameter.location_name %>", "<%= parameter.name %>"}
+            {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>},<% end %><%= for parameter <- Enum.slice action.response_header_parameters, -1..-1 do %>
+            {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>}
           <% end %>],
         FoldFun = fun({Name_, Key_}, Acc_) ->
                       case lists:keyfind(Name_, 1, ResponseHeaders) of
@@ -55,8 +55,8 @@
     SuccessStatusCode = <%= if is_nil(action.success_status_code), do: "undefined", else: inspect(action.success_status_code) %>,
     <%= if length(action.request_header_parameters) > 0 do %>
     HeadersMapping = [<%= for parameter <- Enum.drop(action.request_header_parameters, -1) do %>
-                       {"<%= parameter.location_name %>", "<%= parameter.name %>"},<% end %><%= for parameter <- Enum.slice action.request_header_parameters, -1..-1 do %>
-                       {"<%= parameter.location_name %>", "<%= parameter.name %>"}
+                       {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>},<% end %><%= for parameter <- Enum.slice action.request_header_parameters, -1..-1 do %>
+                       {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>}
                      <% end %>],
     {Headers, Input} = aws_request:build_headers(HeadersMapping, Input0),
     <% else %>Headers = [],
@@ -65,8 +65,8 @@
       {ok, Body0, {_, ResponseHeaders, _} = Response} ->
         ResponseHeadersParams =
           [<%= for parameter <- Enum.drop action.response_header_parameters, -1 do %>
-            {"<%= parameter.location_name %>", "<%= parameter.name %>"},<% end %><%= for parameter <- Enum.slice action.response_header_parameters, -1..-1 do %>
-            {"<%= parameter.location_name %>", "<%= parameter.name %>"}
+            {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>},<% end %><%= for parameter <- Enum.slice action.response_header_parameters, -1..-1 do %>
+            {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>}
           <% end %>],
         FoldFun = fun({Name_, Key_}, Acc_) ->
                       case lists:keyfind(Name_, 1, ResponseHeaders) of
