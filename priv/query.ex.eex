@@ -22,17 +22,10 @@ defmodule <%= context.module_name %> do
     host = get_host("<%= context.endpoint_prefix %>", client)
     url = get_url(host, client)
 
-    headers = if client.session_token do
-      [{"X-Amz-Security-Token", client.session_token}]
-    else
-      []
-    end
-
-    headers =
-      [ {"Host", host},
-        {"Content-Type", "application/x-www-form-urlencoded"}
-        | headers
-      ]
+    headers = [
+      {"Host", host},
+      {"Content-Type", "application/x-www-form-urlencoded"}
+    ]
 
     input = Map.merge(input, %{"Action" => action, "Version" => "<%= context.api_version %>"})
     payload = :uri_string.compose_query(Map.to_list(input))
