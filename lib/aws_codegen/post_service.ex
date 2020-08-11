@@ -1,9 +1,10 @@
-defmodule AWS.CodeGen.JSONService do
+defmodule AWS.CodeGen.PostService do
   alias AWS.CodeGen.Docstring
 
   defmodule Service do
     defstruct abbreviation: nil,
               actions: [],
+              api_version: nil,
               docstring: nil,
               endpoint_prefix: nil,
               json_version: nil,
@@ -21,7 +22,7 @@ defmodule AWS.CodeGen.JSONService do
   end
 
   @doc """
-  Load JSON API service and documentation specifications from the
+  Load POST API service and documentation specifications from the
   `api_spec_path` and `doc_spec_path` files and convert them into a context
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
@@ -32,13 +33,15 @@ defmodule AWS.CodeGen.JSONService do
      nil -> api_spec["metadata"]["endpointPrefix"];
      sn -> sn
     end
-    %Service{actions: actions,
+    %Service{abbreviation: api_spec["metadata"]["serviceAbbreviation"],
+             actions: actions,
+             api_version: api_spec["metadata"]["apiVersion"],
              docstring: Docstring.format(language, doc_spec["service"]),
              endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
-             signing_name: signing_name,
              json_version: api_spec["metadata"]["jsonVersion"],
              module_name: module_name,
              protocol: api_spec["metadata"]["protocol"],
+             signing_name: signing_name,
              target_prefix: api_spec["metadata"]["targetPrefix"]}
   end
 

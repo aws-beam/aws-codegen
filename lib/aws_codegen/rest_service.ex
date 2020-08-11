@@ -1,4 +1,4 @@
-defmodule AWS.CodeGen.RestJSONService do
+defmodule AWS.CodeGen.RestService do
   alias AWS.CodeGen.Docstring
 
   defmodule Service do
@@ -59,7 +59,7 @@ defmodule AWS.CodeGen.RestJSONService do
   end
 
   @doc """
-  Load JSON API service and documentation specifications from the
+  Load REST API service and documentation specifications from the
   `api_spec_path` and `doc_spec_path` files and convert them into a context
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.

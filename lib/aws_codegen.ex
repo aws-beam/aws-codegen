@@ -201,28 +201,28 @@ defmodule AWS.CodeGen do
     },
     :protocols => %{
       :json => %{
-        :module => AWS.CodeGen.JSONService,
+        :module => AWS.CodeGen.PostService,
         :template => %{
           :elixir => "json.ex.eex",
           :erlang => "json.erl.eex"
         }
       },
       :rest_json => %{
-        :module => AWS.CodeGen.RestJSONService,
+        :module => AWS.CodeGen.RestService,
         :template => %{
           :elixir => "rest_json.ex.eex",
           :erlang => "rest_json.erl.eex"
         }
       },
       :query => %{
-        :module => AWS.CodeGen.QueryService,
+        :module => AWS.CodeGen.PostService,
         :template => %{
           :elixir => "query.ex.eex",
           :erlang => "query.erl.eex"
         }
       },
       :rest_xml => %{
-        :module => AWS.CodeGen.RestJSONService,
+        :module => AWS.CodeGen.RestService,
         :template => %{
           :elixir => "rest_xml.ex.eex",
           :erlang => "rest_xml.erl.eex"

@@ -32,8 +32,8 @@ defmodule AWS.CodeGen.QueryService do
                      sn -> sn
                    end
     %Service{
-      api_version: api_spec["metadata"]["apiVersion"],
       abbreviation: api_spec["metadata"]["serviceAbbreviation"],
+      api_version: api_spec["metadata"]["apiVersion"],
       actions: actions,
       docstring: Docstring.format(language, doc_spec["service"]),
       signing_name: signing_name,
