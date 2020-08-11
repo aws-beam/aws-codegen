@@ -64,10 +64,21 @@ defmodule AWS.CodeGen.RestJSONService do
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
   """
-  def load_context(language, module_name, api_spec_path, doc_spec_path, options) do
-    api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!(%{})
-    doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!(%{})
-    build_context(language, module_name, api_spec, doc_spec, options)
+  def load_context(language, module_name, api_spec, doc_spec, options) do
+    actions = collect_actions(language, api_spec, doc_spec)
+    signing_name = case api_spec["metadata"]["signingName"] do
+     nil -> api_spec["metadata"]["endpointPrefix"]
+     sn   -> sn
+      end
+    %Service{actions: actions,
+             docstring: Docstring.format(language, doc_spec["service"]),
+             signing_name: signing_name,
+             endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
+             json_version: api_spec["metadata"]["jsonVersion"],
+             module_name: module_name,
+             protocol: api_spec["metadata"]["protocol"],
+             target_prefix: api_spec["metadata"]["targetPrefix"],
+             options: options}
   end
 
   @doc """
@@ -103,23 +114,6 @@ defmodule AWS.CodeGen.RestJSONService do
               ", #{parameter.code_name} \\\\ #{inspect(default)}"
             end
           end))
-  end
-
-  defp build_context(language, module_name, api_spec, doc_spec, options) do
-    actions = collect_actions(language, api_spec, doc_spec)
-    signing_name = case api_spec["metadata"]["signingName"] do
-     nil -> api_spec["metadata"]["endpointPrefix"]
-     sn   -> sn
-      end
-    %Service{actions: actions,
-      docstring: Docstring.format(language, doc_spec["service"]),
-      signing_name: signing_name,
-      endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
-      json_version: api_spec["metadata"]["jsonVersion"],
-      module_name: module_name,
-      protocol: api_spec["metadata"]["protocol"],
-      target_prefix: api_spec["metadata"]["targetPrefix"],
-             options: options}
   end
 
   defp collect_actions(language, api_spec, doc_spec) do

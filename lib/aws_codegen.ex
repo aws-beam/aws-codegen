@@ -249,7 +249,9 @@ defmodule AWS.CodeGen do
     template = @configuration[:protocols][protocol][:template][language]
     protocol_service = @configuration[:protocols][protocol][:module]
     template_path = Path.join(template_base_path, template)
-    args = [language, module_name, api_spec_path, doc_spec_path, options]
+    args = [language, module_name,
+            parse_spec(api_spec_path), parse_spec(doc_spec_path),
+            options]
     context = apply(protocol_service, :load_context, args)
     code = apply(protocol_service, :render, [context, template_path])
     IO.puts(["Writing ", module_name, " to ", output_path])
@@ -259,4 +261,9 @@ defmodule AWS.CodeGen do
   defp make_spec_path(spec_base_path, spec_path, filename) do
     spec_base_path |> Path.join(spec_path) |> Path.join(filename)
   end
+
+  defp parse_spec(path) do
+    path |> File.read! |> Poison.Parser.parse!(%{})
+  end
+
 end

@@ -2,14 +2,14 @@ defmodule AWS.CodeGen.QueryService do
   alias AWS.CodeGen.Docstring
 
   defmodule Service do
-    defstruct api_version: nil,
-              abbreviation: nil,
+    defstruct abbreviation: nil,
+              api_version: nil,
               actions: [],
               docstring: nil,
-              signing_name: nil,
               endpoint_prefix: nil,
               module_name: nil,
-              protocol: nil
+              protocol: nil,
+              signing_name: nil
   end
 
   defmodule Action do
@@ -25,25 +25,12 @@ defmodule AWS.CodeGen.QueryService do
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
   """
-  def load_context(language, module_name, api_spec_path, doc_spec_path, _options) do
-    api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!(%{})
-    doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!(%{})
-    build_context(language, module_name, api_spec, doc_spec)
-  end
-
-  @doc """
-  Render a code template.
-  """
-  def render(context, template_path) do
-    EEx.eval_file(template_path, [context: context])
-  end
-
-  defp build_context(language, module_name, api_spec, doc_spec) do
+  def load_context(language, module_name, api_spec, doc_spec, _options) do
     actions = collect_actions(language, api_spec, doc_spec)
     signing_name = case api_spec["metadata"]["signingName"] do
-     nil -> api_spec["metadata"]["endpointPrefix"];
-     sn -> sn
-    end
+                     nil -> api_spec["metadata"]["endpointPrefix"];
+                     sn -> sn
+                   end
     %Service{
       api_version: api_spec["metadata"]["apiVersion"],
       abbreviation: api_spec["metadata"]["serviceAbbreviation"],
@@ -54,6 +41,13 @@ defmodule AWS.CodeGen.QueryService do
       module_name: module_name,
       protocol: api_spec["metadata"]["protocol"]
     }
+  end
+
+  @doc """
+  Render a code template.
+  """
+  def render(context, template_path) do
+    EEx.eval_file(template_path, [context: context])
   end
 
   defp collect_actions(language, api_spec, doc_spec) do
