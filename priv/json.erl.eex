@@ -64,10 +64,10 @@ handle_response({error, Reason}) ->
 get_host(_EndpointPrefix, #{region := <<"local">>}) ->
     <<"localhost">>;<%= if context.is_global do %>
 get_host(EndpointPrefix, #{endpoint := Endpoint}) ->
-    aws_util:binary_join([EndpointPrefix, <<".">>, Endpoint], <<"">>).
+    aws_util:binary_join([EndpointPrefix, Endpoint], <<".">>).
 <% else %>
 get_host(EndpointPrefix, #{region := Region, endpoint := Endpoint}) ->
-    aws_util:binary_join([EndpointPrefix, <<".">>, Region, <<".">>, Endpoint], <<"">>).
+    aws_util:binary_join([EndpointPrefix, Region, Endpoint], <<".">>).
 <% end %>
 get_url(Host, Client) ->
     Proto = maps:get(proto, Client),

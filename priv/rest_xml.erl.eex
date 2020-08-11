@@ -143,19 +143,15 @@ get_host(_AccountId, _EndpointPrefix, #{region := <<"local">>}) ->
 get_host(undefined, _EndpointPrefix, _Client) ->
     error(missing_account_id);
 get_host(AccountId, EndpointPrefix, #{region := Region, endpoint := Endpoint}) ->
-    aws_util:binary_join([ AccountId, <<".">>,
-                           EndpointPrefix, <<".">>,
-                           Region, <<".">>,
-                           Endpoint
-                         ],
-                         <<"">>).<% else %>
+    aws_util:binary_join([AccountId, EndpointPrefix, Region, Endpoint],
+                         <<".">>).<% else %>
 get_host(_EndpointPrefix, #{region := <<"local">>}) ->
     <<"localhost">>;<%= if context.is_global do %>
 get_host(EndpointPrefix, #{endpoint := Endpoint}) ->
-    aws_util:binary_join([EndpointPrefix, <<".">>, Endpoint], <<"">>).
+    aws_util:binary_join([EndpointPrefix, Endpoint], <<".">>).
 <% else %>
 get_host(EndpointPrefix, #{region := Region, endpoint := Endpoint}) ->
-    aws_util:binary_join([EndpointPrefix, <<".">>, Region, <<".">>, Endpoint], <<"">>).
+    aws_util:binary_join([EndpointPrefix, Region, Endpoint], <<".">>).
 <% end %><% end %>
 get_url(Host, Path0, Client) ->
     Proto = maps:get(proto, Client),
