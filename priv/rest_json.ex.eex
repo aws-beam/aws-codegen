@@ -128,14 +128,17 @@ defmodule <%= context.module_name %> do
     end
   end
 
-  defp get_host(endpoint_prefix, client) do
-    if client.region == "local" do
-      "localhost"
-    else
-      "#{endpoint_prefix}.#{client.region}.#{client.endpoint}"
-    end
+  defp get_host(_endpoint_prefix, %{region: "local"}) do
+    "localhost"
+  end<%= if context.is_global do %>
+  defp get_host(endpoint_prefix, %{endpoint: endpoint}) do
+    "#{endpoint_prefix}.#{endpoint}"
   end
-
+<% else %>
+  defp get_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
+    "#{endpoint_prefix}.#{region}.#{endpoint}"
+  end
+<% end %>
   defp get_url(host, path, %{:proto => proto, :port => port}) do
     "#{proto}://#{host}:#{port}#{path}<%= if !Enum.member?(context.options, :strip_trailing_slash_in_url) do %>/<% end %>"
   end

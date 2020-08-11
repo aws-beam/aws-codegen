@@ -5,13 +5,14 @@ defmodule AWS.CodeGen.RestService do
     defstruct abbreviation: nil,
               actions: [],
               docstring: nil,
-              signing_name: nil,
               endpoint_prefix: nil,
+              is_global: false,
               json_version: nil,
               module_name: nil,
+              options: [],
               protocol: nil,
-              target_prefix: nil,
-              options: []
+              signing_name: nil,
+              target_prefix: nil
   end
 
   defmodule Action do
@@ -64,21 +65,29 @@ defmodule AWS.CodeGen.RestService do
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
   """
-  def load_context(language, module_name, api_spec, doc_spec, options) do
+  def load_context(language, module_name, endpoints_spec, api_spec, doc_spec, options) do
     actions = collect_actions(language, api_spec, doc_spec)
+    endpoint_prefix = api_spec["metadata"]["endpointPrefix"]
+    is_global = case get_in(endpoints_spec, ["services", endpoint_prefix, "isRegionalized"]) do
+                  nil -> false
+                  is_regionalized -> not is_regionalized
+                end
     signing_name = case api_spec["metadata"]["signingName"] do
-     nil -> api_spec["metadata"]["endpointPrefix"]
-     sn   -> sn
-      end
-    %Service{actions: actions,
-             docstring: Docstring.format(language, doc_spec["service"]),
-             signing_name: signing_name,
-             endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
-             json_version: api_spec["metadata"]["jsonVersion"],
-             module_name: module_name,
-             protocol: api_spec["metadata"]["protocol"],
-             target_prefix: api_spec["metadata"]["targetPrefix"],
-             options: options}
+                     nil -> endpoint_prefix
+                     sn   -> sn
+                   end
+    %Service{
+      actions: actions,
+      docstring: Docstring.format(language, doc_spec["service"]),
+      endpoint_prefix: endpoint_prefix,
+      is_global: is_global,
+      json_version: api_spec["metadata"]["jsonVersion"],
+      module_name: module_name,
+      options: options,
+      protocol: api_spec["metadata"]["protocol"],
+      signing_name: signing_name,
+      target_prefix: api_spec["metadata"]["targetPrefix"]
+    }
   end
 
   @doc """

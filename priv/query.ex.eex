@@ -34,9 +34,7 @@ defmodule <%= context.module_name %> do
         | headers
       ]
 
-    input = %{ input
-               | "Action" => action, "Version" => "<%= context.api_version %>"
-             }
+    input = Map.merge(input, %{"Action" => action, "Version" => "<%= context.api_version %>"})
     payload = :uri_string.compose_query(Map.to_list(input))
     headers = AWS.Request.sign_v4(client, "POST", url, headers, payload)
 
@@ -58,14 +56,17 @@ defmodule <%= context.module_name %> do
     end
   end
 
-  defp get_host(endpoint_prefix, client) do
-    if client.region == "local" do
-      "localhost"
-    else
-      "#{endpoint_prefix}.#{client.region}.#{client.endpoint}"
-    end
+  defp get_host(_endpoint_prefix, %{region: "local"}) do
+    "localhost"
+  end<%= if context.is_global do %>
+  defp get_host(endpoint_prefix, %{endpoint: endpoint}) do
+    "#{endpoint_prefix}.#{endpoint}"
   end
-
+<% else %>
+  defp get_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
+    "#{endpoint_prefix}.#{region}.#{endpoint}"
+  end
+<% end %>
   defp get_url(host, %{:proto => proto, :port => port}) do
     "#{proto}://#{host}:#{port}/"
   end

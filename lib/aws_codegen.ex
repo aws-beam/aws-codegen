@@ -232,24 +232,29 @@ defmodule AWS.CodeGen do
   }
 
   def generate(language, spec_base_path, template_base_path, output_base_path) do
+    endpoints_spec = get_endpoints_spec(spec_base_path)
     tasks = Enum.map(@configuration[:api_specs][language],
       fn({protocol, module_name, spec_path, output_filename, options}) ->
         api_spec_path = make_spec_path(spec_base_path, spec_path, "api-2.json")
         doc_spec_path = make_spec_path(spec_base_path, spec_path, "docs-2.json")
         output_path = Path.join(output_base_path, output_filename)
-        args = [language, protocol, module_name, api_spec_path, doc_spec_path,
+        args = [language, protocol, module_name, endpoints_spec,
+                api_spec_path, doc_spec_path,
                 template_base_path, output_path, options]
         Task.async(AWS.CodeGen, :generate_code, args)
       end)
     Enum.each(tasks, fn(task) -> Task.await(task) end)
   end
 
-  def generate_code(language, protocol, module_name, api_spec_path, doc_spec_path,
-    template_base_path, output_path, options) do
+  def generate_code(
+    language, protocol, module_name, endpoints_spec,
+    api_spec_path, doc_spec_path,
+    template_base_path, output_path, options
+  ) do
     template = @configuration[:protocols][protocol][:template][language]
     protocol_service = @configuration[:protocols][protocol][:module]
     template_path = Path.join(template_base_path, template)
-    args = [language, module_name,
+    args = [language, module_name, endpoints_spec,
             parse_spec(api_spec_path), parse_spec(doc_spec_path),
             options]
     context = apply(protocol_service, :load_context, args)
@@ -260,6 +265,14 @@ defmodule AWS.CodeGen do
 
   defp make_spec_path(spec_base_path, spec_path, filename) do
     spec_base_path |> Path.join(spec_path) |> Path.join(filename)
+  end
+
+  defp get_endpoints_spec(base_path) do
+    Path.join([base_path, "..", "endpoints", "endpoints.json"])
+    |> parse_spec
+    |> get_in(["partitions"])
+    |> Enum.filter(fn(x) -> x["partition"] == "aws" end)
+    |> List.first
   end
 
   defp parse_spec(path) do

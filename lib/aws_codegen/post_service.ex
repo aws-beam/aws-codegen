@@ -7,6 +7,7 @@ defmodule AWS.CodeGen.PostService do
               api_version: nil,
               docstring: nil,
               endpoint_prefix: nil,
+              is_global: false,
               json_version: nil,
               module_name: nil,
               protocol: nil,
@@ -27,17 +28,23 @@ defmodule AWS.CodeGen.PostService do
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
   """
-  def load_context(language, module_name, api_spec, doc_spec, _options) do
+  def load_context(language, module_name, endpoints_spec, api_spec, doc_spec, _options) do
     actions = collect_actions(language, api_spec, doc_spec)
+    endpoint_prefix = api_spec["metadata"]["endpointPrefix"]
+    is_global = case get_in(endpoints_spec, ["services", endpoint_prefix, "isRegionalized"]) do
+                  nil -> false
+                  is_regionalized -> not is_regionalized
+                end
     signing_name = case api_spec["metadata"]["signingName"] do
-     nil -> api_spec["metadata"]["endpointPrefix"];
+     nil -> endpoint_prefix
      sn -> sn
     end
     %Service{abbreviation: api_spec["metadata"]["serviceAbbreviation"],
              actions: actions,
              api_version: api_spec["metadata"]["apiVersion"],
              docstring: Docstring.format(language, doc_spec["service"]),
-             endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
+             endpoint_prefix: endpoint_prefix,
+             is_global: is_global,
              json_version: api_spec["metadata"]["jsonVersion"],
              module_name: module_name,
              protocol: api_spec["metadata"]["protocol"],
