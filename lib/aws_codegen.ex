@@ -2,7 +2,7 @@ defmodule AWS.CodeGen do
 
   @elixir_services [
     {:json, "AWS.AppStream", "appstream/2016-12-01", "appstream.ex", []},
-    {:json, "AWS.AutoScaling", "application-autoscaling/2016-02-06", "autoscaling.ex", []},
+    {:json, "AWS.AppAutoScaling", "application-autoscaling/2016-02-06", "app_autoscaling.ex", []},
     {:json, "AWS.Budgets", "budgets/2016-10-20", "budgets.ex", []},
     {:json, "AWS.CertificateManager", "acm/2015-12-08", "certificate_manager.ex", []},
     {:json, "AWS.CloudHSM", "cloudhsm/2014-05-30", "cloud_hsm.ex", []},
@@ -30,7 +30,6 @@ defmodule AWS.CodeGen do
     {:json, "AWS.GameLift", "gamelift/2015-10-01", "gamelift.ex", []},
     {:json, "AWS.Health", "health/2016-08-04", "health.ex", []},
     {:json, "AWS.Inspector", "inspector/2016-02-16", "inspector.ex", []},
-    {:json, "AWS.IAM", "iam/2010-05-08", "iam.ex", []},
     {:json, "AWS.Kinesis", "kinesis/2013-12-02", "kinesis.ex", []},
     {:json, "AWS.Kinesis.Analytics", "kinesisanalytics/2015-08-14", "kinesis_analytics.ex", []},
     {:json, "AWS.Kinesis.Firehose", "firehose/2015-08-04", "kinesis_firehose.ex", []},
@@ -55,7 +54,6 @@ defmodule AWS.CodeGen do
     {:json, "AWS.Support", "support/2013-04-15", "support.ex", []},
     {:json, "AWS.SMS", "sms/2016-10-24", "sms.ex", []},
     {:json, "AWS.SSM", "ssm/2014-11-06", "ssm.ex", []},
-    {:json, "AWS.STS", "sts/2011-06-15", "sts.ex", []},
     {:json, "AWS.SWF", "swf/2012-01-25", "swf.ex", []},
     {:json, "AWS.WAF", "waf/2015-08-24", "waf.ex", []},
     {:json, "AWS.WAF.Regional", "waf-regional/2016-11-28", "waf_regional.ex", []},
@@ -76,11 +74,30 @@ defmodule AWS.CodeGen do
     {:rest_json, "AWS.LexRuntime", "runtime.lex/2016-11-28", "lex_runtime.ex", []},
     {:rest_json, "AWS.Transcoder", "elastictranscoder/2012-09-25", "transcoder.ex", []},
     {:rest_json, "AWS.XRay", "xray/2016-04-12", "xray.ex", []},
+    {:query, "AWS.Autoscaling", "autoscaling/2011-01-01", "autoscaling.ex", []},
+    {:query, "AWS.CloudFormation", "cloudformation/2010-05-15", "cloud_formation.ex", []},
+    {:query, "AWS.CloudSearch", "cloudsearch/2013-01-01", "cloud_search.ex", []},
+    {:query, "AWS.DocDB", "docdb/2014-10-31", "doc_db.ex", []},
+    {:query, "AWS.ElastiCache", "elasticache/2015-02-02", "elasticache.ex", []},
+    {:query, "AWS.ElasticBeanstalk", "elasticbeanstalk/2010-12-01", "elastic_beanstalk.ex", []},
+    {:query, "AWS.ElasticLoadBalancing", "elasticloadbalancing/2012-06-01", "elastic_load_balancing.ex", []},
+    {:query, "AWS.ElasticLoadBalancingV2", "elasticloadbalancingv2/2015-12-01", "elastic_load_balancing_v2.ex", []},
+    {:query, "AWS.Email", "email/2010-12-01", "email.ex", []},
+    {:query, "AWS.IAM", "iam/2010-05-08", "iam.ex", []},
+    {:query, "AWS.ImportExport", "importexport/2010-06-01", "import_export.ex", []},
+    {:query, "AWS.Monitoring", "monitoring/2010-08-01", "monitoring.ex", []},
+    {:query, "AWS.Neptune", "neptune/2014-10-31", "neptune.ex", []},
+    {:query, "AWS.RDS", "rds/2014-10-31", "rds.ex", []},
+    {:query, "AWS.Redshift", "redshift/2012-12-01", "redshift.ex", []},
+    {:query, "AWS.SDB", "sdb/2009-04-15", "sdb.ex", []},
+    {:query, "AWS.SNS", "sns/2010-03-31", "sns.ex", []},
+    {:query, "AWS.SQS", "sqs/2012-11-05", "sqs.ex", []},
+    {:query, "AWS.STS", "sts/2011-06-15", "sts.ex", []},
   ]
 
   @erlang_services [
     {:json, "aws_appstream", "appstream/2016-12-01", "aws_appstream.erl", []},
-    {:json, "aws_autoscaling", "application-autoscaling/2016-02-06", "aws_autoscaling.erl", []},
+    {:json, "aws_app_autoscaling", "application-autoscaling/2016-02-06", "aws_app_autoscaling.erl", []},
     {:json, "aws_budgets", "budgets/2016-10-20", "aws_budgets.erl", []},
     {:json, "aws_certificate_manager", "acm/2015-12-08", "aws_certificate_manager.erl", []},
     {:json, "aws_cloud_hsm", "cloudhsm/2014-05-30", "aws_cloud_hsm.erl", []},
@@ -108,7 +125,6 @@ defmodule AWS.CodeGen do
     {:json, "aws_gamelift", "gamelift/2015-10-01", "aws_gamelift.erl", []},
     {:json, "aws_health", "health/2016-08-04", "aws_health.erl", []},
     {:json, "aws_inspector", "inspector/2016-02-16", "aws_inspector.erl", []},
-    {:json, "aws_iam", "iam/2010-05-08", "aws_iam.erl", []},
     {:json, "aws_kinesis", "kinesis/2013-12-02", "aws_kinesis.erl", []},
     {:json, "aws_kinesis_analytics", "kinesisanalytics/2015-08-14", "aws_kinesis_analytics.erl", []},
     {:json, "aws_kinesis_firehose", "firehose/2015-08-04", "aws_kinesis_firehose.erl", []},
@@ -133,7 +149,6 @@ defmodule AWS.CodeGen do
     {:json, "aws_support", "support/2013-04-15", "aws_support.erl", []},
     {:json, "aws_sms", "sms/2016-10-24", "aws_sms.erl", []},
     {:json, "aws_ssm", "ssm/2014-11-06", "aws_ssm.erl", []},
-    {:json, "aws_sts", "sts/2011-06-15", "aws_sts.erl", []},
     {:json, "aws_swf", "swf/2012-01-25", "aws_swf.erl", []},
     {:json, "aws_waf", "waf/2015-08-24", "aws_waf.erl", []},
     {:json, "aws_waf_regional", "waf-regional/2016-11-28", "aws_waf_regional.erl", []},
@@ -154,61 +169,80 @@ defmodule AWS.CodeGen do
     {:rest_json, "aws_lex_runtime", "runtime.lex/2016-11-28", "aws_lex_runtime.erl", []},
     {:rest_json, "aws_transcoder", "elastictranscoder/2012-09-25", "aws_transcoder.erl", []},
     {:rest_json, "aws_xray", "xray/2016-04-12", "aws_xray.erl", []},
+    {:query, "aws_autoscaling", "autoscaling/2011-01-01", "aws_autoscaling.erl", []},
+    {:query, "aws_cloudformation", "cloudformation/2010-05-15", "aws_cloudformation.erl", []},
+    {:query, "aws_cloudsearch", "cloudsearch/2013-01-01", "aws_cloudsearch.erl", []},
+    {:query, "aws_docdb", "docdb/2014-10-31", "aws_docdb.erl", []},
+    {:query, "aws_elasticache", "elasticache/2015-02-02", "aws_elasticache.erl", []},
+    {:query, "aws_elasticbeanstalk", "elasticbeanstalk/2010-12-01", "aws_elasticbeanstalk.erl", []},
+    {:query, "aws_elasticloadbalancing", "elasticloadbalancing/2012-06-01", "aws_elasticloadbalancing.erl", []},
+    {:query, "aws_elasticloadbalancingv2", "elasticloadbalancingv2/2015-12-01", "aws_elasticloadbalancingv2.erl", []},
+    {:query, "aws_email", "email/2010-12-01", "aws_email.erl", []},
+    {:query, "aws_iam", "iam/2010-05-08", "aws_iam.erl", []},
+    {:query, "aws_importexport", "importexport/2010-06-01", "aws_importexport.erl", []},
+    {:query, "aws_monitoring", "monitoring/2010-08-01", "aws_monitoring.erl", []},
+    {:query, "aws_neptune", "neptune/2014-10-31", "aws_neptune.erl", []},
+    {:query, "aws_rds", "rds/2014-10-31", "aws_rds.erl", []},
+    {:query, "aws_redshift", "redshift/2012-12-01", "aws_redshift.erl", []},
+    {:query, "aws_sdb", "sdb/2009-04-15", "aws_sdb.erl", []},
+    {:query, "aws_sns", "sns/2010-03-31", "aws_sns.erl", []},
+    {:query, "aws_sqs", "sqs/2012-11-05", "aws_sqs.erl", []},
+    {:query, "aws_sts", "sts/2011-06-15", "aws_sts.erl", []},
   ]
 
+  @configuration %{
+    :api_specs => %{
+      :elixir => @elixir_services,
+      :erlang => @erlang_services
+    },
+    :protocols => %{
+      :json => %{
+        :module => AWS.CodeGen.JSONService,
+        :template => %{
+          :elixir => "json.ex.eex",
+          :erlang => "json.erl.eex"
+        }
+      },
+      :rest_json => %{
+        :module => AWS.CodeGen.RestJSONService,
+        :template => %{
+          :elixir => "rest_json.ex.eex",
+          :erlang => "rest_json.erl.eex"
+        }
+      },
+      :query => %{
+        :module => AWS.CodeGen.QueryService,
+        :template => %{
+          :elixir => "query.ex.eex",
+          :erlang => "query.erl.eex"
+        }
+      }
+    }
+  }
+
   def generate(language, spec_base_path, template_base_path, output_base_path) do
-    tasks = Enum.map(api_specs(language), fn({protocol, module_name, spec_path, output_filename, options}) ->
-      api_spec_path = make_spec_path(spec_base_path, spec_path, "api-2.json")
-      doc_spec_path = make_spec_path(spec_base_path, spec_path, "docs-2.json")
-      output_path = Path.join(output_base_path, output_filename)
-      args = [language, protocol, module_name, api_spec_path, doc_spec_path,
-              template_base_path, output_path, options]
-      Task.async(AWS.CodeGen, :generate_code, args)
-    end)
+    tasks = Enum.map(@configuration[:api_specs][language],
+      fn({protocol, module_name, spec_path, output_filename, options}) ->
+        api_spec_path = make_spec_path(spec_base_path, spec_path, "api-2.json")
+        doc_spec_path = make_spec_path(spec_base_path, spec_path, "docs-2.json")
+        output_path = Path.join(output_base_path, output_filename)
+        args = [language, protocol, module_name, api_spec_path, doc_spec_path,
+                template_base_path, output_path, options]
+        Task.async(AWS.CodeGen, :generate_code, args)
+      end)
     Enum.each(tasks, fn(task) -> Task.await(task) end)
   end
 
-  def api_specs(:elixir) do
-    @elixir_services
-  end
-
-  def api_specs(:erlang) do
-    @erlang_services
-  end
-
-  def generate_code(language, :json, module_name, api_spec_path, doc_spec_path,
-                    template_base_path, output_path, _options) do
-    template_path = Path.join(template_base_path, json_spec_template(language))
-    context = AWS.CodeGen.JSONService.load_context(language, module_name,
-                                                   api_spec_path, doc_spec_path)
-    code = AWS.CodeGen.JSONService.render(context, template_path)
+  def generate_code(language, protocol, module_name, api_spec_path, doc_spec_path,
+    template_base_path, output_path, options) do
+    template = @configuration[:protocols][protocol][:template][language]
+    protocol_service = @configuration[:protocols][protocol][:module]
+    template_path = Path.join(template_base_path, template)
+    args = [language, module_name, api_spec_path, doc_spec_path, options]
+    context = apply(protocol_service, :load_context, args)
+    code = apply(protocol_service, :render, [context, template_path])
+    IO.puts(["Writing ", module_name, " to ", output_path])
     File.write(output_path, code)
-  end
-
-  def generate_code(language, :rest_json, module_name, api_spec_path,
-                    doc_spec_path, template_base_path, output_path, options) do
-    template_path = Path.join(template_base_path, rest_json_spec_template(language))
-    context = AWS.CodeGen.RestJSONService.load_context(language, module_name,
-                                                       api_spec_path,
-                                                       doc_spec_path, options)
-    code = AWS.CodeGen.RestJSONService.render(context, template_path)
-    File.write(output_path, code)
-  end
-
-  defp json_spec_template(:elixir) do
-    "json.ex.eex"
-  end
-
-  defp json_spec_template(:erlang) do
-    "json.erl.eex"
-  end
-
-  defp rest_json_spec_template(:elixir) do
-    "rest_json.ex.eex"
-  end
-
-  defp rest_json_spec_template(:erlang) do
-    "rest_json.erl.eex"
   end
 
   defp make_spec_path(spec_base_path, spec_path, filename) do
