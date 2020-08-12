@@ -58,7 +58,7 @@ defmodule AWS.CodeGen do
     {:json, "AWS.WAF", "waf/2015-08-24", "waf.ex", []},
     {:json, "AWS.WAF.Regional", "waf-regional/2016-11-28", "waf_regional.ex", []},
     {:json, "AWS.Workspaces", "workspaces/2015-04-08", "workspaces.ex", []},
-    {:rest_json, "AWS.APIGateway", "apigateway/2015-07-09", "api_gateway.ex", [:strip_trailing_slash_in_url]},
+    {:rest_json, "AWS.APIGateway", "apigateway/2015-07-09", "api_gateway.ex", []},
     {:rest_json, "AWS.Batch", "batch/2016-08-10", "batch.ex", []},
     {:rest_json, "AWS.CloudDirectory", "clouddirectory/2017-01-11", "cloud_directory.ex", []},
     {:rest_json, "AWS.Cognito.Sync", "cognito-sync/2014-06-30", "cognito_sync.ex", []},
@@ -66,7 +66,7 @@ defmodule AWS.CodeGen do
     {:rest_json, "AWS.EFS", "elasticfilesystem/2015-02-01", "efs.ex", []},
     {:rest_json, "AWS.Glacier", "glacier/2012-06-01", "glacier.ex", []},
     {:rest_json, "AWS.IoT", "iot/2015-05-28", "iot.ex", []},
-    {:rest_json, "AWS.IoT.DataPlane", "iot-data/2015-05-28", "iot_data.ex", [:strip_trailing_slash_in_url]},
+    {:rest_json, "AWS.IoT.DataPlane", "iot-data/2015-05-28", "iot_data.ex", []},
     {:rest_json, "AWS.Lambda", "lambda/2015-03-31", "lambda.ex", []},
     {:rest_json, "AWS.MobileAnalytics", "mobileanalytics/2014-06-05", "mobile_analytics.ex", []},
     {:rest_json, "AWS.Pinpoint", "pinpoint/2016-12-01", "pinpoint.ex", []},
@@ -74,6 +74,10 @@ defmodule AWS.CodeGen do
     {:rest_json, "AWS.LexRuntime", "runtime.lex/2016-11-28", "lex_runtime.ex", []},
     {:rest_json, "AWS.Transcoder", "elastictranscoder/2012-09-25", "transcoder.ex", []},
     {:rest_json, "AWS.XRay", "xray/2016-04-12", "xray.ex", []},
+    {:rest_xml, "AWS.Cloudfront", "cloudfront/2020-05-31", "cloudfront.ex", []},
+    {:rest_xml, "AWS.Route53", "route53/2013-04-01", "route53.ex", []},
+    {:rest_xml, "AWS.S3", "s3/2006-03-01", "s3.ex", []},
+    {:rest_xml, "AWS.S3Control", "s3control/2018-08-20", "s3control.ex", []},
     {:query, "AWS.Autoscaling", "autoscaling/2011-01-01", "autoscaling.ex", []},
     {:query, "AWS.CloudFormation", "cloudformation/2010-05-15", "cloud_formation.ex", []},
     {:query, "AWS.CloudSearch", "cloudsearch/2013-01-01", "cloud_search.ex", []},
@@ -153,7 +157,7 @@ defmodule AWS.CodeGen do
     {:json, "aws_waf", "waf/2015-08-24", "aws_waf.erl", []},
     {:json, "aws_waf_regional", "waf-regional/2016-11-28", "aws_waf_regional.erl", []},
     {:json, "aws_workspaces", "workspaces/2015-04-08", "aws_workspaces.erl", []},
-    {:rest_json, "aws_api_gateway", "apigateway/2015-07-09", "aws_api_gateway.erl", [:strip_trailing_slash_in_url]},
+    {:rest_json, "aws_api_gateway", "apigateway/2015-07-09", "aws_api_gateway.erl", []},
     {:rest_json, "aws_batch", "batch/2016-08-10", "aws_batch.erl", []},
     {:rest_json, "aws_cloud_directory", "clouddirectory/2017-01-11", "aws_cloud_directory.erl", []},
     {:rest_json, "aws_cognito_sync", "cognito-sync/2014-06-30", "aws_cognito_sync.erl", []},
@@ -161,7 +165,7 @@ defmodule AWS.CodeGen do
     {:rest_json, "aws_efs", "elasticfilesystem/2015-02-01", "aws_efs.erl", []},
     {:rest_json, "aws_glacier", "glacier/2012-06-01", "aws_glacier.erl", []},
     {:rest_json, "aws_iot", "iot/2015-05-28", "aws_iot.erl", []},
-    {:rest_json, "aws_iot_data", "iot-data/2015-05-28", "aws_iot_data.erl", [:strip_trailing_slash_in_url]},
+    {:rest_json, "aws_iot_data", "iot-data/2015-05-28", "aws_iot_data.erl", []},
     {:rest_json, "aws_lambda", "lambda/2015-03-31", "aws_lambda.erl", []},
     {:rest_json, "aws_mobile_analytics", "mobileanalytics/2014-06-05", "aws_mobile_analytics.erl", []},
     {:rest_json, "aws_pinpoint", "pinpoint/2016-12-01", "aws_pinpoint.erl", []},
@@ -169,6 +173,10 @@ defmodule AWS.CodeGen do
     {:rest_json, "aws_lex_runtime", "runtime.lex/2016-11-28", "aws_lex_runtime.erl", []},
     {:rest_json, "aws_transcoder", "elastictranscoder/2012-09-25", "aws_transcoder.erl", []},
     {:rest_json, "aws_xray", "xray/2016-04-12", "aws_xray.erl", []},
+    {:rest_xml, "aws_cloudfront", "cloudfront/2020-05-31", "aws_cloudfront.erl", []},
+    {:rest_xml, "aws_route53", "route53/2013-04-01", "aws_route53.erl", []},
+    {:rest_xml, "aws_s3", "s3/2006-03-01", "aws_s3.erl", []},
+    {:rest_xml, "aws_s3control", "s3control/2018-08-20", "aws_s3control.erl", []},
     {:query, "aws_autoscaling", "autoscaling/2011-01-01", "aws_autoscaling.erl", []},
     {:query, "aws_cloudformation", "cloudformation/2010-05-15", "aws_cloudformation.erl", []},
     {:query, "aws_cloudsearch", "cloudsearch/2013-01-01", "aws_cloudsearch.erl", []},
@@ -197,48 +205,62 @@ defmodule AWS.CodeGen do
     },
     :protocols => %{
       :json => %{
-        :module => AWS.CodeGen.JSONService,
+        :module => AWS.CodeGen.PostService,
         :template => %{
           :elixir => "json.ex.eex",
           :erlang => "json.erl.eex"
         }
       },
       :rest_json => %{
-        :module => AWS.CodeGen.RestJSONService,
+        :module => AWS.CodeGen.RestService,
         :template => %{
           :elixir => "rest_json.ex.eex",
           :erlang => "rest_json.erl.eex"
         }
       },
       :query => %{
-        :module => AWS.CodeGen.QueryService,
+        :module => AWS.CodeGen.PostService,
         :template => %{
           :elixir => "query.ex.eex",
           :erlang => "query.erl.eex"
+        }
+      },
+      :rest_xml => %{
+        :module => AWS.CodeGen.RestService,
+        :template => %{
+          :elixir => "rest_xml.ex.eex",
+          :erlang => "rest_xml.erl.eex"
         }
       }
     }
   }
 
   def generate(language, spec_base_path, template_base_path, output_base_path) do
+    endpoints_spec = get_endpoints_spec(spec_base_path)
     tasks = Enum.map(@configuration[:api_specs][language],
       fn({protocol, module_name, spec_path, output_filename, options}) ->
         api_spec_path = make_spec_path(spec_base_path, spec_path, "api-2.json")
         doc_spec_path = make_spec_path(spec_base_path, spec_path, "docs-2.json")
         output_path = Path.join(output_base_path, output_filename)
-        args = [language, protocol, module_name, api_spec_path, doc_spec_path,
+        args = [language, protocol, module_name, endpoints_spec,
+                api_spec_path, doc_spec_path,
                 template_base_path, output_path, options]
         Task.async(AWS.CodeGen, :generate_code, args)
       end)
     Enum.each(tasks, fn(task) -> Task.await(task) end)
   end
 
-  def generate_code(language, protocol, module_name, api_spec_path, doc_spec_path,
-    template_base_path, output_path, options) do
+  def generate_code(
+    language, protocol, module_name, endpoints_spec,
+    api_spec_path, doc_spec_path,
+    template_base_path, output_path, options
+  ) do
     template = @configuration[:protocols][protocol][:template][language]
     protocol_service = @configuration[:protocols][protocol][:module]
     template_path = Path.join(template_base_path, template)
-    args = [language, module_name, api_spec_path, doc_spec_path, options]
+    args = [language, module_name, endpoints_spec,
+            parse_spec(api_spec_path), parse_spec(doc_spec_path),
+            options]
     context = apply(protocol_service, :load_context, args)
     code = apply(protocol_service, :render, [context, template_path])
     IO.puts(["Writing ", module_name, " to ", output_path])
@@ -248,4 +270,17 @@ defmodule AWS.CodeGen do
   defp make_spec_path(spec_base_path, spec_path, filename) do
     spec_base_path |> Path.join(spec_path) |> Path.join(filename)
   end
+
+  defp get_endpoints_spec(base_path) do
+    Path.join([base_path, "..", "endpoints", "endpoints.json"])
+    |> parse_spec
+    |> get_in(["partitions"])
+    |> Enum.filter(fn(x) -> x["partition"] == "aws" end)
+    |> List.first
+  end
+
+  defp parse_spec(path) do
+    path |> File.read! |> Poison.Parser.parse!(%{})
+  end
+
 end

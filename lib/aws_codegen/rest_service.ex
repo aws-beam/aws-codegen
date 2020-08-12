@@ -1,17 +1,19 @@
-defmodule AWS.CodeGen.RestJSONService do
+defmodule AWS.CodeGen.RestService do
   alias AWS.CodeGen.Docstring
 
   defmodule Service do
     defstruct abbreviation: nil,
               actions: [],
+              credential_scope: nil,
               docstring: nil,
-              signing_name: nil,
               endpoint_prefix: nil,
+              is_global: false,
               json_version: nil,
               module_name: nil,
+              options: [],
               protocol: nil,
-              target_prefix: nil,
-              options: []
+              signing_name: nil,
+              target_prefix: nil
   end
 
   defmodule Action do
@@ -44,11 +46,7 @@ defmodule AWS.CodeGen.RestJSONService do
           # multi-segment. This regex takes that into account.
           {:ok, re} = Regex.compile("{#{parameter.location_name}\\+?}")
           String.replace(acc, re, name)
-        end) |>
-        # FIXME(jkakar) This is only here because the invoke-async method
-        # defined for the Lambda API has an apparently spurious trailing slash
-        # in the JSON spec.
-        String.trim_trailing("/")
+        end)
     end
   end
 
@@ -59,15 +57,36 @@ defmodule AWS.CodeGen.RestJSONService do
   end
 
   @doc """
-  Load JSON API service and documentation specifications from the
+  Load REST API service and documentation specifications from the
   `api_spec_path` and `doc_spec_path` files and convert them into a context
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
   """
-  def load_context(language, module_name, api_spec_path, doc_spec_path, options) do
-    api_spec = File.read!(api_spec_path) |> Poison.Parser.parse!(%{})
-    doc_spec = File.read!(doc_spec_path) |> Poison.Parser.parse!(%{})
-    build_context(language, module_name, api_spec, doc_spec, options)
+  def load_context(language, module_name, endpoints_spec, api_spec, doc_spec, options) do
+    actions = collect_actions(language, api_spec, doc_spec)
+    endpoint_prefix = api_spec["metadata"]["endpointPrefix"]
+    endpoint_info = endpoints_spec["services"][endpoint_prefix]
+    is_global = not Map.get(endpoint_info, "isRegionalized", true)
+    credential_scope = if is_global do
+      endpoint_info["endpoints"]["aws-global"]["credentialScope"]["region"]
+    else
+      nil
+    end
+    signing_name = case api_spec["metadata"]["signingName"] do
+                     nil -> endpoint_prefix
+                     sn   -> sn
+                   end
+    %Service{actions: actions,
+             docstring: Docstring.format(language, doc_spec["service"]),
+             credential_scope: credential_scope,
+             endpoint_prefix: endpoint_prefix,
+             is_global: is_global,
+             json_version: api_spec["metadata"]["jsonVersion"],
+             module_name: module_name,
+             options: options,
+             protocol: api_spec["metadata"]["protocol"],
+             signing_name: signing_name,
+             target_prefix: api_spec["metadata"]["targetPrefix"]}
   end
 
   @doc """
@@ -105,23 +124,6 @@ defmodule AWS.CodeGen.RestJSONService do
           end))
   end
 
-  defp build_context(language, module_name, api_spec, doc_spec, options) do
-    actions = collect_actions(language, api_spec, doc_spec)
-    signing_name = case api_spec["metadata"]["signingName"] do
-     nil -> api_spec["metadata"]["endpointPrefix"]
-     sn   -> sn
-      end
-    %Service{actions: actions,
-      docstring: Docstring.format(language, doc_spec["service"]),
-      signing_name: signing_name,
-      endpoint_prefix: api_spec["metadata"]["endpointPrefix"],
-      json_version: api_spec["metadata"]["jsonVersion"],
-      module_name: module_name,
-      protocol: api_spec["metadata"]["protocol"],
-      target_prefix: api_spec["metadata"]["targetPrefix"],
-             options: options}
-  end
-
   defp collect_actions(language, api_spec, doc_spec) do
     Enum.map(api_spec["operations"], fn({operation, _metadata}) ->
       url_parameters = collect_url_parameters(language, api_spec, operation)
@@ -148,11 +150,15 @@ defmodule AWS.CodeGen.RestJSONService do
 
   defp collect_url_parameters(language, api_spec, operation) do
     shape_name = api_spec["operations"][operation]["input"]["shape"]
-    shape = api_spec["shapes"][shape_name]
+    if shape_name do
+      shape = api_spec["shapes"][shape_name]
 
-    shape["members"]
-    |> Enum.filter(filter_fn("uri"))
-    |> Enum.map(fn x -> build_parameter(language, x) end)
+      shape["members"]
+      |> Enum.filter(filter_fn("uri"))
+      |> Enum.map(fn x -> build_parameter(language, x) end)
+    else
+      []
+    end
   end
 
   defp collect_request_header_parameters(language, api_spec, operation) do

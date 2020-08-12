@@ -18,20 +18,16 @@ defmodule <%= context.module_name %> do
           | {:error, Poison.Parser.t()}
           | {:error, HTTPoison.Error.t()}
   defp request(client, action, input, options) do
-    client = %{client | service: "<%= context.endpoint_prefix %>"}
+    client = %{client | service: "<%= context.signing_name %>"<%= if context.is_global do %>,
+                        region:  "<%= context.credential_scope %>"<% end %>}
     host = get_host("<%= context.endpoint_prefix %>", client)
     url = get_url(host, client)
-
-    headers = if client.session_token do
-      [{"X-Amz-Security-Token", client.session_token}]
-    else
-      []
-    end
 
     headers = [
       {"Host", host},
       {"Content-Type", "application/x-amz-json-<%= context.json_version %>"},
-      {"X-Amz-Target", "<%= context.target_prefix %>.#{action}"} | headers]
+      {"X-Amz-Target", "<%= context.target_prefix %>.#{action}"}
+    ]
 
     payload = Poison.Encoder.encode(input, %{})
     headers = AWS.Request.sign_v4(client, "POST", url, headers, payload)
@@ -54,14 +50,17 @@ defmodule <%= context.module_name %> do
     end
   end
 
-  defp get_host(endpoint_prefix, client) do
-    if client.region == "local" do
-      "localhost"
-    else
-      "#{endpoint_prefix}.#{client.region}.#{client.endpoint}"
-    end
+  defp get_host(_endpoint_prefix, %{region: "local"}) do
+    "localhost"
+  end<%= if context.is_global do %>
+  defp get_host(endpoint_prefix, %{endpoint: endpoint}) do
+    "#{endpoint_prefix}.#{endpoint}"
   end
-
+<% else %>
+  defp get_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
+    "#{endpoint_prefix}.#{region}.#{endpoint}"
+  end
+<% end %>
   defp get_url(host, %{:proto => proto, :port => port}) do
     "#{proto}://#{host}:#{port}/"
   end

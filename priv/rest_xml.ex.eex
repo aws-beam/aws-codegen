@@ -80,7 +80,7 @@ defmodule <%= context.module_name %> do
 
     headers = [
       {"Host", host},
-      {"Content-Type", "application/x-amz-json-1.1"}
+      {"Content-Type", "text/xml"}
       | headers
     ]
 
@@ -96,10 +96,11 @@ defmodule <%= context.module_name %> do
 
       {:ok, %HTTPoison.Response{status_code: status_code, body: body} = response}
       when status_code == 200 or status_code == 202 or status_code == 204 ->
-        {:ok, Poison.Parser.parse!(body, %{}), response}
+        {:ok, AWS.Util.decode_xml(body), response}
 
       {:ok, %HTTPoison.Response{body: body}} ->
-        reason = Poison.Parser.parse!(body, %{})["Message"]
+        error = AWS.Util.decode_xml(body)
+        reason = error["ErrorResponse"]["Error"]["Message"]
         {:error, reason}
 
       {:error, %HTTPoison.Error{reason: reason}} ->
@@ -113,10 +114,11 @@ defmodule <%= context.module_name %> do
         {:ok, nil, response}
 
       {:ok, %HTTPoison.Response{status_code: ^success_status_code, body: body} = response} ->
-        {:ok, Poison.Parser.parse!(body, %{}), response}
+        {:ok, AWS.Util.decode_xml(body), response}
 
       {:ok, %HTTPoison.Response{body: body}} ->
-        reason = Poison.Parser.parse!(body, %{})["Message"]
+        error = AWS.Util.decode_xml(body)
+        reason = error["ErrorResponse"]["Error"]["Message"]
         {:error, reason}
 
       {:error, %HTTPoison.Error{reason: reason}} ->
@@ -140,6 +142,6 @@ defmodule <%= context.module_name %> do
   end
 
   defp encode_payload(input) do
-    if input != nil, do: Poison.Encoder.encode(input, %{}), else: ""
+    if input != nil, do: AWS.Util.encode_xml(input), else: ""
   end
 end
