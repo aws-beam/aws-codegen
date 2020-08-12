@@ -46,11 +46,7 @@ defmodule AWS.CodeGen.RestService do
           # multi-segment. This regex takes that into account.
           {:ok, re} = Regex.compile("{#{parameter.location_name}\\+?}")
           String.replace(acc, re, name)
-        end) |>
-        # FIXME(jkakar) This is only here because the invoke-async method
-        # defined for the Lambda API has an apparently spurious trailing slash
-        # in the JSON spec.
-        String.trim_trailing("/")
+        end)
     end
   end
 
