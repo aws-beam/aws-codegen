@@ -5,6 +5,7 @@ defmodule AWS.CodeGen.PostService do
     defstruct abbreviation: nil,
               actions: [],
               api_version: nil,
+              credential_scope: nil,
               docstring: nil,
               endpoint_prefix: nil,
               is_global: false,
@@ -31,10 +32,13 @@ defmodule AWS.CodeGen.PostService do
   def load_context(language, module_name, endpoints_spec, api_spec, doc_spec, _options) do
     actions = collect_actions(language, api_spec, doc_spec)
     endpoint_prefix = api_spec["metadata"]["endpointPrefix"]
-    is_global = case get_in(endpoints_spec, ["services", endpoint_prefix, "isRegionalized"]) do
-                  nil -> false
-                  is_regionalized -> not is_regionalized
-                end
+    endpoint_info = endpoints_spec["services"][endpoint_prefix]
+    is_global = not Map.get(endpoint_info, "isRegionalized", true)
+    credential_scope = if is_global do
+      endpoint_info["endpoints"]["aws-global"]["credentialScope"]["region"]
+    else
+      nil
+    end
     signing_name = case api_spec["metadata"]["signingName"] do
      nil -> endpoint_prefix
      sn -> sn
@@ -42,6 +46,7 @@ defmodule AWS.CodeGen.PostService do
     %Service{abbreviation: api_spec["metadata"]["serviceAbbreviation"],
              actions: actions,
              api_version: api_spec["metadata"]["apiVersion"],
+             credential_scope: credential_scope,
              docstring: Docstring.format(language, doc_spec["service"]),
              endpoint_prefix: endpoint_prefix,
              is_global: is_global,

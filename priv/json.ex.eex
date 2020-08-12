@@ -18,7 +18,8 @@ defmodule <%= context.module_name %> do
           | {:error, Poison.Parser.t()}
           | {:error, HTTPoison.Error.t()}
   defp request(client, action, input, options) do
-    client = %{client | service: "<%= context.endpoint_prefix %>"}
+    client = %{client | service: "<%= context.signing_name %>"<%= if context.is_global do %>,
+                        region:  "<%= context.credential_scope %>"<% end %>}
     host = get_host("<%= context.endpoint_prefix %>", client)
     url = get_url(host, client)
 

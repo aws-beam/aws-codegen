@@ -93,7 +93,8 @@
     Result :: map() | undefined,
     Error :: {binary(), binary()}.
 request(Client, Method, Path, Headers0, Input, Options, SuccessStatusCode) ->
-    Client1 = Client#{service => <<"<%= context.signing_name %>">>},
+    Client1 = Client#{service => <<"<%= context.signing_name %>">><%= if context.is_global do %>,
+                      region => <<"<%= context.credential_scope %>">><% end %>},
     <%= if context.endpoint_prefix == "s3-control" do %>
     AccountId = proplists:get_value(<<"x-amz-account-id">>, Headers0),
     Host = get_host(AccountId, <<"<%= context.endpoint_prefix %>">>, Client1),

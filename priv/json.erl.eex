@@ -31,7 +31,8 @@
     Result :: map() | undefined,
     Error :: {binary(), binary()}.
 request(Client, Action, Input, Options) ->
-    Client1 = Client#{service => <<"<%= context.signing_name %>">>},
+    Client1 = Client#{service => <<"<%= context.signing_name %>">><%= if context.is_global do %>,
+                      region => <<"<%= context.credential_scope %>">><% end %>},
     Host = get_host(<<"<%= context.endpoint_prefix %>">>, Client1),
     URL = get_url(Host, Client1),
     Headers = [
