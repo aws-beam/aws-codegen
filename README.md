@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/aws-beam/aws-codegen.svg?branch=master)](https://travis-ci.org/aws-beam/aws-codegen)
+[![Actions Status](https://github.com/aws-beam/aws-codegen/workflows/Build/badge.svg)](https://github.com/aws-beam/aws-codegen/actions)
 
 Code generator for Elixir and Erlang AWS client.
 
