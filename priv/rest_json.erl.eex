@@ -90,7 +90,7 @@
     {ok, Result, {integer(), list(), hackney:client()}} |
     {error, Error, {integer(), list(), hackney:client()}} |
     {error, term()} when
-    Result :: map() | undefined,
+    Result :: map(),
     Error :: map().
 request(Client, Method, Path, Headers0, Input, Options, SuccessStatusCode) ->
     Client1 = Client#{service => <<"<%= context.signing_name %>">><%= if context.is_global do %>,
@@ -116,7 +116,7 @@ handle_response({ok, StatusCode, ResponseHeaders, Client}, SuccessStatusCode)
     case hackney:body(Client) of
         {ok, <<>>} when StatusCode =:= 200;
                         StatusCode =:= SuccessStatusCode ->
-            {ok, undefined, {StatusCode, ResponseHeaders, Client}};
+            {ok, #{}, {StatusCode, ResponseHeaders, Client}};
         {ok, Body} ->
             Result = jsx:decode(Body, [return_maps]),
             {ok, Result, {StatusCode, ResponseHeaders, Client}}
