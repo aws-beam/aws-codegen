@@ -17,6 +17,7 @@ defmodule AWS.CodeGen.RestService do
   end
 
   defmodule Action do
+    alias AWS.CodeGen.RestService.Parameter
     defstruct arity: nil,
               docstring: nil,
               method: nil,
@@ -37,11 +38,20 @@ defmodule AWS.CodeGen.RestService do
     def url_path(action) do
       Enum.reduce(action.url_parameters, action.request_uri,
         fn(parameter, acc) ->
+          multi_segment = Parameter.multi_segment?(parameter, acc)
           name = if action.language == :elixir do
+            if multi_segment do
+              Enum.join([~S(#{), "AWS.Util.encode_uri(", parameter.code_name, ", true)", ~S(})])
+            else
               Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
+            end
+          else
+            if multi_segment do
+              Enum.join(["\", aws_util:encode_uri(", parameter.code_name,", true), \""])
             else
               Enum.join(["\", http_uri:encode(", parameter.code_name, "), \""])
             end
+          end
           # Some url parameters have a trailing "+" indicating they are
           # multi-segment. This regex takes that into account.
           {:ok, re} = Regex.compile("{#{parameter.location_name}\\+?}")
@@ -54,6 +64,11 @@ defmodule AWS.CodeGen.RestService do
     defstruct code_name: nil,
               name: nil,
               location_name: nil
+
+    def multi_segment?(parameter, request_uri) do
+      {:ok, re} = Regex.compile("{#{parameter.location_name}\\+}")
+      String.match?(request_uri, re)
+    end
   end
 
   @doc """
