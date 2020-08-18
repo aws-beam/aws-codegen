@@ -26,6 +26,7 @@ defmodule AWS.CodeGen.RestService do
               function_name: nil,
               name: nil,
               url_parameters: [],
+              query_parameters: [],
               request_header_parameters: [],
               response_header_parameters: [],
               language: nil
@@ -142,6 +143,7 @@ defmodule AWS.CodeGen.RestService do
   defp collect_actions(language, api_spec, doc_spec) do
     Enum.map(api_spec["operations"], fn({operation, _metadata}) ->
       url_parameters = collect_url_parameters(language, api_spec, operation)
+      query_parameters = collect_query_parameters(language, api_spec, operation)
       request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
       method = api_spec["operations"][operation]["http"]["method"]
       arity = length(url_parameters) + if(method == "GET", do: 2 + length(request_header_parameters), else: 3)
@@ -155,6 +157,7 @@ defmodule AWS.CodeGen.RestService do
         function_name: AWS.CodeGen.Name.to_snake_case(operation),
         name: operation,
         url_parameters: url_parameters,
+        query_parameters: query_parameters,
         request_header_parameters: request_header_parameters,
         response_header_parameters: collect_response_header_parameters(language, api_spec, operation),
         language: language
@@ -164,38 +167,35 @@ defmodule AWS.CodeGen.RestService do
   end
 
   defp collect_url_parameters(language, api_spec, operation) do
-    shape_name = api_spec["operations"][operation]["input"]["shape"]
-    if shape_name do
-      shape = api_spec["shapes"][shape_name]
+    collect_parameters(language, api_spec, operation, "input", "uri")
+  end
 
-      shape["members"]
-      |> Enum.filter(filter_fn("uri"))
-      |> Enum.map(fn x -> build_parameter(language, x) end)
-    else
-      []
-    end
+  defp collect_query_parameters(language, api_spec, operation) do
+    collect_parameters(language, api_spec, operation, "input", "querystring")
   end
 
   defp collect_request_header_parameters(language, api_spec, operation) do
-    collect_header_parameters(language, api_spec, operation, "input")
+    collect_parameters(language, api_spec, operation, "input", "header")
   end
 
   defp collect_response_header_parameters(language, api_spec, operation) do
-    collect_header_parameters(language, api_spec, operation, "output")
+    collect_parameters(language, api_spec, operation, "output", "header")
   end
 
-  defp collect_header_parameters(language, api_spec, operation, data_type) do
+  defp collect_parameters(language, api_spec, operation, data_type, param_type) do
     shape_name = api_spec["operations"][operation][data_type]["shape"]
-    shape = api_spec["shapes"][shape_name]
+    if shape_name do
+      case api_spec["shapes"][shape_name] do
+        nil ->
+          []
 
-    case shape do
-      nil ->
-        []
-
-      ^shape ->
-        shape["members"]
-        |> Enum.filter(filter_fn("header"))
-        |> Enum.map(fn x -> build_parameter(language, x) end)
+        shape ->
+          shape["members"]
+          |> Enum.filter(filter_fn(param_type))
+          |> Enum.map(fn x -> build_parameter(language, x) end)
+      end
+    else
+      []
     end
   end
 
