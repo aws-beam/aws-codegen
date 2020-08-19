@@ -145,7 +145,11 @@ defmodule AWS.CodeGen.RestService do
       query_parameters = collect_query_parameters(language, api_spec, operation)
       request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
       method = api_spec["operations"][operation]["http"]["method"]
-      arity = length(url_parameters) + if(method == "GET", do: 2 + length(request_header_parameters), else: 3)
+      arity = length(url_parameters) + case method do
+                                         "GET" ->
+                                           2 + length(request_header_parameters) + length(query_parameters)
+                                         _ ->  3
+                                       end
       %Action{
         arity: arity,
         docstring: Docstring.format(language,
@@ -161,6 +165,7 @@ defmodule AWS.CodeGen.RestService do
         response_header_parameters: collect_response_header_parameters(language, api_spec, operation),
         language: language
       }
+
     end)
     |> Enum.sort(fn(a, b) -> a.function_name < b.function_name end)
   end
