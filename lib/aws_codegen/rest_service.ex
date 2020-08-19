@@ -26,6 +26,7 @@ defmodule AWS.CodeGen.RestService do
               function_name: nil,
               name: nil,
               url_parameters: [],
+              query_parameters: [],
               request_header_parameters: [],
               response_header_parameters: [],
               language: nil
@@ -63,7 +64,8 @@ defmodule AWS.CodeGen.RestService do
   defmodule Parameter do
     defstruct code_name: nil,
               name: nil,
-              location_name: nil
+              location_name: nil,
+              required: false
 
     def multi_segment?(parameter, request_uri) do
       {:ok, re} = Regex.compile("{#{parameter.location_name}\\+}")
@@ -116,25 +118,23 @@ defmodule AWS.CodeGen.RestService do
   into the code template.
   """
   def function_parameters(action) do
-    Enum.join([join_parameters(action.url_parameters),
-               join_header_parameters(action)])
+    language = action.language
+    Enum.join([join_parameters(action.url_parameters, language) |
+               case action.method do
+                 "GET" ->
+                   [join_parameters(action.query_parameters, language),
+                    join_parameters(action.request_header_parameters, language)]
+                 _ -> []
+               end])
   end
 
-  defp join_header_parameters(action) do
-    if action.method == "GET" do
-      join_parameters(action.request_header_parameters, nil)
-    else
-      ""
-    end
-  end
-
-  defp join_parameters(parameters, default \\ nil) do
+  defp join_parameters(parameters, language) do
     Enum.join(Enum.map(parameters,
           fn(parameter) ->
-            if default == nil do
-              ", #{parameter.code_name}"
+            if not parameter.required and language == :elixir do
+              ", #{parameter.code_name} \\\\ nil"
             else
-              ", #{parameter.code_name} \\\\ #{inspect(default)}"
+              ", #{parameter.code_name}"
             end
           end))
   end
@@ -142,9 +142,14 @@ defmodule AWS.CodeGen.RestService do
   defp collect_actions(language, api_spec, doc_spec) do
     Enum.map(api_spec["operations"], fn({operation, _metadata}) ->
       url_parameters = collect_url_parameters(language, api_spec, operation)
+      query_parameters = collect_query_parameters(language, api_spec, operation)
       request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
       method = api_spec["operations"][operation]["http"]["method"]
-      arity = length(url_parameters) + if(method == "GET", do: 2 + length(request_header_parameters), else: 3)
+      arity = length(url_parameters) + case method do
+                                         "GET" ->
+                                           2 + length(request_header_parameters) + length(query_parameters)
+                                         _ ->  3
+                                       end
       %Action{
         arity: arity,
         docstring: Docstring.format(language,
@@ -155,47 +160,50 @@ defmodule AWS.CodeGen.RestService do
         function_name: AWS.CodeGen.Name.to_snake_case(operation),
         name: operation,
         url_parameters: url_parameters,
+        query_parameters: query_parameters,
         request_header_parameters: request_header_parameters,
         response_header_parameters: collect_response_header_parameters(language, api_spec, operation),
         language: language
       }
+
     end)
     |> Enum.sort(fn(a, b) -> a.function_name < b.function_name end)
   end
 
   defp collect_url_parameters(language, api_spec, operation) do
-    shape_name = api_spec["operations"][operation]["input"]["shape"]
-    if shape_name do
-      shape = api_spec["shapes"][shape_name]
+    collect_parameters(language, api_spec, operation, "input", "uri")
+  end
 
-      shape["members"]
-      |> Enum.filter(filter_fn("uri"))
-      |> Enum.map(fn x -> build_parameter(language, x) end)
-    else
-      []
-    end
+  defp collect_query_parameters(language, api_spec, operation) do
+    collect_parameters(language, api_spec, operation, "input", "querystring")
   end
 
   defp collect_request_header_parameters(language, api_spec, operation) do
-    collect_header_parameters(language, api_spec, operation, "input")
+    collect_parameters(language, api_spec, operation, "input", "header")
   end
 
   defp collect_response_header_parameters(language, api_spec, operation) do
-    collect_header_parameters(language, api_spec, operation, "output")
+    collect_parameters(language, api_spec, operation, "output", "header")
   end
 
-  defp collect_header_parameters(language, api_spec, operation, data_type) do
+  defp collect_parameters(language, api_spec, operation, data_type, param_type) do
     shape_name = api_spec["operations"][operation][data_type]["shape"]
-    shape = api_spec["shapes"][shape_name]
+    if shape_name do
+      case api_spec["shapes"][shape_name] do
+        nil ->
+          []
 
-    case shape do
-      nil ->
-        []
-
-      ^shape ->
-        shape["members"]
-        |> Enum.filter(filter_fn("header"))
-        |> Enum.map(fn x -> build_parameter(language, x) end)
+        shape ->
+          required_members = Access.get(shape, "required", [])
+          shape["members"]
+          |> Enum.filter(filter_fn(param_type))
+          |> Enum.map(fn {name, _} = x ->
+            required = Enum.member?(required_members, name)
+            build_parameter(language, x, required)
+          end)
+      end
+    else
+      []
     end
   end
 
@@ -208,7 +216,7 @@ defmodule AWS.CodeGen.RestService do
     end
   end
 
-  defp build_parameter(language, {name, data}) do
+  defp build_parameter(language, {name, data}, required) do
     %Parameter{
       code_name: if language == :elixir do
         AWS.CodeGen.Name.to_snake_case(name)
@@ -216,7 +224,8 @@ defmodule AWS.CodeGen.RestService do
         AWS.CodeGen.Name.upcase_first(name)
       end,
       name: name,
-      location_name: data["locationName"]
+      location_name: data["locationName"],
+      required: required
     }
   end
 end
