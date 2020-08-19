@@ -64,7 +64,8 @@ defmodule AWS.CodeGen.RestService do
   defmodule Parameter do
     defstruct code_name: nil,
               name: nil,
-              location_name: nil
+              location_name: nil,
+              required: false
 
     def multi_segment?(parameter, request_uri) do
       {:ok, re} = Regex.compile("{#{parameter.location_name}\\+}")
@@ -117,25 +118,23 @@ defmodule AWS.CodeGen.RestService do
   into the code template.
   """
   def function_parameters(action) do
-    Enum.join([join_parameters(action.url_parameters),
-               join_header_parameters(action)])
+    language = action.language
+    Enum.join([join_parameters(action.url_parameters, language) |
+               case action.method do
+                 "GET" ->
+                   [join_parameters(action.query_parameters, language),
+                    join_parameters(action.request_header_parameters, language)]
+                 _ -> []
+               end])
   end
 
-  defp join_header_parameters(action) do
-    if action.method == "GET" do
-      join_parameters(action.request_header_parameters, nil)
-    else
-      ""
-    end
-  end
-
-  defp join_parameters(parameters, default \\ nil) do
+  defp join_parameters(parameters, language) do
     Enum.join(Enum.map(parameters,
           fn(parameter) ->
-            if default == nil do
-              ", #{parameter.code_name}"
+            if not parameter.required and language == :elixir do
+              ", #{parameter.code_name} \\\\ nil"
             else
-              ", #{parameter.code_name} \\\\ #{inspect(default)}"
+              ", #{parameter.code_name}"
             end
           end))
   end
@@ -190,9 +189,13 @@ defmodule AWS.CodeGen.RestService do
           []
 
         shape ->
+          required_members = Access.get(shape, "required", [])
           shape["members"]
           |> Enum.filter(filter_fn(param_type))
-          |> Enum.map(fn x -> build_parameter(language, x) end)
+          |> Enum.map(fn {name, _} = x ->
+            required = Enum.member?(required_members, name)
+            build_parameter(language, x, required)
+          end)
       end
     else
       []
@@ -208,7 +211,7 @@ defmodule AWS.CodeGen.RestService do
     end
   end
 
-  defp build_parameter(language, {name, data}) do
+  defp build_parameter(language, {name, data}, required) do
     %Parameter{
       code_name: if language == :elixir do
         AWS.CodeGen.Name.to_snake_case(name)
@@ -216,7 +219,8 @@ defmodule AWS.CodeGen.RestService do
         AWS.CodeGen.Name.upcase_first(name)
       end,
       name: name,
-      location_name: data["locationName"]
+      location_name: data["locationName"],
+      required: required
     }
   end
 end
