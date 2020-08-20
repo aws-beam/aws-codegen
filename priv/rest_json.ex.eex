@@ -17,7 +17,7 @@ defmodule <%= context.module_name %> do
     else
       headers
     end<% end %>
-    query = []<%= for parameter <- action.query_parameters do %>
+    query = []<%= for parameter <- Enum.reverse(action.query_parameters) do %>
     query = if !is_nil(<%= parameter.code_name %>) do
       [{"<%= parameter.location_name %>", <%= parameter.code_name %>} | query]
     else
