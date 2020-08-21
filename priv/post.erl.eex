@@ -37,12 +37,17 @@ request(Client, Action, Input0, Options) ->
     URL = get_url(Host, Client1),
     Headers = [
         {<<"Host">>, Host},
-        {<<"Content-Type">>, <<"application/x-www-form-urlencoded">>}
+        {<<"Content-Type">>, <<"<%= context.content_type %>">>}<%= if context.protocol == "json" do %>,
+        {<<"X-Amz-Target">>, <<"<%= context.target_prefix %>.", Action/binary>>}<% end %>
     ],
+<%= if context.protocol == "query" do %>
     Input = Input0#{ <<"Action">> => Action
                    , <<"Version">> => <<"<%= context.api_version %>">>
                    },
-    Payload = aws_util:encode_query(Input),
+<% else %>
+    Input = Input0,
+<% end %>
+    Payload = <%= context.encode %>,
     SignedHeaders = aws_request:sign_request(Client1, <<"POST">>, URL, Headers, Payload),
     Response = hackney:request(post, URL, SignedHeaders, Payload, Options),
     handle_response(Response).
@@ -52,12 +57,12 @@ handle_response({ok, 200, ResponseHeaders, Client}) ->
         {ok, <<>>} ->
             {ok, undefined, {200, ResponseHeaders, Client}};
         {ok, Body} ->
-            Result = aws_util:decode_xml(Body),
+            Result = <%= context.decode %>,
             {ok, Result, {200, ResponseHeaders, Client}}
     end;
 handle_response({ok, StatusCode, ResponseHeaders, Client}) ->
     {ok, Body} = hackney:body(Client),
-    Error = aws_util:decode_xml(Body),
+    Error = <%= context.decode %>,
     {error, Error, {StatusCode, ResponseHeaders, Client}};
 handle_response({error, Reason}) ->
     {error, Reason}.
