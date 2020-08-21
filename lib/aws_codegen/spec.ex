@@ -32,11 +32,12 @@ defmodule AWS.CodeGen.Spec do
                      nil -> api["metadata"]["endpointPrefix"]
                      service_id -> service_id
                    end
+    |> String.replace("-sync", "Sync")
     case language do
       :elixir ->
         service_name = service_name
+        |> String.replace(" connections", " Connections")
         |> String.replace(" ", "")
-        |> String.replace("-sync", ".Sync")
         |> AWS.CodeGen.Name.upcase_first
         "AWS.#{service_name}"
       :erlang ->

@@ -20,8 +20,8 @@ defmodule <%= context.module_name %> do
   defp request(client, action, input, options) do
     client = %{client | service: "<%= context.signing_name %>"<%= if context.is_global do %>,
                         region:  "<%= context.credential_scope %>"<% end %>}
-    host = get_host("<%= context.endpoint_prefix %>", client)
-    url = get_url(host, client)
+    host = build_host("<%= context.endpoint_prefix %>", client)
+    url = build_url(host, client)
 
     headers = [
       {"Host", host},
@@ -49,18 +49,18 @@ defmodule <%= context.module_name %> do
     end
   end
 
-  defp get_host(_endpoint_prefix, %{region: "local"}) do
+  defp build_host(_endpoint_prefix, %{region: "local"}) do
     "localhost"
   end<%= if context.is_global do %>
-  defp get_host(endpoint_prefix, %{endpoint: endpoint}) do
+  defp build_host(endpoint_prefix, %{endpoint: endpoint}) do
     "#{endpoint_prefix}.#{endpoint}"
   end
 <% else %>
-  defp get_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
+  defp build_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
     "#{endpoint_prefix}.#{region}.#{endpoint}"
   end
 <% end %>
-  defp get_url(host, %{:proto => proto, :port => port}) do
+  defp build_url(host, %{:proto => proto, :port => port}) do
     "#{proto}://#{host}:#{port}/"
   end
 end

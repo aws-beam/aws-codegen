@@ -86,9 +86,9 @@ defmodule <%= context.module_name %> do
     client = %{client | service: "<%= context.signing_name %>"<%= if context.is_global do %>,
                         region:  "<%= context.credential_scope %>"<% end %>}
     <%= if context.endpoint_prefix == "s3-control" do %>account_id = :proplists.get_value("x-amz-account-id", headers)
-    host = get_host(account_id, "<%= context.endpoint_prefix %>", client)<% else %>host = get_host("<%= context.endpoint_prefix %>", client)<% end %>
+    host = build_host(account_id, "<%= context.endpoint_prefix %>", client)<% else %>host = build_host("<%= context.endpoint_prefix %>", client)<% end %>
     url = host
-    |> get_url(path, client)
+    |> build_url(path, client)
     |> add_query(query)
 
     additional_headers = [{"Host", host}, {"Content-Type", "<%= context.content_type %>"}]
@@ -134,28 +134,28 @@ defmodule <%= context.module_name %> do
     end
   end
 <%= if context.endpoint_prefix == "s3-control" do %>
-  defp get_host(_account_id, _endpoint_prefix, %{region: "local"}) do
+  defp build_host(_account_id, _endpoint_prefix, %{region: "local"}) do
     "localhost"
   end
-  defp get_host(:undefined, _endpoint_prefix, _client) do
+  defp build_host(:undefined, _endpoint_prefix, _client) do
     raise "missing account_id"
   end
-  defp get_host(account_id, endpoint_prefix, %{region: region, endpoint: endpoint}) do
+  defp build_host(account_id, endpoint_prefix, %{region: region, endpoint: endpoint}) do
     "#{account_id}.#{endpoint_prefix}.#{region}.#{endpoint}"
   end
 <% else %>
-  defp get_host(_endpoint_prefix, %{region: "local"}) do
+  defp build_host(_endpoint_prefix, %{region: "local"}) do
     "localhost"
   end<%= if context.is_global do %>
-  defp get_host(endpoint_prefix, %{endpoint: endpoint}) do
+  defp build_host(endpoint_prefix, %{endpoint: endpoint}) do
     "#{endpoint_prefix}.#{endpoint}"
   end
 <% else %>
-  defp get_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
+  defp build_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
     "#{endpoint_prefix}.#{region}.#{endpoint}"
   end
 <% end %><% end %>
-  defp get_url(host, path, %{:proto => proto, :port => port}) do
+  defp build_url(host, path, %{:proto => proto, :port => port}) do
     "#{proto}://#{host}:#{port}#{path}"
   end
 
