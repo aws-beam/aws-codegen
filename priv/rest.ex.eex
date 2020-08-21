@@ -44,7 +44,7 @@ defmodule <%= context.module_name %> do
     request(client, :get, path_, query, headers, nil, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% else %>
   def <%= action.function_name %>(client<%= AWS.CodeGen.RestService.function_parameters(action) %>, input, options \\ []) do
-    path = "<%= AWS.CodeGen.RestService.Action.url_path(action) %>"<%= if length(action.request_header_parameters) > 0 do %>
+    path_ = "<%= AWS.CodeGen.RestService.Action.url_path(action) %>"<%= if length(action.request_header_parameters) > 0 do %>
     {headers, input} =
       [<%= for parameter <- action.request_header_parameters do %>
         {"<%= parameter.name %>", "<%= parameter.location_name %>"},<% end %>
@@ -57,7 +57,7 @@ defmodule <%= context.module_name %> do
       ]
       |> AWS.Request.build_params(input)<% else %>
     query = []<% end %><%= if length(action.response_header_parameters) > 0 do %>
-    case request(client, <%= AWS.CodeGen.RestService.Action.method(action) %>, path, query, headers, input, options, <%= inspect(action.success_status_code) %>) do
+    case request(client, <%= AWS.CodeGen.RestService.Action.method(action) %>, path_, query, headers, input, options, <%= inspect(action.success_status_code) %>) do
       {:ok, body, response} ->
         body =
           [<%= for parameter <- action.response_header_parameters do %>
@@ -75,7 +75,7 @@ defmodule <%= context.module_name %> do
       result ->
         result
     end<% else %>
-    request(client, <%= AWS.CodeGen.RestService.Action.method(action) %>, path, query, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
+    request(client, <%= AWS.CodeGen.RestService.Action.method(action) %>, path_, query, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% end %><% end %>
 
   @spec request(AWS.Client.t(), binary(), binary(), list(), list(), map(), list(), pos_integer()) ::
@@ -85,12 +85,13 @@ defmodule <%= context.module_name %> do
   defp request(client, method, path, query, headers, input, options, success_status_code) do
     client = %{client | service: "<%= context.signing_name %>"<%= if context.is_global do %>,
                         region:  "<%= context.credential_scope %>"<% end %>}
-    host = get_host("<%= context.endpoint_prefix %>", client)
+    <%= if context.endpoint_prefix == "s3-control" do %>account_id = :proplists.get_value("x-amz-account-id", headers)
+    host = get_host(account_id, "<%= context.endpoint_prefix %>", client)<% else %>host = get_host("<%= context.endpoint_prefix %>", client)<% end %>
     url = host
     |> get_url(path, client)
     |> add_query(query)
 
-    additional_headers = [{"Host", host}, {"Content-Type", "application/x-amz-json-1.1"}]
+    additional_headers = [{"Host", host}, {"Content-Type", "<%= context.content_type %>"}]
     headers = AWS.Request.add_headers(additional_headers, headers)
 
     payload = encode_payload(input)
@@ -105,10 +106,10 @@ defmodule <%= context.module_name %> do
 
       {:ok, %HTTPoison.Response{status_code: status_code, body: body} = response}
       when status_code == 200 or status_code == 202 or status_code == 204 ->
-        {:ok, Poison.Parser.parse!(body, %{}), response}
+        {:ok, <%= context.decode %>, response}
 
       {:ok, %HTTPoison.Response{body: body}} ->
-        error = Poison.Parser.parse!(body, %{})
+        error = <%= context.decode %>
         {:error, error}
 
       {:error, %HTTPoison.Error{reason: reason}} ->
@@ -122,17 +123,27 @@ defmodule <%= context.module_name %> do
         {:ok, %{}, response}
 
       {:ok, %HTTPoison.Response{status_code: ^success_status_code, body: body} = response} ->
-        {:ok, Poison.Parser.parse!(body, %{}), response}
+        {:ok, <%= context.decode %>, response}
 
       {:ok, %HTTPoison.Response{body: body}} ->
-        error = Poison.Parser.parse!(body, %{})
+        error = <%= context.decode %>
         {:error, error}
 
       {:error, %HTTPoison.Error{reason: reason}} ->
         {:error, %HTTPoison.Error{reason: reason}}
     end
   end
-
+<%= if context.endpoint_prefix == "s3-control" do %>
+  defp get_host(_account_id, _endpoint_prefix, %{region: "local"}) do
+    "localhost"
+  end
+  defp get_host(:undefined, _endpoint_prefix, _client) do
+    raise "missing account_id"
+  end
+  defp get_host(account_id, endpoint_prefix, %{region: region, endpoint: endpoint}) do
+    "#{account_id}.#{endpoint_prefix}.#{region}.#{endpoint}"
+  end
+<% else %>
   defp get_host(_endpoint_prefix, %{region: "local"}) do
     "localhost"
   end<%= if context.is_global do %>
@@ -143,7 +154,7 @@ defmodule <%= context.module_name %> do
   defp get_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
     "#{endpoint_prefix}.#{region}.#{endpoint}"
   end
-<% end %>
+<% end %><% end %>
   defp get_url(host, path, %{:proto => proto, :port => port}) do
     "#{proto}://#{host}:#{port}#{path}"
   end
@@ -157,6 +168,6 @@ defmodule <%= context.module_name %> do
   end
 
   defp encode_payload(input) do
-    if input != nil, do: Poison.Encoder.encode(input, %{}), else: ""
+    if input != nil, do: <%= context.encode %>, else: ""
   end
 end

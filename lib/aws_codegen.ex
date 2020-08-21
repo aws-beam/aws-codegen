@@ -114,7 +114,7 @@ defmodule AWS.CodeGen do
     {:json, "aws_cognito", "cognito-identity/2014-06-30", "aws_cognito.erl", []},
     {:json, "aws_cognito_idp", "cognito-idp/2016-04-18", "aws_cognito_idp.erl", []},
     {:json, "aws_config", "config/2014-11-12", "aws_config.erl", []},
-    {:json, "aws_cost_and_usage_report", "cur/2017-01-06", "aws_cost_and_usage_report.ex", []},
+    {:json, "aws_cost_and_usage_report", "cur/2017-01-06", "aws_cost_and_usage_report.erl", []},
     {:json, "aws_data_pipeline", "datapipeline/2012-10-29", "aws_data_pipeline.erl", []},
     {:json, "aws_device_farm", "devicefarm/2015-06-23", "aws_device_farm.erl", []},
     {:json, "aws_direct_connect", "directconnect/2012-10-25", "aws_direct_connect.erl", []},
@@ -214,8 +214,8 @@ defmodule AWS.CodeGen do
       :rest_json => %{
         :module => AWS.CodeGen.RestService,
         :template => %{
-          :elixir => "rest_json.ex.eex",
-          :erlang => "rest_json.erl.eex"
+          :elixir => "rest.ex.eex",
+          :erlang => "rest.erl.eex"
         }
       },
       :query => %{
@@ -228,8 +228,8 @@ defmodule AWS.CodeGen do
       :rest_xml => %{
         :module => AWS.CodeGen.RestService,
         :template => %{
-          :elixir => "rest_xml.ex.eex",
-          :erlang => "rest_xml.erl.eex"
+          :elixir => "rest.ex.eex",
+          :erlang => "rest.erl.eex"
         }
       }
     }

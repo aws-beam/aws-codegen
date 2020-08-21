@@ -117,11 +117,12 @@
 request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusCode) ->
     Client1 = Client#{service => <<"<%= context.signing_name %>">><%= if context.is_global do %>,
                       region => <<"<%= context.credential_scope %>">><% end %>},
-    Host = get_host(<<"<%= context.endpoint_prefix %>">>, Client1),
+    <%= if context.endpoint_prefix == "s3-control" do %>AccountId = proplists:get_value(<<"x-amz-account-id">>, Headers0),
+    Host = get_host(AccountId, <<"<%= context.endpoint_prefix %>">>, Client1),<% else %>Host = get_host(<<"<%= context.endpoint_prefix %>">>, Client1),<% end %>
     URL0 = get_url(Host, Path, Client1),
     URL = aws_request:add_query(URL0, Query),
     AdditionalHeaders = [ {<<"Host">>, Host}
-                        , {<<"Content-Type">>, <<"application/x-amz-json-1.1">>}
+                        , {<<"Content-Type">>, <<"<%= context.content_type %>">>}
                         ],
     Headers1 = aws_request:add_headers(AdditionalHeaders, Headers0),
     Payload = encode_payload(Input),
@@ -140,16 +141,23 @@ handle_response({ok, StatusCode, ResponseHeaders, Client}, SuccessStatusCode)
                         StatusCode =:= SuccessStatusCode ->
             {ok, #{}, {StatusCode, ResponseHeaders, Client}};
         {ok, Body} ->
-            Result = jsx:decode(Body, [return_maps]),
+            Result = <%= context.decode %>,
             {ok, Result, {StatusCode, ResponseHeaders, Client}}
     end;
 handle_response({ok, StatusCode, ResponseHeaders, Client}, _) ->
     {ok, Body} = hackney:body(Client),
-    Error = jsx:decode(Body, [return_maps]),
+    Error = <%= context.decode %>,
     {error, Error, {StatusCode, ResponseHeaders, Client}};
 handle_response({error, Reason}, _) ->
   {error, Reason}.
-
+<%= if context.endpoint_prefix == "s3-control" do %>
+get_host(_AccountId, _EndpointPrefix, #{region := <<"local">>}) ->
+    <<"localhost">>;
+get_host(undefined, _EndpointPrefix, _Client) ->
+    error(missing_account_id);
+get_host(AccountId, EndpointPrefix, #{region := Region, endpoint := Endpoint}) ->
+    aws_util:binary_join([AccountId, EndpointPrefix, Region, Endpoint],
+                         <<".">>).<% else %>
 get_host(_EndpointPrefix, #{region := <<"local">>}) ->
     <<"localhost">>;<%= if context.is_global do %>
 get_host(EndpointPrefix, #{endpoint := Endpoint}) ->
@@ -157,7 +165,7 @@ get_host(EndpointPrefix, #{endpoint := Endpoint}) ->
 <% else %>
 get_host(EndpointPrefix, #{region := Region, endpoint := Endpoint}) ->
     aws_util:binary_join([EndpointPrefix, Region, Endpoint], <<".">>).
-<% end %>
+<% end %><% end %>
 get_url(Host, Path0, Client) ->
     Proto = maps:get(proto, Client),
     Path = erlang:iolist_to_binary(Path0),
@@ -168,4 +176,4 @@ get_url(Host, Path0, Client) ->
 encode_payload(undefined) ->
   <<>>;
 encode_payload(Input) ->
-  jsx:encode(Input).
+  <%= context.encode %>.

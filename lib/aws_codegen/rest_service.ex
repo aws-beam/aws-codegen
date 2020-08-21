@@ -5,7 +5,10 @@ defmodule AWS.CodeGen.RestService do
     defstruct abbreviation: nil,
               actions: [],
               credential_scope: nil,
+              content_type: nil,
               docstring: nil,
+              decode: nil,
+              encode: nil,
               endpoint_prefix: nil,
               is_global: false,
               json_version: nil,
@@ -73,6 +76,31 @@ defmodule AWS.CodeGen.RestService do
     end
   end
 
+  @configuration %{
+    "rest-xml" => %{
+      content_type: "text/xml",
+      elixir: %{
+        decode: "AWS.Util.decode_xml(body)",
+        encode: "AWS.Util.encode_xml(input)"
+      },
+      erlang: %{
+        decode: "aws_util:decode_xml(Body)",
+        encode: "aws_util:encode_xml(Input)"
+      }
+    },
+    "rest-json" => %{
+      content_type: "application/x-amz-json-1.1",
+      elixir: %{
+        decode: "Poison.Parser.parse!(body, %{})",
+        encode: "Poison.Encoder.encode(input, %{})"
+      },
+      erlang: %{
+        decode: "jsx:decode(Body)",
+        encode: "jsx:encode(Input)"
+      }
+    }
+  }
+
   @doc """
   Load REST API service and documentation specifications from the
   `api_spec_path` and `doc_spec_path` files and convert them into a context
@@ -81,6 +109,7 @@ defmodule AWS.CodeGen.RestService do
   """
   def load_context(language, module_name, endpoints_spec, api_spec, doc_spec, options) do
     actions = collect_actions(language, api_spec, doc_spec)
+    protocol = api_spec["metadata"]["protocol"]
     endpoint_prefix = api_spec["metadata"]["endpointPrefix"]
     endpoint_info = endpoints_spec["services"][endpoint_prefix]
     is_global = not Map.get(endpoint_info, "isRegionalized", true)
@@ -96,6 +125,9 @@ defmodule AWS.CodeGen.RestService do
     %Service{actions: actions,
              docstring: Docstring.format(language, doc_spec["service"]),
              credential_scope: credential_scope,
+             content_type: @configuration[protocol][:content_type],
+             decode: @configuration[protocol][language][:decode],
+             encode: @configuration[protocol][language][:encode],
              endpoint_prefix: endpoint_prefix,
              is_global: is_global,
              json_version: api_spec["metadata"]["jsonVersion"],
