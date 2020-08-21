@@ -6,7 +6,10 @@ defmodule AWS.CodeGen.PostService do
               actions: [],
               api_version: nil,
               credential_scope: nil,
+              content_type: nil,
               docstring: nil,
+              decode: nil,
+              encode: nil,
               endpoint_prefix: nil,
               is_global: false,
               json_version: nil,
@@ -22,6 +25,31 @@ defmodule AWS.CodeGen.PostService do
               function_name: nil,
               name: nil
   end
+
+  @configuration %{
+    "query" => %{
+      content_type: "application/x-www-form-urlencoded",
+      elixir: %{
+        decode: "AWS.Util.decode_xml(body)",
+        encode: "AWS.Util.encode_query(input)"
+      },
+      erlang: %{
+        decode: "aws_util:decode_xml(Body)",
+        encode: "aws_util:encode_query(Input)"
+      }
+    },
+    "json" => %{
+      content_type: "application/x-amz-json-",
+      elixir: %{
+        decode: "Poison.Parser.parse!(body, %{})",
+        encode: "Poison.Encoder.encode(input, %{})"
+      },
+      erlang: %{
+        decode: "jsx:decode(Body)",
+        encode: "jsx:encode(Input)"
+      }
+    }
+  }
 
   @doc """
   Load POST API service and documentation specifications from the
@@ -39,6 +67,10 @@ defmodule AWS.CodeGen.PostService do
     else
       nil
     end
+    json_version = api_spec["metadata"]["jsonVersion"]
+    protocol = api_spec["metadata"]["protocol"]
+    content_type = @configuration[protocol][:content_type]
+    content_type = content_type <>  if protocol == "json", do: json_version, else: ""
     signing_name = case api_spec["metadata"]["signingName"] do
      nil -> endpoint_prefix
      sn -> sn
@@ -47,12 +79,15 @@ defmodule AWS.CodeGen.PostService do
              actions: actions,
              api_version: api_spec["metadata"]["apiVersion"],
              credential_scope: credential_scope,
+             content_type: content_type,
              docstring: Docstring.format(language, doc_spec["service"]),
+             decode: @configuration[protocol][language][:decode],
+             encode: @configuration[protocol][language][:encode],
              endpoint_prefix: endpoint_prefix,
              is_global: is_global,
-             json_version: api_spec["metadata"]["jsonVersion"],
+             json_version: json_version,
              module_name: module_name,
-             protocol: api_spec["metadata"]["protocol"],
+             protocol: protocol,
              signing_name: signing_name,
              target_prefix: api_spec["metadata"]["targetPrefix"]}
   end

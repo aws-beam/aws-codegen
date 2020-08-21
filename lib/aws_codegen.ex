@@ -207,8 +207,8 @@ defmodule AWS.CodeGen do
       :json => %{
         :module => AWS.CodeGen.PostService,
         :template => %{
-          :elixir => "json.ex.eex",
-          :erlang => "json.erl.eex"
+          :elixir => "post.ex.eex",
+          :erlang => "post.erl.eex"
         }
       },
       :rest_json => %{
@@ -221,8 +221,8 @@ defmodule AWS.CodeGen do
       :query => %{
         :module => AWS.CodeGen.PostService,
         :template => %{
-          :elixir => "query.ex.eex",
-          :erlang => "query.erl.eex"
+          :elixir => "post.ex.eex",
+          :erlang => "post.erl.eex"
         }
       },
       :rest_xml => %{
