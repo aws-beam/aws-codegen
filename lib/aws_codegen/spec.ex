@@ -33,6 +33,9 @@ defmodule AWS.CodeGen.Spec do
                      service_id -> service_id
                    end
     |> String.replace("-sync", "Sync")
+    |> String.replace("dynamodb", "DynamoDB")
+    |> String.replace("api.pricing", "API.Pricing")
+    |> String.replace("entitlement.marketplace", "Entitlement.Marketplace")
     case language do
       :elixir ->
         service_name = service_name
@@ -59,6 +62,7 @@ defmodule AWS.CodeGen.Spec do
     |> String.replace("SES", "Ses")
     |> String.replace("HSM", "Hsm")
     |> String.replace("EC2", "Ec2")
+    |> String.replace("DynamoDB", "Dynamodb")
     |> String.replace("ElastiCache", "Elasticache")
     |> String.replace("FSx", "Fsx")
     |> String.replace("IoT", "Iot")
