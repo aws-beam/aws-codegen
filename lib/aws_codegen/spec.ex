@@ -1,4 +1,7 @@
 defmodule AWS.CodeGen.Spec do
+  @moduledoc """
+  Parse and process the specfication for an AWS service.
+  """
   defstruct protocol: nil,
     module_name: nil,
     filename: nil,

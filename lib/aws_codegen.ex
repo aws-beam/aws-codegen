@@ -1,6 +1,21 @@
 defmodule AWS.CodeGen do
   alias AWS.CodeGen.Spec
+  @moduledoc """
+  AWS API Services generator.
 
+  Generates the AWS client modules for the `aws-beam/aws-erlang` and
+  `aws-beam/aws-elixir` projects.
+
+  Maintains a global `@configuration` that specifies what protocols
+  are implemented for which target language (`:erlang` or `:elixir`).
+
+  The services that will be generated is discovered by finding all
+  available specs in the provided `spec_base_path` and then checking
+  if there is an available implementation for that protocol.
+  """
+
+  # Configuration map which determines what AWS API protocols have an
+  # implementation for what language.
   @configuration %{
     :json => %{
       :module => AWS.CodeGen.PostService,
@@ -32,6 +47,9 @@ defmodule AWS.CodeGen do
     }
   }
 
+  @doc """
+  Entrypoint for the code generation.
+  """
   def generate(language, spec_base_path, template_base_path, output_base_path) do
     endpoints_spec = get_endpoints_spec(spec_base_path)
     tasks = Enum.map(api_specs(spec_base_path, language),
@@ -43,6 +61,11 @@ defmodule AWS.CodeGen do
     Enum.each(tasks, fn(task) -> Task.await(task) end)
   end
 
+  @doc """
+  Generate code for a specific API using `spec`.
+
+  Called throuhg Task.async/3.
+  """
   def generate_code(spec, language, endpoints_spec, template_base_path, output_path) do
     template = @configuration[spec.protocol][:template][language]
     if not is_nil(template) do
