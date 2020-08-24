@@ -33,6 +33,8 @@ defmodule AWS.CodeGen.Spec do
                      service_id -> service_id
                    end
     |> String.replace("-sync", "Sync")
+    |> String.replace("Route 53", "Route53")
+    |> String.replace(~r/ Service$/, "")
     |> String.replace("dynamodb", "DynamoDB")
     |> String.replace("api.pricing", "API.Pricing")
     |> String.replace("entitlement.marketplace", "Entitlement.Marketplace")
