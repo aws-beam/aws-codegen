@@ -13,7 +13,6 @@ defmodule AWS.CodeGen.RestService do
               is_global: false,
               json_version: nil,
               module_name: nil,
-              options: [],
               protocol: nil,
               signing_name: nil,
               target_prefix: nil
@@ -107,12 +106,12 @@ defmodule AWS.CodeGen.RestService do
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
   """
-  def load_context(language, module_name, endpoints_spec, api_spec, doc_spec, options) do
+  def load_context(language, module_name, endpoints_spec, api_spec, doc_spec) do
     actions = collect_actions(language, api_spec, doc_spec)
     protocol = api_spec["metadata"]["protocol"]
     endpoint_prefix = api_spec["metadata"]["endpointPrefix"]
     endpoint_info = endpoints_spec["services"][endpoint_prefix]
-    is_global = not Map.get(endpoint_info, "isRegionalized", true)
+    is_global = not is_nil(endpoint_info) and not Map.get(endpoint_info, "isRegionalized", true)
     credential_scope = if is_global do
       endpoint_info["endpoints"]["aws-global"]["credentialScope"]["region"]
     else
@@ -132,7 +131,6 @@ defmodule AWS.CodeGen.RestService do
              is_global: is_global,
              json_version: api_spec["metadata"]["jsonVersion"],
              module_name: module_name,
-             options: options,
              protocol: api_spec["metadata"]["protocol"],
              signing_name: signing_name,
              target_prefix: api_spec["metadata"]["targetPrefix"]}

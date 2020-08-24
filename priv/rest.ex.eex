@@ -17,13 +17,13 @@ defmodule <%= context.module_name %> do
     else
       headers
     end<% end %>
-    query = []<%= for parameter <- Enum.reverse(action.query_parameters) do %>
-    query = if !is_nil(<%= parameter.code_name %>) do
-      [{"<%= parameter.location_name %>", <%= parameter.code_name %>} | query]
+    query_ = []<%= for parameter <- Enum.reverse(action.query_parameters) do %>
+    query_ = if !is_nil(<%= parameter.code_name %>) do
+      [{"<%= parameter.location_name %>", <%= parameter.code_name %>} | query_]
     else
-      query
+      query_
     end<% end %><%= if length(action.response_header_parameters) > 0 do %>
-    case request(client, :get, path_, query, headers, nil, options, <%= inspect(action.success_status_code) %>) do
+    case request(client, :get, path_, query_, headers, nil, options, <%= inspect(action.success_status_code) %>) do
       {:ok, body, response} ->
         body =
           [<%= for parameter <- action.response_header_parameters do %>
@@ -41,7 +41,7 @@ defmodule <%= context.module_name %> do
       result ->
         result
     end<% else %>
-    request(client, :get, path_, query, headers, nil, options, <%= inspect(action.success_status_code) %>)<% end %>
+    request(client, :get, path_, query_, headers, nil, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% else %>
   def <%= action.function_name %>(client<%= AWS.CodeGen.RestService.function_parameters(action) %>, input, options \\ []) do
     path_ = "<%= AWS.CodeGen.RestService.Action.url_path(action) %>"<%= if length(action.request_header_parameters) > 0 do %>
@@ -51,13 +51,13 @@ defmodule <%= context.module_name %> do
       ]
       |> AWS.Request.build_params(input)<% else %>
     headers = []<% end %><%= if length(action.query_parameters) > 0 do %>
-    {query, input} =
+    {query_, input} =
       [<%= for parameter <- action.query_parameters do %>
         {"<%= parameter.name %>", "<%= parameter.location_name %>"},<% end %>
       ]
       |> AWS.Request.build_params(input)<% else %>
-    query = []<% end %><%= if length(action.response_header_parameters) > 0 do %>
-    case request(client, <%= AWS.CodeGen.RestService.Action.method(action) %>, path_, query, headers, input, options, <%= inspect(action.success_status_code) %>) do
+    query_ = []<% end %><%= if length(action.response_header_parameters) > 0 do %>
+    case request(client, <%= AWS.CodeGen.RestService.Action.method(action) %>, path_, query_, headers, input, options, <%= inspect(action.success_status_code) %>) do
       {:ok, body, response} ->
         body =
           [<%= for parameter <- action.response_header_parameters do %>
@@ -75,7 +75,7 @@ defmodule <%= context.module_name %> do
       result ->
         result
     end<% else %>
-    request(client, <%= AWS.CodeGen.RestService.Action.method(action) %>, path_, query, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
+    request(client, <%= AWS.CodeGen.RestService.Action.method(action) %>, path_, query_, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% end %><% end %>
 
   @spec request(AWS.Client.t(), binary(), binary(), list(), list(), map(), list(), pos_integer()) ::
@@ -86,9 +86,9 @@ defmodule <%= context.module_name %> do
     client = %{client | service: "<%= context.signing_name %>"<%= if context.is_global do %>,
                         region:  "<%= context.credential_scope %>"<% end %>}
     <%= if context.endpoint_prefix == "s3-control" do %>account_id = :proplists.get_value("x-amz-account-id", headers)
-    host = get_host(account_id, "<%= context.endpoint_prefix %>", client)<% else %>host = get_host("<%= context.endpoint_prefix %>", client)<% end %>
+    host = build_host(account_id, "<%= context.endpoint_prefix %>", client)<% else %>host = build_host("<%= context.endpoint_prefix %>", client)<% end %>
     url = host
-    |> get_url(path, client)
+    |> build_url(path, client)
     |> add_query(query)
 
     additional_headers = [{"Host", host}, {"Content-Type", "<%= context.content_type %>"}]
@@ -134,28 +134,28 @@ defmodule <%= context.module_name %> do
     end
   end
 <%= if context.endpoint_prefix == "s3-control" do %>
-  defp get_host(_account_id, _endpoint_prefix, %{region: "local"}) do
+  defp build_host(_account_id, _endpoint_prefix, %{region: "local"}) do
     "localhost"
   end
-  defp get_host(:undefined, _endpoint_prefix, _client) do
+  defp build_host(:undefined, _endpoint_prefix, _client) do
     raise "missing account_id"
   end
-  defp get_host(account_id, endpoint_prefix, %{region: region, endpoint: endpoint}) do
+  defp build_host(account_id, endpoint_prefix, %{region: region, endpoint: endpoint}) do
     "#{account_id}.#{endpoint_prefix}.#{region}.#{endpoint}"
   end
 <% else %>
-  defp get_host(_endpoint_prefix, %{region: "local"}) do
+  defp build_host(_endpoint_prefix, %{region: "local"}) do
     "localhost"
   end<%= if context.is_global do %>
-  defp get_host(endpoint_prefix, %{endpoint: endpoint}) do
+  defp build_host(endpoint_prefix, %{endpoint: endpoint}) do
     "#{endpoint_prefix}.#{endpoint}"
   end
 <% else %>
-  defp get_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
+  defp build_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
     "#{endpoint_prefix}.#{region}.#{endpoint}"
   end
 <% end %><% end %>
-  defp get_url(host, path, %{:proto => proto, :port => port}) do
+  defp build_url(host, path, %{:proto => proto, :port => port}) do
     "#{proto}://#{host}:#{port}#{path}"
   end
 
