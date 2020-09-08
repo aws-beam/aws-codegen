@@ -49,6 +49,9 @@ defmodule <%= context.module_name %> do
     end
   end
 
+  defp build_host(_endpoint_prefix, %{region: "local", endpoint: endpoint}) do
+    endpoint
+  end
   defp build_host(_endpoint_prefix, %{region: "local"}) do
     "localhost"
   end<%= if context.is_global do %>

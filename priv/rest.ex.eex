@@ -134,6 +134,9 @@ defmodule <%= context.module_name %> do
     end
   end
 <%= if context.endpoint_prefix == "s3-control" do %>
+  defp build_host(_account_id, _endpoint_prefix, %{region: "local", endpoint: endpoint}) do
+    endpoint
+  end
   defp build_host(_account_id, _endpoint_prefix, %{region: "local"}) do
     "localhost"
   end
@@ -144,6 +147,9 @@ defmodule <%= context.module_name %> do
     "#{account_id}.#{endpoint_prefix}.#{region}.#{endpoint}"
   end
 <% else %>
+  defp build_host(_endpoint_prefix, %{region: "local", endpoint: endpoint}) do
+    endpoint
+  end
   defp build_host(_endpoint_prefix, %{region: "local"}) do
     "localhost"
   end<%= if context.is_global do %>
