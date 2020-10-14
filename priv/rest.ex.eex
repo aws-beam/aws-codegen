@@ -133,6 +133,10 @@ defmodule <%= context.module_name %> do
         {:error, %HTTPoison.Error{reason: reason}}
     end
   end
+
+  defp build_host(_endpoint_prefix, %{host: host}) when is_binary(host) do
+    host
+  end
 <%= if context.endpoint_prefix == "s3-control" do %>
   defp build_host(_account_id, _endpoint_prefix, %{region: "local", endpoint: endpoint}) do
     endpoint

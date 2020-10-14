@@ -150,6 +150,8 @@ handle_response({ok, StatusCode, ResponseHeaders, Client}, _) ->
     {error, Error, {StatusCode, ResponseHeaders, Client}};
 handle_response({error, Reason}, _) ->
   {error, Reason}.
+build_host(_AccountId, _EndpointPrefix, #{host := Host}) when is_binary(Host) ->
+    Host;
 <%= if context.endpoint_prefix == "s3-control" do %>
 build_host(_AccountId, _EndpointPrefix, #{region := <<"local">>, endpoint := Endpoint}) ->
     Endpoint;

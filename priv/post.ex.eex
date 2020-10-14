@@ -52,6 +52,9 @@ defmodule <%= context.module_name %> do
   defp build_host(_endpoint_prefix, %{region: "local", endpoint: endpoint}) do
     endpoint
   end
+  defp build_host(_endpoint_prefix, %{host: host}) when is_binary(host) do
+    host
+  end
   defp build_host(_endpoint_prefix, %{region: "local"}) do
     "localhost"
   end<%= if context.is_global do %>

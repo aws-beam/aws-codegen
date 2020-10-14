@@ -69,6 +69,8 @@ handle_response({error, Reason}) ->
 
 build_host(_EndpointPrefix, #{region := <<"local">>, endpoint := Endpoint}) ->
     Endpoint;
+build_host(_EndpointPrefix, #{host := Host}) when is_binary(Host) ->
+    Host;
 build_host(_EndpointPrefix, #{region := <<"local">>}) ->
     <<"localhost">>;<%= if context.is_global do %>
 build_host(EndpointPrefix, #{endpoint := Endpoint}) ->
