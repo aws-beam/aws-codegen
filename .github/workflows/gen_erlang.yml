@@ -1,0 +1,44 @@
+name: Generate aws-erlang
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    strategy:
+      matrix:
+        include:
+          - elixir: 1.11.x
+            otp: 23.x
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1.4.1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - name: Install Dependencies
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - name: Checkout aws/aws-sdk-go
+        uses: actions/checkout@v2
+        with:
+          repository: aws/aws-sdk-go
+          path: aws/aws-sdk-go/
+      - name: Checkout aws-erlang
+        uses: actions/checkout@v2
+        with:
+          repository: aws-beam/aws-erlang
+          path: aws-beam/aws-erlang
+      - name: Generate aws-erlang
+        env:
+          SPEC_PATH: aws/aws-sdk-go/models/apis
+          TEMPLATE_PATH: priv
+          ERLANG_OUTPUT_PATH: aws-beam/aws-erlang/src
+        run: mix run generate.exs erlang $SPEC_PATH $TEMPLATE_PATH $ERLANG_OUTPUT_PATH

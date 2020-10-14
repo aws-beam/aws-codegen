@@ -1,0 +1,44 @@
+name: Generate aws-elixir
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    strategy:
+      matrix:
+        include:
+          - elixir: 1.11.x
+            otp: 23.x
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1.4.1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - name: Install Dependencies
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - name: Checkout aws/aws-sdk-go
+        uses: actions/checkout@v2
+        with:
+          repository: aws/aws-sdk-go
+          path: aws/aws-sdk-go/
+      - name: Checkout aws-elixir
+        uses: actions/checkout@v2
+        with:
+          repository: aws-beam/aws-elixir
+          path: aws-beam/aws-elixir
+      - name: Generate aws-elixir
+        env:
+          SPEC_PATH: aws/aws-sdk-go/models/apis
+          TEMPLATE_PATH: priv
+          ELIXIR_OUTPUT_PATH: aws-beam/aws-elixir/lib/aws
+        run: mix run generate.exs elixir $SPEC_PATH $TEMPLATE_PATH $ELIXIR_OUTPUT_PATH
