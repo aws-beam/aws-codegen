@@ -14,9 +14,8 @@ defmodule <%= context.module_name %> do
   end
 <% end %>
   @spec request(AWS.Client.t(), binary(), map(), list()) ::
-          {:ok, Poison.Parser.t() | nil, Poison.Response.t()}
-          | {:error, Poison.Parser.t()}
-          | {:error, HTTPoison.Error.t()}
+          {:ok, map() | nil, term()}
+          | {:error, term()}
   defp request(client, action, input, options) do
     client = %{client | service: "<%= context.signing_name %>"<%= if context.is_global do %>,
                         region:  "<%= context.credential_scope %>"<% end %>}
@@ -30,23 +29,19 @@ defmodule <%= context.module_name %> do
     ]
 <%= if context.protocol == "query" do %>
     input = Map.merge(input, %{"Action" => action, "Version" => "<%= context.api_version %>"})<% end %>
-    payload = <%= context.encode %>
+    payload = encode!(input)
     headers = AWS.Request.sign_v4(client, "POST", url, headers, payload)
+    perform_request(:post, url, payload, headers, options, 200)
+  end
 
-    case HTTPoison.post(url, payload, headers, options) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: ""} = response} ->
-        {:ok, nil, response}
+  defp encode!(input) do
+    {encoder, fun} = Application.get_env(:aws_elixir, :json_encoder, {Poison, :encode!})
+    apply(encoder, fun, [input])
+  end
 
-      {:ok, %HTTPoison.Response{status_code: 200, body: body} = response} ->
-        {:ok, <%= context.decode %>, response}
-
-      {:ok, %HTTPoison.Response{body: body}} ->
-        error = <%= context.decode %>
-        {:error, error}
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        {:error, %HTTPoison.Error{reason: reason}}
-    end
+  defp perform_request(method, url, payload, headers, options, success_status_code) do
+    {client, fun} = Application.get_env(:aws_elixir, :http_client, {Aws.Internal.HttpClient, :request})
+    apply(client, fun, [method, url, payload, headers, options, success_status_code])
   end
 
   defp build_host(_endpoint_prefix, %{region: "local", endpoint: endpoint}) do

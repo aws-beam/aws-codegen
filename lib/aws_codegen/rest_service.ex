@@ -89,10 +89,6 @@ defmodule AWS.CodeGen.RestService do
     },
     "rest-json" => %{
       content_type: "application/x-amz-json-1.1",
-      elixir: %{
-        decode: "Poison.Parser.parse!(body, %{})",
-        encode: "Poison.Encoder.encode(input, %{})"
-      },
       erlang: %{
         decode: "jsx:decode(Body)",
         encode: "jsx:encode(Input)"

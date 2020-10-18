@@ -40,10 +40,6 @@ defmodule AWS.CodeGen.PostService do
     },
     "json" => %{
       content_type: "application/x-amz-json-",
-      elixir: %{
-        decode: "Poison.Parser.parse!(body, %{})",
-        encode: "Poison.Encoder.encode(input, %{})"
-      },
       erlang: %{
         decode: "jsx:decode(Body)",
         encode: "jsx:encode(Input)"
