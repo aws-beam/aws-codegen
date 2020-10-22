@@ -1,7 +1,7 @@
 defmodule AWS.CodeGen.Docstring do
   @doc """
   Tranform HTML text into Markdown suitable for inclusion in a docstring
-  heredoc in generated Elixir code.
+  heredoc in generated Elixir or Erlang code.
   """
   def format(:elixir, text) do
     text
@@ -10,11 +10,6 @@ defmodule AWS.CodeGen.Docstring do
     |> Enum.map(&(justify_line(&1)))
     |> Enum.join("\n\n")
   end
-
-  @doc """
-  Tranform HTML text into Markdown suitable for inclusion in a docstring
-  heredoc in generated Erlang code.
-  """
   def format(:erlang, nil), do: ""
   def format(:erlang, ""), do: ""
   def format(:erlang, text) do

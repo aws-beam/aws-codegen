@@ -44,10 +44,6 @@ defmodule AWS.CodeGen do
         :elixir => "rest.ex.eex",
         :erlang => "rest.erl.eex"
       }
-    },
-    :internals => %{
-      :elixir => "internal/elixir",
-      :erlang => "internal/erlang"
     }
   }
 
@@ -62,8 +58,7 @@ defmodule AWS.CodeGen do
         args = [spec, language, endpoints_spec, template_base_path, output_path]
         Task.async(AWS.CodeGen, :generate_code, args)
       end)
-    lib_tasks = copy_internals(template_base_path, output_base_path, language)
-    Enum.each([lib_tasks | tasks], fn(task) -> Task.await(task) end)
+    Enum.each(tasks, fn(task) -> Task.await(task) end)
   end
 
   @doc """
@@ -101,16 +96,4 @@ defmodule AWS.CodeGen do
     |> Enum.filter(fn(x) -> x["partition"] == "aws" end)
     |> List.first
   end
-
-  defp copy_internals(template_base_path, output_base_path, language) do
-    internals = @configuration[:internals][language]
-    IO.puts("Copying internals")
-    Task.async(fn ->
-      template_path = Path.join([template_base_path, internals])
-      output_path = Path.join([output_base_path, "internal"])
-      File.mkdir_p!(output_path)
-      File.cp_r!(template_path, output_path)
-    end)
-  end
-
 end
