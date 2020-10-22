@@ -40,6 +40,10 @@ defmodule AWS.CodeGen.PostService do
     },
     "json" => %{
       content_type: "application/x-amz-json-",
+      elixir: %{
+        decode: "AWS.JSON.decode!(body)",
+        encode: "AWS.JSON.encode!(input)"
+      },
       erlang: %{
         decode: "jsx:decode(Body)",
         encode: "jsx:encode(Input)"
@@ -77,8 +81,8 @@ defmodule AWS.CodeGen.PostService do
              credential_scope: credential_scope,
              content_type: content_type,
              docstring: Docstring.format(language, doc_spec["service"]),
-             decode: @configuration[protocol][language][:decode],
-             encode: @configuration[protocol][language][:encode],
+             decode: Map.fetch!(@configuration[protocol][language], :decode),
+             encode: Map.fetch!(@configuration[protocol][language], :encode),
              endpoint_prefix: endpoint_prefix,
              is_global: is_global,
              json_version: json_version,

@@ -29,7 +29,7 @@ defmodule <%= context.module_name %> do
     ]
 <%= if context.protocol == "query" do %>
     input = Map.merge(input, %{"Action" => action, "Version" => "<%= context.api_version %>"})<% end %>
-    payload = AWS.JSON.encode!(input)
+    payload = <%=  context.encode %>
     headers = AWS.Request.sign_v4(client, "POST", url, headers, payload)
     AWS.HTTP.request(:post, url, payload, headers, options, 200)
   end
