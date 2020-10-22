@@ -1,8 +1,16 @@
 language = Enum.at(System.argv, 0)
-|> case do
-  nil -> raise "Please, specify either elixir or erlang in the first argument: $ mix run generate.exs elixir"
-  lang -> lang
+unless Enum.member?(["elixir", "erlang"], language) do
+  raise """
+  Please, specify either elixir or erlang in the first argument:
+
+    mix run generate.exs elixir
+
+  or, for erlang:
+
+    mix run generate.exs erlang
+  """
 end
+
 spec_path = Enum.at(System.argv, 1, "../aws-sdk-go/models/apis")
 if !File.dir?(spec_path) do
   raise """
@@ -31,14 +39,14 @@ if !File.dir?(template_path) do
   and try again.
   """
 end
-output_path = Enum.at(System.argv, 3, "../aws-elixir/lib/aws")
+output_path = Enum.at(System.argv, 3, "../aws-#{language}/lib/aws")
 if !File.dir?(output_path) do
   raise """
-  The AWS Elixir project could not be found at path "#{output_path}"!
+  The aws-#{language} project could not be found at path "#{output_path}"!
 
-  Please, specify the correct path in the fourth argument:
+  Please, specify the correct path in the last argument:
 
-     mix run generate.exs #{language} #{spec_path} #{template_path} /path/to/aws-elixir
+     mix run generate.exs #{language} #{spec_path} #{template_path} /path/to/aws-#{language}
 
   and try again.
   """
