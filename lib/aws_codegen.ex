@@ -96,4 +96,5 @@ defmodule AWS.CodeGen do
     |> Enum.filter(fn(x) -> x["partition"] == "aws" end)
     |> List.first
   end
+
 end
