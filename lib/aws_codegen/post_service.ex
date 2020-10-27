@@ -30,8 +30,8 @@ defmodule AWS.CodeGen.PostService do
     "query" => %{
       content_type: "application/x-www-form-urlencoded",
       elixir: %{
-        decode: "AWS.Util.decode_xml(body)",
-        encode: "AWS.Util.encode_query(input)"
+        decode: "xml",
+        encode: "query"
       },
       erlang: %{
         decode: "aws_util:decode_xml(Body)",
@@ -41,8 +41,8 @@ defmodule AWS.CodeGen.PostService do
     "json" => %{
       content_type: "application/x-amz-json-",
       elixir: %{
-        decode: "AWS.JSON.decode!(body)",
-        encode: "AWS.JSON.encode!(input)"
+        decode: "json",
+        encode: "json"
       },
       erlang: %{
         decode: "jsx:decode(Body)",

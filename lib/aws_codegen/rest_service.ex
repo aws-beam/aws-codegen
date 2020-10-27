@@ -79,8 +79,8 @@ defmodule AWS.CodeGen.RestService do
     "rest-xml" => %{
       content_type: "text/xml",
       elixir: %{
-        decode: "AWS.Util.decode_xml(body)",
-        encode: "AWS.Util.encode_xml(input)"
+        decode: "xml",
+        encode: "xml"
       },
       erlang: %{
         decode: "aws_util:decode_xml(Body)",
@@ -90,8 +90,8 @@ defmodule AWS.CodeGen.RestService do
     "rest-json" => %{
       content_type: "application/x-amz-json-1.1",
       elixir: %{
-        decode: "AWS.JSON.decode!(body)",
-        encode: "AWS.JSON.encode!(input)"
+        decode: "json",
+        encode: "json"
       },
       erlang: %{
         decode: "jsx:decode(Body)",
