@@ -88,7 +88,7 @@ defmodule <%= context.module_name %> do
     host = build_host(account_id, "<%= context.endpoint_prefix %>", client)<% else %>host = build_host("<%= context.endpoint_prefix %>", client)<% end %>
     url = host
     |> build_url(path, client)
-    |> add_query(query)
+    |> add_query(query, client)
 
     additional_headers = [{"Host", host}, {"Content-Type", "<%= context.content_type %>"}]
     headers = AWS.Request.add_headers(additional_headers, headers)
@@ -157,11 +157,11 @@ defmodule <%= context.module_name %> do
     "#{proto}://#{host}:#{port}#{path}"
   end
 
-  defp add_query(url, []) do
+  defp add_query(url, [], _client) do
     url
   end
-  defp add_query(url, query) do
-    querystring = AWS.Util.encode_query(query)
+  defp add_query(url, query, client) do
+    querystring = encode!(client, query, :query)
     "#{url}?#{querystring}"
   end
 
@@ -170,10 +170,10 @@ defmodule <%= context.module_name %> do
     apply(mod, fun, [method, url, payload, headers, options])
   end
 
-  defp encode!(client, payload) do
+  defp encode!(client, payload, type \\ :<%= context.encode %>) do
     {mod, fun} = client
       |> Map.fetch(:encode)
-      |> Map.fetch(:<%= context.encode %>)
+      |> Map.fetch(type)
     apply(mod, fun, [payload])
   end
 
