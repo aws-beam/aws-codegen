@@ -14,9 +14,8 @@ defmodule <%= context.module_name %> do
   end
 <% end %>
   @spec request(AWS.Client.t(), binary(), map(), list()) ::
-          {:ok, Poison.Parser.t() | nil, Poison.Response.t()}
-          | {:error, Poison.Parser.t()}
-          | {:error, HTTPoison.Error.t()}
+          {:ok, map() | nil, map()}
+          | {:error, term()}
   defp request(client, action, input, options) do
     client = %{client | service: "<%= context.signing_name %>"<%= if context.is_global do %>,
                         region:  "<%= context.credential_scope %>"<% end %>}
@@ -30,22 +29,21 @@ defmodule <%= context.module_name %> do
     ]
 <%= if context.protocol == "query" do %>
     input = Map.merge(input, %{"Action" => action, "Version" => "<%= context.api_version %>"})<% end %>
-    payload = <%= context.encode %>
+    payload = encode!(client, input)
     headers = AWS.Request.sign_v4(client, "POST", url, headers, payload)
+    post(client, url, payload, headers, options)
+  end
 
-    case HTTPoison.post(url, payload, headers, options) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: ""} = response} ->
-        {:ok, nil, response}
+  defp post(client, url, payload, headers, options) do
+    case AWS.Client.request(client, :post, url, payload, headers, options) do
+      {:ok, %{status_code: 200, body: body} = response} ->
+        body = if body != "", do: decode!(client, body)
+        {:ok, body, response}
 
-      {:ok, %HTTPoison.Response{status_code: 200, body: body} = response} ->
-        {:ok, <%= context.decode %>, response}
+      {:ok, response} ->
+        {:error, {:unexpected_response, response}}
 
-      {:ok, %HTTPoison.Response{body: body}} ->
-        error = <%= context.decode %>
-        {:error, error}
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        {:error, %HTTPoison.Error{reason: reason}}
+      error = {:error, _reason} -> error
     end
   end
 
@@ -65,5 +63,13 @@ defmodule <%= context.module_name %> do
 <% end %>
   defp build_url(host, %{:proto => proto, :port => port}) do
     "#{proto}://#{host}:#{port}/"
+  end
+
+  defp encode!(client, payload) do
+    AWS.Client.encode!(client, payload, :<%= context.encode %>)
+  end
+
+  defp decode!(client, payload) do
+    AWS.Client.decode!(client, payload, :<%= context.decode %>)
   end
 end

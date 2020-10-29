@@ -30,8 +30,8 @@ defmodule AWS.CodeGen.PostService do
     "query" => %{
       content_type: "application/x-www-form-urlencoded",
       elixir: %{
-        decode: "AWS.Util.decode_xml(body)",
-        encode: "AWS.Util.encode_query(input)"
+        decode: "xml",
+        encode: "query"
       },
       erlang: %{
         decode: "aws_util:decode_xml(Body)",
@@ -41,8 +41,8 @@ defmodule AWS.CodeGen.PostService do
     "json" => %{
       content_type: "application/x-amz-json-",
       elixir: %{
-        decode: "Poison.Parser.parse!(body, %{})",
-        encode: "Poison.Encoder.encode(input, %{})"
+        decode: "json",
+        encode: "json"
       },
       erlang: %{
         decode: "jsx:decode(Body)",
@@ -81,8 +81,8 @@ defmodule AWS.CodeGen.PostService do
              credential_scope: credential_scope,
              content_type: content_type,
              docstring: Docstring.format(language, doc_spec["service"]),
-             decode: @configuration[protocol][language][:decode],
-             encode: @configuration[protocol][language][:encode],
+             decode: Map.fetch!(@configuration[protocol][language], :decode),
+             encode: Map.fetch!(@configuration[protocol][language], :encode),
              endpoint_prefix: endpoint_prefix,
              is_global: is_global,
              json_version: json_version,

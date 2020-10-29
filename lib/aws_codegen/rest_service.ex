@@ -79,8 +79,8 @@ defmodule AWS.CodeGen.RestService do
     "rest-xml" => %{
       content_type: "text/xml",
       elixir: %{
-        decode: "AWS.Util.decode_xml(body)",
-        encode: "AWS.Util.encode_xml(input)"
+        decode: "xml",
+        encode: "xml"
       },
       erlang: %{
         decode: "aws_util:decode_xml(Body)",
@@ -90,8 +90,8 @@ defmodule AWS.CodeGen.RestService do
     "rest-json" => %{
       content_type: "application/x-amz-json-1.1",
       elixir: %{
-        decode: "Poison.Parser.parse!(body, %{})",
-        encode: "Poison.Encoder.encode(input, %{})"
+        decode: "json",
+        encode: "json"
       },
       erlang: %{
         decode: "jsx:decode(Body)",
@@ -125,8 +125,8 @@ defmodule AWS.CodeGen.RestService do
              docstring: Docstring.format(language, doc_spec["service"]),
              credential_scope: credential_scope,
              content_type: @configuration[protocol][:content_type],
-             decode: @configuration[protocol][language][:decode],
-             encode: @configuration[protocol][language][:encode],
+             decode: Map.fetch!(@configuration[protocol][language], :decode),
+             encode: Map.fetch!(@configuration[protocol][language], :encode),
              endpoint_prefix: endpoint_prefix,
              is_global: is_global,
              json_version: api_spec["metadata"]["jsonVersion"],
