@@ -115,7 +115,7 @@ defmodule <%= context.module_name %> do
   defp perform_request(client, method, url, payload, headers, options, success_status_code) do
     case do_request(client, method, url, payload, headers, options) do
       {:ok, %{status_code: ^success_status_code, body: body} = response} ->
-        body = if(body != "", do: decode!(client, body))
+        body = if body != "", do: decode!(client, body)
         {:ok, body, response}
 
       {:ok, %{body: body}} ->
