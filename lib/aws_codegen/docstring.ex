@@ -1,6 +1,6 @@
 defmodule AWS.CodeGen.Docstring do
   @doc """
-  Tranform HTML text into Markdown suitable for inclusion in a docstring
+  Transform HTML text into Markdown suitable for inclusion in a docstring
   heredoc in generated Elixir or Erlang code.
   """
   def format(:elixir, text) do
