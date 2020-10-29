@@ -79,8 +79,8 @@ defmodule <%= context.module_name %> do
   end<% end %><% end %>
 
   @spec request(AWS.Client.t(), binary(), binary(), list(), list(), map(), list(), pos_integer()) ::
-          {:ok, map() | nil, term()}
-          | {:error, map(), term()}
+          {:ok, map() | nil, map()}
+          | {:error, map(), map()}
           | {:error, term()}
   defp request(client, method, path, query, headers, input, options, success_status_code) do
     client = %{client | service: "<%= context.signing_name %>"<%= if context.is_global do %>,
