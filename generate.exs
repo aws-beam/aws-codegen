@@ -39,14 +39,14 @@ if !File.dir?(template_path) do
   and try again.
   """
 end
-output_path = Enum.at(System.argv, 3, "../aws-#{language}/lib/aws")
+output_path = Enum.at(System.argv, 3, "../aws-#{language}/lib/aws/generated")
 if !File.dir?(output_path) do
   raise """
   The aws-#{language} project could not be found at path "#{output_path}"!
 
   Please, specify the correct path in the last argument:
 
-     mix run generate.exs #{language} #{spec_path} #{template_path} /path/to/aws-#{language}
+     mix run generate.exs #{language} #{spec_path} #{template_path} /path/to/aws-#{language}/lib/aws/generated
 
   and try again.
   """
