@@ -40,5 +40,7 @@ jobs:
         env:
           SPEC_PATH: aws/aws-sdk-go/models/apis
           TEMPLATE_PATH: priv
-          ELIXIR_OUTPUT_PATH: aws-beam/aws-elixir/lib/aws
-        run: mix run generate.exs elixir $SPEC_PATH $TEMPLATE_PATH $ELIXIR_OUTPUT_PATH
+          ELIXIR_OUTPUT_PATH: aws-beam/aws-elixir/lib/aws/generated
+        run: |
+          mkdir -p $ELIXIR_OUTPUT_PATH
+          mix run generate.exs elixir $SPEC_PATH $TEMPLATE_PATH $ELIXIR_OUTPUT_PATH
