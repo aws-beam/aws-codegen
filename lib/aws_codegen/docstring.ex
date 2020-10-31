@@ -95,19 +95,21 @@ defmodule AWS.CodeGen.Docstring do
       end)
       |> Floki.traverse_and_update(fn
         {tag, _, children} when tag in @list_tags ->
-          Floki.text(children)
+          Floki.text(children) <> "\n\n"
 
         other ->
           other
       end)
 
     Floki.raw_html(tree, encode: false)
-    |> String.replace(~r/<\/?(a|code)>/, "`")
-    |> String.replace(~r/<\/?(b|strong)>/, "**")
-    |> String.replace(~r/<\/?(i|em)>/, "*")
-    |> String.replace(~r/<(p|fullname|note)( class=[^>]+)?>/, "")
-    |> String.replace(~r/<\/(p|fullname|note)>/, "\n\n")
   end
+
+  defp update_nodes({"code", _, content}), do: "`#{Floki.text(content)}`"
+  defp update_nodes({tag, _, content}) when tag in ~w(b strong), do: "**#{Floki.text(content)}**"
+  defp update_nodes({tag, _, content}) when tag in ~w(i em), do: "*#{Floki.text(content)}*"
+
+  defp update_nodes({tag, _, content}) when tag in ~w(p fullname note important),
+    do: Floki.text(content) <> "\n\n"
 
   defp update_nodes({"a", attrs, content}) do
     case Enum.find(attrs, fn {attr, _} -> attr == "href" end) do
