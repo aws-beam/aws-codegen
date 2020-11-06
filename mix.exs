@@ -17,8 +17,7 @@ defmodule AWS.CodeGen.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [
-      extra_applications: [:logger, :eex],
-      env: [floki: [html_parser: Floki.HTMLParser.FastHtml]]
+      extra_applications: [:logger, :eex]
     ]
   end
 
