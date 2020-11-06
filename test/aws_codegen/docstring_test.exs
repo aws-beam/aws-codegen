@@ -22,6 +22,8 @@ defmodule AWS.CodeGen.DocstringTest do
     test "keeps the text formated according to ExDoc" do
       text = """
       The UpdateTimeToLive method enables or disables Time to Live (TTL) for the specified table. A successful UpdateTimeToLive call returns the current TimeToLiveSpecification. It can take up to one hour for the change to fully process. Any additional UpdateTimeToLive calls for the same table during this one hour duration result in a ValidationException.
+
+      <div class="seeAlso"><a href="http://bar.com">foo</a></div>
       """
 
       assert String.trim("""
@@ -30,6 +32,8 @@ defmodule AWS.CodeGen.DocstringTest do
         A successful UpdateTimeToLive call returns the current TimeToLiveSpecification. It can take up to
         one hour for the change to fully process. Any additional UpdateTimeToLive calls for the same table
         during this one hour duration result in a ValidationException.
+
+        See also: [foo](http://bar.com)
       """, "\n") == Docstring.format(:elixir, text)
     end
 
@@ -46,7 +50,7 @@ defmodule AWS.CodeGen.DocstringTest do
       """, "\n") == Docstring.format(:elixir, text)
     end
 
-    test "transforms the ul lists into markdown lists" do
+    test "transforms ul lists into markdown lists" do
       text = """
       A short-description.
 
@@ -106,7 +110,35 @@ defmodule AWS.CodeGen.DocstringTest do
           3. Third
       """, "\n")
 
-      #IO.puts Docstring.format(:elixir, text)
+      assert expected == Docstring.format(:elixir, text)
+    end
+
+    test "transforms dl tags in definition blocks" do
+      text = """
+      A short-description.
+
+      <dl>
+        <dt>Term</dt>
+        <dd>Explanation <em>Emphasis</em></dd>
+        <dt>Second term</dt>
+        <dd>Details</dd>
+      </dl>
+      """
+
+      expected = String.trim("""
+        A short-description.
+
+        ## Definitions
+
+        ### Term
+
+        Explanation *Emphasis*
+
+        ### Second term
+
+        Details
+      """, "\n")
+
       assert expected == Docstring.format(:elixir, text)
     end
   end

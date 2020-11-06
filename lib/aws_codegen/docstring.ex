@@ -4,7 +4,7 @@ defmodule AWS.CodeGen.Docstring do
   @list_tags ~w(ul ol)
 
   @doc """
-  Tranform HTML text into Markdown suitable for inclusion in a docstring
+  Transform HTML text into Markdown suitable for inclusion in a docstring
   heredoc in generated Elixir code.
   """
   def format(:elixir, text) do
@@ -33,7 +33,13 @@ defmodule AWS.CodeGen.Docstring do
   end
 
   defp split_first_sentence_in_one_line(doc) do
-    String.replace(doc, ~r/^([^.!]*)([.!])\s/, "\\1\\2\n\n", global: false)
+    case String.split(doc, ~r/[.!][\s\n]/, parts: 2) do
+      [first, rest] ->
+        first <> ".\n\n" <> rest
+
+      [doc] ->
+        doc
+    end
   end
 
   # It searches for links with breaking lines and remove the breaking line.
@@ -134,6 +140,38 @@ defmodule AWS.CodeGen.Docstring do
       end)
 
     {tag, attrs, subtree}
+  end
+
+  defp update_nodes({"div", attrs, children}) do
+    case attrs do
+      [{"class", "seeAlso"}] ->
+        "See also: " <> Floki.text(children) <> "\n\n"
+
+      _ ->
+        Floki.text(children) <> "\n\n"
+    end
+  end
+
+  defp update_nodes({"dl", _, definitions}) do
+    io_data = ["## Definitions \n\n"]
+
+    definitions
+    |> Enum.reduce(io_data, fn el, data ->
+      case el do
+        {"dt", _, term} ->
+          [data | ["### ", Floki.text(term), "\n\n"]]
+
+        {"dd", _, definition} ->
+          [data | [Floki.text(definition), "\n\n"]]
+
+        other when is_binary(other) ->
+          [data | other]
+
+        other ->
+          [data | Floki.text(other)]
+      end
+    end)
+    |> IO.iodata_to_binary()
   end
 
   defp update_nodes(other), do: other
