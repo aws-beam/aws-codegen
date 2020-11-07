@@ -61,15 +61,19 @@ packages with Hex. Here you can find instructions for Ubuntu Linux and Mac OS.
 
 ### Ubuntu Linux dependencies
 
-Two packages are needed: `gcc` and `cmake`. To install them:
+Two packages are needed for Ubuntu: `gcc` and `cmake`. To install them:
 
-    $ apt-get install gcc cmake
+    $ apt-get install build-essential cmake
 
 ### Mac OS X dependencies
 
 The same packages are needed in OS X, but you may install them with [brew][]:
 
     $ brew install gcc cmake
+
+Alternativaly you can install XCode's Command Line Developer Tools package:
+
+    $ xcode-select --install
 
 [aws-sdk-go]: https://github.com/aws/aws-sdk-go
 [brew]: https://brew.sh/
