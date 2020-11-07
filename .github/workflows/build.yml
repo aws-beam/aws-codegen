@@ -22,6 +22,6 @@ jobs:
           mix local.rebar --force
           mix local.hex --force
           apt-get update
-          apt-get -y install build-essential cmake
+          apt-get -y install gcc cmake
           mix deps.get
       - run: mix test
