@@ -1,6 +1,7 @@
 defmodule AWS.CodeGen.Docstring do
   @max_elixir_line_length 98
   @two_spaces "&nbsp;&nbsp;"
+  @two_break_lines "\n\n"
   @list_tags ~w(ul ol)
 
   @doc """
@@ -35,7 +36,7 @@ defmodule AWS.CodeGen.Docstring do
   defp split_first_sentence_in_one_line(doc) do
     case String.split(doc, ~r/[.!][\s\n]/, parts: 2) do
       [first, rest] ->
-        first <> ".\n\n" <> rest
+        first <> ".#{@two_break_lines}" <> rest
 
       [doc] ->
         doc
@@ -48,12 +49,14 @@ defmodule AWS.CodeGen.Docstring do
     String.replace(text, ~r/\[([^\n]+)\n\s\s([^]]+)\]/, "[\\1 \\2]")
   end
 
+  # This is needed because we add these spaces for each list level inside
+  # a list.
   defp fix_html_spaces(text) do
     String.replace(text, "&nbsp;", " ")
   end
 
   defp fix_long_break_lines(text) do
-    String.replace(text, ~r/[\n]{3,}/, "\n\n")
+    String.replace(text, ~r/[\n]{3,}/, @two_break_lines)
   end
 
   @doc """
@@ -64,71 +67,77 @@ defmodule AWS.CodeGen.Docstring do
   def html_to_markdown(text) do
     {:ok, document} = Floki.parse_fragment(text)
 
-    tree =
-      Floki.traverse_and_update(document, &update_nodes/1)
-      |> Floki.traverse_and_update(fn
-        {"ul", attrs, children} ->
-          updated_children =
-            children
-            |> prepend_to_list_items("* ")
-            |> append_new_line_to_list_items()
-
-          {"ul", attrs, updated_children}
-
-        {"ol", attrs, children} ->
-          {_, elements} =
-            Enum.reduce(children, {0, []}, fn el, {count, elements} ->
-              case el do
-                {"li", _, _} ->
-                  count = count + 1
-                  {count, [["#{count}. ", el] | elements]}
-
-                other ->
-                  {count, [other | elements]}
-              end
-            end)
-
-          updated_children =
-            elements
-            |> Enum.reverse()
-            |> List.flatten()
-            |> append_new_line_to_list_items()
-
-          {"ol", attrs, updated_children}
-
-        other ->
-          other
-      end)
-      |> Floki.traverse_and_update(fn
-        {tag, _, children} when tag in @list_tags ->
-          Floki.text(children) <> "\n\n"
-
-        other ->
-          other
-      end)
-
-    Floki.raw_html(tree, encode: false)
+    document
+    |> Floki.traverse_and_update(&update_nodes/1)
+    |> Floki.traverse_and_update(&format_html_lists/1)
+    |> Floki.raw_html(encode: false)
   end
 
-  defp update_nodes({"code", _, content}), do: "`#{Floki.text(content)}`"
-  defp update_nodes({tag, _, content}) when tag in ~w(b strong), do: "**#{Floki.text(content)}**"
-  defp update_nodes({tag, _, content}) when tag in ~w(i em), do: "*#{Floki.text(content)}*"
+  defp format_html_lists({"ul", _, children}) do
+    updated_children =
+      children
+      |> prepend_to_list_items("* ")
+      |> append_new_line_to_list_items()
 
-  defp update_nodes({tag, _, content}) when tag in ~w(p fullname note important),
-    do: Floki.text(content) <> "\n\n"
+    Floki.text(updated_children) <> @two_break_lines
+  end
 
-  defp update_nodes({"a", attrs, content}) do
-    case Enum.find(attrs, fn {attr, _} -> attr == "href" end) do
-      {_, href} ->
-        "[#{Floki.text(content)}](#{href})"
+  defp format_html_lists({"ol", _, children}) do
+    {_, elements} =
+      Enum.reduce(children, {0, []}, fn el, {count, elements} ->
+        case el do
+          {"li", _, _} ->
+            count = count + 1
+            {count, [["#{count}. ", el] | elements]}
 
-      nil ->
-        "`#{Floki.text(content)}`"
+          other ->
+            {count, [other | elements]}
+        end
+      end)
+
+    updated_children =
+      elements
+      |> Enum.reverse()
+      |> List.flatten()
+      |> append_new_line_to_list_items()
+
+    Floki.text(updated_children) <> @two_break_lines
+  end
+
+  defp format_html_lists(other), do: other
+
+  defp update_nodes({"code", _, children}) do
+    text = Floki.text(children)
+
+    if String.contains?(text, "\n") do
+      "#{@two_break_lines}```\n#{text}\n```#{@two_break_lines}"
+    else
+      "`#{text}`"
     end
   end
 
-  defp update_nodes({tag, attrs, content}) when tag in @list_tags do
-    new_content = prepend_to_list_items(content, @two_spaces)
+  defp update_nodes({tag, _, children}) when tag in ~w(b strong),
+    do: "**#{Floki.text(children)}**"
+
+  defp update_nodes({tag, _, children}) when tag in ~w(i em), do: "*#{Floki.text(children)}*"
+
+  defp update_nodes({tag, _, children}) when tag in ~w(p fullname note important),
+    do: Floki.text(children) <> @two_break_lines
+
+  defp update_nodes({"a", attrs, children}) do
+    case Enum.find(attrs, fn {attr, _} -> attr == "href" end) do
+      {_, href} ->
+        "[#{Floki.text(children)}](#{href})"
+
+      nil ->
+        "`#{Floki.text(children)}`"
+    end
+  end
+
+  # We need to first prepend two HTML spaces to all
+  # lists inside the three before formatting it correctly.
+  defp update_nodes({tag, attrs, children}) when tag in @list_tags do
+    new_content = prepend_to_list_items(children, @two_spaces)
 
     subtree =
       Floki.traverse_and_update(new_content, fn
@@ -145,24 +154,24 @@ defmodule AWS.CodeGen.Docstring do
   defp update_nodes({"div", attrs, children}) do
     case attrs do
       [{"class", "seeAlso"}] ->
-        "See also: " <> Floki.text(children) <> "\n\n"
+        "See also: " <> Floki.text(children) <> @two_break_lines
 
       _ ->
-        Floki.text(children) <> "\n\n"
+        Floki.text(children) <> @two_break_lines
     end
   end
 
   defp update_nodes({"dl", _, definitions}) do
-    io_data = ["## Definitions \n\n"]
+    io_data = ["## Definitions", @two_break_lines]
 
     definitions
-    |> Enum.reduce(io_data, fn el, data ->
-      case el do
+    |> Enum.reduce(io_data, fn element, data ->
+      case element do
         {"dt", _, term} ->
-          [data | ["### ", Floki.text(term), "\n\n"]]
+          [data | ["### ", Floki.text(term), @two_break_lines]]
 
         {"dd", _, definition} ->
-          [data | [Floki.text(definition), "\n\n"]]
+          [data | [Floki.text(definition), @two_break_lines]]
 
         other when is_binary(other) ->
           [data | other]
@@ -174,34 +183,34 @@ defmodule AWS.CodeGen.Docstring do
     |> IO.iodata_to_binary()
   end
 
+  defp update_nodes({"pre", _, [content]}) when is_binary(content) do
+    html_to_markdown(content)
+  end
+
   defp update_nodes(other), do: other
 
   defp prepend_to_list_items(content, text) do
-    content
-    |> Enum.map(fn
+    Enum.flat_map(content, fn
       {"li", _, _} = li ->
         [text, li]
 
       other ->
-        other
+        [other]
     end)
-    |> List.flatten()
   end
 
   defp append_new_line_to_list_items(content) do
-    content
-    |> Enum.map(fn
+    Enum.flat_map(content, fn
       {"li", _, children} = li ->
         if with_html_lists?(children) do
-          li
+          [li]
         else
           [li, "\n"]
         end
 
       other ->
-        other
+        [other]
     end)
-    |> List.flatten()
   end
 
   defp with_html_lists?(children) do
@@ -220,9 +229,9 @@ defmodule AWS.CodeGen.Docstring do
 
   def html_to_edoc(text) do
     text
-    |> String.replace("</fullname>", "</fullname>\n\n")
+    |> String.replace("</fullname>", "</fullname>#{@two_break_lines}")
     |> String.replace("<p>", "")
-    |> String.replace("</p>", "\n\n")
+    |> String.replace("</p>", @two_break_lines)
   end
 
   @doc """
