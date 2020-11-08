@@ -1,5 +1,5 @@
 defmodule AWS.CodeGen.Docstring do
-  @max_elixir_line_length 98
+  @max_elixir_line_length 80
   @two_spaces "&nbsp;&nbsp;"
   @two_break_lines "\n\n"
   @list_tags ~w(ul ol)
@@ -34,7 +34,7 @@ defmodule AWS.CodeGen.Docstring do
   end
 
   defp split_first_sentence_in_one_line(doc) do
-    case String.split(doc, ~r/[.!][\s\n]/, parts: 2) do
+    case String.split(doc, ~r/\.[\s\n]/, parts: 2) do
       [first, rest] ->
         first <> ".#{@two_break_lines}" <> rest
 
@@ -49,8 +49,7 @@ defmodule AWS.CodeGen.Docstring do
     String.replace(text, ~r/\[([^\n]+)\n\s\s([^]]+)\]/, "[\\1 \\2]")
   end
 
-  # This is needed because we add these spaces for each list level inside
-  # a list.
+  # We added these spaces for each list level.
   defp fix_html_spaces(text) do
     String.replace(text, "&nbsp;", " ")
   end
