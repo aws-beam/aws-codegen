@@ -81,7 +81,7 @@ defmodule AWS.CodeGen.DocstringTest do
           """
             A short-description.
 
-            **About Permissions**
+            ## About Permissions
 
               * If the private CA and the certificates it issues reside in the
             same account, you can use `CreatePermission` to grant permissions for ACM to

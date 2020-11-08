@@ -18,6 +18,7 @@ defmodule AWS.CodeGen.Docstring do
     |> fix_broken_markdown_links()
     |> fix_html_spaces()
     |> fix_long_break_lines()
+    |> transform_subtitles()
     |> String.trim_trailing()
   end
 
@@ -43,7 +44,7 @@ defmodule AWS.CodeGen.Docstring do
     end
   end
 
-  # It searches for links with breaking lines and remove the breaking line.
+  # It searches for links with breaking lines and remove them.
   # Since performance is not an issue here, we are doing this post processing.
   defp fix_broken_markdown_links(text) do
     String.replace(text, ~r/\[([^\n]+)\n\s\s([^]]+)\]/, "[\\1 \\2]")
@@ -56,6 +57,11 @@ defmodule AWS.CodeGen.Docstring do
 
   defp fix_long_break_lines(text) do
     String.replace(text, ~r/[\n]{3,}/, @two_break_lines)
+  end
+
+  # Transform `**Subtitle**` into `## Subtitle`
+  defp transform_subtitles(text) do
+    String.replace(text, ~r/[*]{2}([^*]+)[*]{2}\n/, "## \\1\n")
   end
 
   @doc """
