@@ -6,7 +6,7 @@ defmodule AWS.CodeGen.Docstring do
 
   @doc """
   Transform HTML text into Markdown suitable for inclusion in a docstring
-  heredoc in generated Elixir code.
+  heredoc in generated Elixir or Erlang code.
   """
   def format(:elixir, text) do
     text
@@ -139,8 +139,8 @@ defmodule AWS.CodeGen.Docstring do
     end
   end
 
-  # We need to first prepend two HTML spaces to all
-  # lists inside the three before formatting it correctly.
+  # We need to first prepend two HTML spaces to all lists
+  # inside the tree before formatting it correctly.
   defp update_nodes({tag, attrs, children}) when tag in @list_tags do
     new_content = prepend_to_list_items(children, @two_spaces)
 

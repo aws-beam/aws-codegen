@@ -61,17 +61,17 @@ packages with Hex. Here you can find instructions for Ubuntu Linux and Mac OS.
 
 ### Ubuntu Linux dependencies
 
-Two packages are needed for Ubuntu: `gcc` and `cmake`. To install them:
+Two packages are needed for Ubuntu: `gcc` and `build-essential`. To install them:
 
     $ apt-get install build-essential cmake
 
 ### Mac OS X dependencies
 
-The same packages are needed in OS X, but you may install them with [brew][]:
+Two similar packages are needed in OS X, but you may install them with [brew][]:
 
     $ brew install gcc cmake
 
-Alternativaly you can install XCode's Command Line Developer Tools package:
+Alternatively you can install XCode's Command Line Developer Tools package:
 
     $ xcode-select --install
 
