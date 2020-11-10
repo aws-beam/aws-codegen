@@ -1,49 +1,228 @@
 defmodule AWS.CodeGen.Docstring do
+  @max_elixir_line_length 80
+  @two_spaces "&nbsp;&nbsp;"
+  @two_break_lines "\n\n"
+  @list_tags ~w(ul ol)
+
   @doc """
   Transform HTML text into Markdown suitable for inclusion in a docstring
   heredoc in generated Elixir or Erlang code.
   """
   def format(:elixir, text) do
     text
-    |> html_to_markdown
-    |> split_paragraphs
-    |> Enum.map(&(justify_line(&1)))
-    |> Enum.join("\n\n")
+    |> html_to_markdown()
+    |> split_first_sentence_in_one_line()
+    |> split_paragraphs()
+    |> Enum.map(&justify_line(&1, @max_elixir_line_length))
+    |> Enum.join("\n")
+    |> fix_broken_markdown_links()
+    |> fix_html_spaces()
+    |> fix_long_break_lines()
+    |> transform_subtitles()
+    |> String.trim_trailing()
   end
+
   def format(:erlang, nil), do: ""
   def format(:erlang, ""), do: ""
+
   def format(:erlang, text) do
     "@doc #{text}"
     |> html_to_edoc
     |> split_paragraphs
-    |> Enum.map(&(justify_line(&1, 74, "%% ")))
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.map(&justify_line(&1, 74, "%% "))
     |> Enum.join("\n%%\n")
+  end
+
+  defp split_first_sentence_in_one_line(doc) do
+    case String.split(doc, ~r/\.[\s\n]/, parts: 2) do
+      [first, rest] ->
+        first <> ".#{@two_break_lines}" <> rest
+
+      [doc] ->
+        doc
+    end
+  end
+
+  # It searches for links with breaking lines and remove them.
+  # Since performance is not an issue here, we are doing this post processing.
+  defp fix_broken_markdown_links(text) do
+    String.replace(text, ~r/\[([^\n]+)\n\s\s([^]]+)\]/, "[\\1 \\2]")
+  end
+
+  # We added these spaces for each list level.
+  defp fix_html_spaces(text) do
+    String.replace(text, "&nbsp;", " ")
+  end
+
+  defp fix_long_break_lines(text) do
+    String.replace(text, ~r/[\n]{3,}/, @two_break_lines)
+  end
+
+  # Transform `**Subtitle**` into `## Subtitle`
+  defp transform_subtitles(text) do
+    String.replace(text, ~r/[*]{2}([^*]+)[*]{2}\n/, "## \\1\n")
   end
 
   @doc """
   Transform HTML tags into Markdown.
-
-  `UL` and `LI` tags are left unchanged because the simple conversion logic
-  here doesn't handle nesting correctly.  Markdown lists would be nicer to
-  read in text-format, but Pandoc correctly renders HTML lists in the ExDoc
-  output.
   """
   def html_to_markdown(nil), do: ""
+
   def html_to_markdown(text) do
-    text
-    |> convert_links
-    |> String.replace("<a>", "`")
-    |> String.replace("</a>", "`")
-    |> String.replace("<b>", "**")
-    |> String.replace("</b>", "**")
-    |> String.replace("<code>", "`")
-    |> String.replace("</code>", "`")
-    |> String.replace("<fullname>", "")
-    |> String.replace("</fullname>", "\n\n")
-    |> String.replace("<i>", "*")
-    |> String.replace("</i>", "*")
-    |> String.replace("<p>", "")
-    |> String.replace("</p>", "\n\n")
+    {:ok, document} = Floki.parse_fragment(text)
+
+    document
+    |> Floki.traverse_and_update(&update_nodes/1)
+    |> Floki.traverse_and_update(&format_html_lists/1)
+    |> Floki.raw_html(encode: false)
+  end
+
+  defp format_html_lists({"ul", _, children}) do
+    updated_children =
+      children
+      |> prepend_to_list_items("* ")
+      |> append_new_line_to_list_items()
+
+    Floki.text(updated_children) <> @two_break_lines
+  end
+
+  defp format_html_lists({"ol", _, children}) do
+    {_, elements} =
+      Enum.reduce(children, {0, []}, fn el, {count, elements} ->
+        case el do
+          {"li", _, _} ->
+            count = count + 1
+            {count, [["#{count}. ", el] | elements]}
+
+          other ->
+            {count, [other | elements]}
+        end
+      end)
+
+    updated_children =
+      elements
+      |> Enum.reverse()
+      |> List.flatten()
+      |> append_new_line_to_list_items()
+
+    Floki.text(updated_children) <> @two_break_lines
+  end
+
+  defp format_html_lists(other), do: other
+
+  defp update_nodes({"code", _, children}) do
+    text = Floki.text(children)
+
+    if String.contains?(text, "\n") do
+      "#{@two_break_lines}```\n#{text}\n```#{@two_break_lines}"
+    else
+      "`#{text}`"
+    end
+  end
+
+  defp update_nodes({tag, _, children}) when tag in ~w(b strong),
+    do: "**#{Floki.text(children)}**"
+
+  defp update_nodes({tag, _, children}) when tag in ~w(i em), do: "*#{Floki.text(children)}*"
+
+  defp update_nodes({tag, _, children}) when tag in ~w(p fullname note important),
+    do: Floki.text(children) <> @two_break_lines
+
+  defp update_nodes({"a", attrs, children}) do
+    case Enum.find(attrs, fn {attr, _} -> attr == "href" end) do
+      {_, href} ->
+        "[#{Floki.text(children)}](#{href})"
+
+      nil ->
+        "`#{Floki.text(children)}`"
+    end
+  end
+
+  # We need to first prepend two HTML spaces to all lists
+  # inside the tree before formatting it correctly.
+  defp update_nodes({tag, attrs, children}) when tag in @list_tags do
+    new_content = prepend_to_list_items(children, @two_spaces)
+
+    subtree =
+      Floki.traverse_and_update(new_content, fn
+        {tag, attrs, children} when tag in @list_tags ->
+          {tag, attrs, prepend_to_list_items(children, @two_spaces)}
+
+        other ->
+          other
+      end)
+
+    {tag, attrs, subtree}
+  end
+
+  defp update_nodes({"div", attrs, children}) do
+    case attrs do
+      [{"class", "seeAlso"}] ->
+        "See also: " <> Floki.text(children) <> @two_break_lines
+
+      _ ->
+        Floki.text(children) <> @two_break_lines
+    end
+  end
+
+  defp update_nodes({"dl", _, definitions}) do
+    io_data = ["## Definitions", @two_break_lines]
+
+    definitions
+    |> Enum.reduce(io_data, fn element, data ->
+      case element do
+        {"dt", _, term} ->
+          [data | ["### ", Floki.text(term), @two_break_lines]]
+
+        {"dd", _, definition} ->
+          [data | [Floki.text(definition), @two_break_lines]]
+
+        other when is_binary(other) ->
+          [data | other]
+
+        other ->
+          [data | Floki.text(other)]
+      end
+    end)
+    |> IO.iodata_to_binary()
+  end
+
+  defp update_nodes({"pre", _, [content]}) when is_binary(content) do
+    html_to_markdown(content)
+  end
+
+  defp update_nodes(other), do: other
+
+  defp prepend_to_list_items(content, text) do
+    Enum.flat_map(content, fn
+      {"li", _, _} = li ->
+        [text, li]
+
+      other ->
+        [other]
+    end)
+  end
+
+  defp append_new_line_to_list_items(content) do
+    Enum.flat_map(content, fn
+      {"li", _, children} = li ->
+        if with_html_lists?(children) do
+          [li]
+        else
+          [li, "\n"]
+        end
+
+      other ->
+        [other]
+    end)
+  end
+
+  defp with_html_lists?(children) do
+    Enum.any?(children, fn
+      {tag, _, _} when tag in @list_tags -> true
+      _ -> false
+    end)
   end
 
   @doc """
@@ -52,11 +231,12 @@ defmodule AWS.CodeGen.Docstring do
   `P` tags are replaced with newlines and other tags are left unchanged.
   """
   def html_to_edoc(nil), do: ""
+
   def html_to_edoc(text) do
     text
-    |> String.replace("</fullname>", "</fullname>\n\n")
+    |> String.replace("</fullname>", "</fullname>#{@two_break_lines}")
     |> String.replace("<p>", "")
-    |> String.replace("</p>", "\n\n")
+    |> String.replace("</p>", @two_break_lines)
   end
 
   @doc """
@@ -66,8 +246,7 @@ defmodule AWS.CodeGen.Docstring do
   def split_paragraphs(text) do
     text
     |> String.split("\n")
-    |> Enum.map(&(String.trim(&1)))
-    |> Enum.reject(&(&1 == ""))
+    |> Enum.map(&String.trim_trailing(&1))
   end
 
   @doc """
@@ -78,44 +257,42 @@ defmodule AWS.CodeGen.Docstring do
   def justify_line(text, max_length \\ 75, indent \\ "  ") do
     text
     |> break_line(max_length)
-    |> Enum.map(&(String.trim(&1)))
-    |> Enum.reject(&(&1 == ""))
-    |> Enum.map(&("#{indent}#{&1}"))
+    |> Enum.map(&String.trim_trailing(&1))
+    |> Enum.map(fn line ->
+      if line == "" do
+        line
+      else
+        "#{indent}#{line}"
+      end
+    end)
     |> Enum.join("\n")
   end
 
-  defp convert_links(text) do
-    Regex.replace(~r{<a href="(.+?)">(.+?)</a>}, text, "[\\2](\\1)",
-                  global: true)
-  end
-
   defp break_line(text, max_length) do
-    {lines, current} = List.foldl(String.split(text), {[], ""},
-      fn word, {lines, current} ->
-        case String.length(current) + 1 + String.length(word) > max_length do
-          true ->
-            case current == "" do
-              true ->
-                # The current word is the first on the current line, and is
-                # longer than our max_length, so append it as a new line.
-                {lines ++ [word], current}
-              false ->
-                # The current word exceeds the max length, so append the last
-                # line, and start a new one with the current word.
-                {lines ++ [current], word}
-            end
-          false ->
-            case current == "" do
-              true ->
-                # The current word is the first on the current line, so append
-                # it as a new line.
-                {lines, word}
-              false ->
-                # Append the current word to the current line.
-                {lines, "#{current} #{word}"}
-            end
+    {lines, current} =
+      List.foldl(String.split(text), {[], ""}, fn word, {lines, current} ->
+        if String.length(current) + 1 + String.length(word) > max_length do
+          if current == "" do
+            # The current word is the first on the current line, and is
+            # longer than our max_length, so append it as a new line.
+            {lines ++ [word], current}
+          else
+            # The current word exceeds the max length, so append the last
+            # line, and start a new one with the current word.
+            {lines ++ [current], word}
+          end
+        else
+          if current == "" do
+            # The current word is the first on the current line, so append
+            # it as a new line.
+            {lines, word}
+          else
+            # Append the current word to the current line.
+            {lines, "#{current} #{word}"}
+          end
         end
       end)
+
     List.flatten(lines ++ [current])
   end
 end
