@@ -17,7 +17,7 @@ defmodule AWS.CodeGen.DocstringTest do
       text = "<p>Hello,</p> <p><code>world</code></p>!"
       assert "  Hello,\n\n  `world`\n\n  !" == Docstring.format(:elixir, text)
 
-      assert "%% @doc Hello,\n%%\n%% `world`\n%%\n%% !" ==
+      assert "%% @doc Hello,\n%%\n%% `world'\n%%\n%% !" ==
                Docstring.format(:erlang, text)
     end
 
@@ -212,16 +212,16 @@ defmodule AWS.CodeGen.DocstringTest do
           %% @doc A short description.
           %%
           %% This is a <a href="https://foo.bar">link</a>.
-          %% This is a `code` and a multiline is here:
+          %% This is a `code' and a multiline is here:
           %%
           %% ```
           %% puts "hello"
-          %% ```
+          %% '''
           %%
           %% == Section title ==
           %%
           %% Here is a link with the same text: [https://foo]
-          %% And a link without href: `without href`
+          %% And a link without href: `without href'
           """,
           "\n"
         )

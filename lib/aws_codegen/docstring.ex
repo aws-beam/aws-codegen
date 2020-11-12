@@ -256,9 +256,9 @@ defmodule AWS.CodeGen.Docstring do
         text = Floki.text(children)
 
         if String.contains?(text, "\n") do
-          "\n```\n#{String.trim_leading(text, "\n")}```#{@two_break_lines}"
+          "\n```\n#{String.trim_leading(text, "\n")}'''#{@two_break_lines}"
         else
-          "`#{text}`"
+          "`#{text}'"
         end
 
       {"a", attrs, children} = html_node ->
@@ -273,7 +273,7 @@ defmodule AWS.CodeGen.Docstring do
             end
 
           nil ->
-            "`#{Floki.text(children)}`"
+            "`#{Floki.text(children)}'"
         end
 
       other ->
