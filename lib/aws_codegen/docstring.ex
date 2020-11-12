@@ -1,5 +1,6 @@
 defmodule AWS.CodeGen.Docstring do
   @max_elixir_line_length 80
+  @max_erlang_line_length 74
   @two_spaces "&nbsp;&nbsp;"
   @two_break_lines "\n\n"
   @list_tags ~w(ul ol)
@@ -26,12 +27,15 @@ defmodule AWS.CodeGen.Docstring do
   def format(:erlang, ""), do: ""
 
   def format(:erlang, text) do
-    "@doc #{text}"
-    |> html_to_edoc
-    |> split_paragraphs
-    |> Enum.reject(&(&1 == ""))
-    |> Enum.map(&justify_line(&1, 74, "%% "))
-    |> Enum.join("\n%%\n")
+    html = html_to_edoc(text)
+
+    "@doc #{split_first_sentence_in_one_line(html)}"
+    |> split_paragraphs()
+    |> Enum.map(&justify_line(&1, @max_erlang_line_length, "%% "))
+    |> Enum.join("\n")
+    |> fix_long_break_lines()
+    |> String.trim_trailing()
+    |> String.replace(@two_break_lines, "\n%%\n")
   end
 
   defp split_first_sentence_in_one_line(doc) do
@@ -69,7 +73,7 @@ defmodule AWS.CodeGen.Docstring do
   """
   def html_to_markdown(nil), do: ""
 
-  def html_to_markdown(text) do
+  def html_to_markdown(text) when is_binary(text) do
     {:ok, document} = Floki.parse_fragment(text)
 
     document
@@ -232,11 +236,50 @@ defmodule AWS.CodeGen.Docstring do
   """
   def html_to_edoc(nil), do: ""
 
-  def html_to_edoc(text) do
-    text
-    |> String.replace("</fullname>", "</fullname>#{@two_break_lines}")
-    |> String.replace("<p>", "")
-    |> String.replace("</p>", @two_break_lines)
+  def html_to_edoc(text) when is_binary(text) do
+    {:ok, document} = Floki.parse_fragment(text)
+
+    document
+    |> Floki.traverse_and_update(fn
+      {"p", [{"class", "title"}], title} ->
+        text =
+          title
+          |> Floki.text()
+          |> String.trim()
+
+        "== #{text} ==#{@two_break_lines}"
+
+      {tag, _, _} = html_node when tag in ~w(p fullname note important div) ->
+        update_nodes(html_node)
+
+      {"code", _, children} ->
+        text = Floki.text(children)
+
+        if String.contains?(text, "\n") do
+          "\n```\n#{String.trim_leading(text, "\n")}```#{@two_break_lines}"
+        else
+          "`#{text}`"
+        end
+
+      {"a", attrs, children} = html_node ->
+        case Enum.find(attrs, fn {attr, _} -> attr == "href" end) do
+          {_, href} ->
+            text = Floki.text(children)
+
+            if text == href do
+              "[#{href}]"
+            else
+              html_node
+            end
+
+          nil ->
+            "`#{Floki.text(children)}`"
+        end
+
+      other ->
+        other
+    end)
+    |> Floki.raw_html(encode: false)
   end
 
   @doc """
