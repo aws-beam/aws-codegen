@@ -50,9 +50,9 @@ defmodule AWS.CodeGen.RestService do
             end
           else
             if multi_segment do
-              Enum.join(["\", aws_util:encode_uri(", parameter.code_name,", true), \""])
+              Enum.join(["\", aws_util:encode_multi_segment_uri(", parameter.code_name,"), \""])
             else
-              Enum.join(["\", http_uri:encode(", parameter.code_name, "), \""])
+              Enum.join(["\", aws_util:encode_uri(", parameter.code_name, "), \""])
             end
           end
           # Some url parameters have a trailing "+" indicating they are

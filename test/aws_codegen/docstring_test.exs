@@ -17,7 +17,7 @@ defmodule AWS.CodeGen.DocstringTest do
       text = "<p>Hello,</p> <p><code>world</code></p>!"
       assert "  Hello,\n\n  `world`\n\n  !" == Docstring.format(:elixir, text)
 
-      assert "%% @doc Hello,\n%%\n%% <code>world</code>\n%%\n%% !" ==
+      assert "%% @doc Hello,\n%%\n%% `world'\n%%\n%% !" ==
                Docstring.format(:erlang, text)
     end
 
@@ -164,11 +164,70 @@ defmodule AWS.CodeGen.DocstringTest do
 
       assert expected == Docstring.format(:elixir, text)
     end
-  end
 
-  test "html_to_edoc/1 renders <fullname> tags as distinct paragraphs" do
-    text = "<fullname>Hello, world!</fullname>"
-    assert "<fullname>Hello, world!</fullname>\n\n" == Docstring.html_to_edoc(text)
+    test "removes some tags and add spacing after them" do
+      text = """
+      <p>A short description</p>
+
+      <div>This is a div</div>
+      <fullname>Fullname node</fullname>
+      <note>Here is a note</note>
+      <div class="seeAlso">See also div</div>
+      """
+
+      expected =
+        String.trim(
+          """
+          %% @doc A short description
+          %%
+          %% This is a div
+          %%
+          %% Fullname node
+          %%
+          %% Here is a note
+          %%
+          %% See also: See also div
+          """,
+          "\n"
+        )
+
+      assert expected == Docstring.format(:erlang, text)
+    end
+
+    test "formats a, code and p (as title) tags" do
+      text = """
+      A short description. This is a <a href="https://foo.bar">link</a>.
+      This is a <code>code</code> and a multiline is here:
+      <code>
+      puts "hello"
+      </code>
+      <p class="title">Section title</p>
+      Here is a link with the same text: <a href="https://foo">https://foo</a>
+      And a link without href: <a>without href</a>
+      """
+
+      expected =
+        String.trim(
+          """
+          %% @doc A short description.
+          %%
+          %% This is a <a href="https://foo.bar">link</a>.
+          %% This is a `code' and a multiline is here:
+          %%
+          %% ```
+          %% puts "hello"
+          %% '''
+          %%
+          %% == Section title ==
+          %%
+          %% Here is a link with the same text: [https://foo]
+          %% And a link without href: `without href'
+          """,
+          "\n"
+        )
+
+      assert expected == Docstring.format(:erlang, text)
+    end
   end
 
   test "html_to_markdown/1 replaces <code> tags with backticks" do
