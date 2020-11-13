@@ -252,6 +252,11 @@ defmodule AWS.CodeGen.Docstring do
       {tag, _, _} = html_node when tag in ~w(p fullname note important div) ->
         update_nodes(html_node)
 
+      {"pre", _, children} ->
+        children
+        |> Floki.text()
+        |> String.replace(~r/(^`|'$)/, "")
+
       {"code", _, children} ->
         text = Floki.text(children)
 
