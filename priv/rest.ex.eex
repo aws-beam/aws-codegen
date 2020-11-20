@@ -4,7 +4,23 @@
 defmodule <%= context.module_name %> do
   @moduledoc """
 <%= context.docstring %>
-  """<%= for action <- context.actions do %>
+  """
+
+  def metadata do
+    %AWS.ServiceMetadata{
+      abbreviation: <%= inspect(context.abbreviation) %>,
+      api_version: <%= inspect(context.api_version) %>,
+      content_type: <%= inspect(context.content_type) %>,
+      credential_scope: <%= inspect(context.credential_scope) %>,
+      endpoint_prefix: <%= inspect(context.endpoint_prefix) %>,
+      global?: <%= inspect(context.is_global) %>,
+      protocol: <%= inspect(context.protocol) %>,
+      service_id: <%= inspect(context.service_id) %>,
+      signature_version: <%= inspect(context.signature_version) %>,
+      signing_name: <%= inspect(context.signing_name) %>,
+      target_prefix: <%= inspect(context.target_prefix) %>
+    }
+  end<%= for action <- context.actions do %>
 
   @doc """
 <%= action.docstring %>

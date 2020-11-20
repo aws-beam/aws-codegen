@@ -3,6 +3,7 @@ defmodule AWS.CodeGen.RestService do
 
   defmodule Service do
     defstruct abbreviation: nil,
+              api_version: nil,
               actions: [],
               credential_scope: nil,
               content_type: nil,
@@ -15,6 +16,8 @@ defmodule AWS.CodeGen.RestService do
               module_name: nil,
               protocol: nil,
               signing_name: nil,
+              signature_version: nil,
+              service_id: nil,
               target_prefix: nil
   end
 
@@ -125,6 +128,7 @@ defmodule AWS.CodeGen.RestService do
 
     %Service{
       actions: actions,
+      api_version: api_spec["metadata"]["apiVersion"],
       docstring: Docstring.format(language, doc_spec["service"]),
       credential_scope: credential_scope,
       content_type: @configuration[protocol][:content_type],
@@ -136,6 +140,8 @@ defmodule AWS.CodeGen.RestService do
       module_name: module_name,
       protocol: api_spec["metadata"]["protocol"],
       signing_name: signing_name,
+      signature_version: api_spec["metadata"]["signatureVersion"],
+      service_id: api_spec["metadata"]["serviceId"],
       target_prefix: api_spec["metadata"]["targetPrefix"]
     }
   end

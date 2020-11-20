@@ -15,6 +15,8 @@ defmodule AWS.CodeGen.PostService do
               json_version: nil,
               module_name: nil,
               protocol: nil,
+              signature_version: nil,
+              service_id: nil,
               signing_name: nil,
               target_prefix: nil
   end
@@ -94,6 +96,8 @@ defmodule AWS.CodeGen.PostService do
       module_name: module_name,
       protocol: protocol,
       signing_name: signing_name,
+      signature_version: api_spec["metadata"]["signatureVersion"],
+      service_id: api_spec["metadata"]["serviceId"],
       target_prefix: api_spec["metadata"]["targetPrefix"]
     }
   end
