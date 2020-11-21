@@ -6,6 +6,9 @@ defmodule <%= context.module_name %> do
 <%= context.docstring %>
   """
 
+  alias AWS.Client
+  alias AWS.Request
+
   def metadata do
     %AWS.ServiceMetadata{
       abbreviation: <%= inspect(context.abbreviation) %>,
@@ -25,67 +28,8 @@ defmodule <%= context.module_name %> do
   @doc """
 <%= action.docstring %>
   """
-  def <%= action.function_name %>(client, input, options \\ []) do
-    request(client, "<%= action.name %>", input, options)
+  def <%= action.function_name %>(%Client{} = client, input, options \\ []) do
+    Request.request_post(client, metadata(), "<%= action.name %>", input, options)
   end
 <% end %>
-  @spec request(AWS.Client.t(), binary(), map(), list()) ::
-          {:ok, map() | nil, map()}
-          | {:error, term()}
-  defp request(client, action, input, options) do
-    client = %{client | service: "<%= context.signing_name %>"<%= if context.is_global do %>,
-                        region:  "<%= context.credential_scope %>"<% end %>}
-    host = build_host("<%= context.endpoint_prefix %>", client)
-    url = build_url(host, client)
-
-    headers = [
-      {"Host", host},
-      {"Content-Type", "<%= context.content_type %>"}<%= if context.protocol == "json" do %>,
-      {"X-Amz-Target", "<%= context.target_prefix %>.#{action}"}<% end %>
-    ]
-<%= if context.protocol == "query" do %>
-    input = Map.merge(input, %{"Action" => action, "Version" => "<%= context.api_version %>"})<% end %>
-    payload = encode!(client, input)
-    headers = AWS.Request.sign_v4(client, "POST", url, headers, payload)
-    post(client, url, payload, headers, options)
-  end
-
-  defp post(client, url, payload, headers, options) do
-    case AWS.Client.request(client, :post, url, payload, headers, options) do
-      {:ok, %{status_code: 200, body: body} = response} ->
-        body = if body != "", do: decode!(client, body)
-        {:ok, body, response}
-
-      {:ok, response} ->
-        {:error, {:unexpected_response, response}}
-
-      error = {:error, _reason} -> error
-    end
-  end
-
-  defp build_host(_endpoint_prefix, %{region: "local", endpoint: endpoint}) do
-    endpoint
-  end
-  defp build_host(_endpoint_prefix, %{region: "local"}) do
-    "localhost"
-  end<%= if context.is_global do %>
-  defp build_host(endpoint_prefix, %{endpoint: endpoint}) do
-    "#{endpoint_prefix}.#{endpoint}"
-  end
-<% else %>
-  defp build_host(endpoint_prefix, %{region: region, endpoint: endpoint}) do
-    "#{endpoint_prefix}.#{region}.#{endpoint}"
-  end
-<% end %>
-  defp build_url(host, %{:proto => proto, :port => port}) do
-    "#{proto}://#{host}:#{port}/"
-  end
-
-  defp encode!(client, payload) do
-    AWS.Client.encode!(client, payload, :<%= context.encode %>)
-  end
-
-  defp decode!(client, payload) do
-    AWS.Client.decode!(client, payload, :<%= context.decode %>)
-  end
 end
