@@ -1,25 +1,6 @@
 defmodule AWS.CodeGen.PostService do
   alias AWS.CodeGen.Docstring
-
-  defmodule Service do
-    defstruct abbreviation: nil,
-              actions: [],
-              api_version: nil,
-              credential_scope: nil,
-              content_type: nil,
-              docstring: nil,
-              decode: nil,
-              encode: nil,
-              endpoint_prefix: nil,
-              is_global: false,
-              json_version: nil,
-              module_name: nil,
-              protocol: nil,
-              signature_version: nil,
-              service_id: nil,
-              signing_name: nil,
-              target_prefix: nil
-  end
+  alias AWS.CodeGen.Service
 
   defmodule Action do
     defstruct arity: nil,

@@ -15,6 +15,28 @@ defmodule AWS.CodeGen do
   if there is an available implementation for that protocol.
   """
 
+  defmodule Service do
+    @moduledoc false
+
+    defstruct abbreviation: nil,
+              actions: [],
+              api_version: nil,
+              credential_scope: nil,
+              content_type: nil,
+              docstring: nil,
+              decode: nil,
+              encode: nil,
+              endpoint_prefix: nil,
+              is_global: false,
+              json_version: nil,
+              module_name: nil,
+              protocol: nil,
+              signature_version: nil,
+              service_id: nil,
+              signing_name: nil,
+              target_prefix: nil
+  end
+
   # Configuration map which determines what AWS API protocols have an
   # implementation for what language.
   @configuration %{

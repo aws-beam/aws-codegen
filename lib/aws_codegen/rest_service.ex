@@ -1,25 +1,6 @@
 defmodule AWS.CodeGen.RestService do
   alias AWS.CodeGen.Docstring
-
-  defmodule Service do
-    defstruct abbreviation: nil,
-              api_version: nil,
-              actions: [],
-              credential_scope: nil,
-              content_type: nil,
-              docstring: nil,
-              decode: nil,
-              encode: nil,
-              endpoint_prefix: nil,
-              is_global: false,
-              json_version: nil,
-              module_name: nil,
-              protocol: nil,
-              signing_name: nil,
-              signature_version: nil,
-              service_id: nil,
-              target_prefix: nil
-  end
+  alias AWS.CodeGen.Service
 
   defmodule Action do
     alias AWS.CodeGen.RestService.Parameter
