@@ -103,7 +103,16 @@ defmodule AWS.CodeGen do
       args = [language, spec.module_name, endpoints_spec, spec.api, spec.doc]
       context = apply(protocol_service, :load_context, args)
       code = apply(protocol_service, :render, [context, template_path])
+
       IO.puts(["Writing ", spec.module_name, " to ", output_path])
+
+      code =
+        if language == :elixir do
+          Code.format_string!(code)
+        else
+          code
+        end
+
       File.write(output_path, code)
     else
       IO.puts("Failed to generate #{spec.module_name}, protocol #{spec.protocol}")
