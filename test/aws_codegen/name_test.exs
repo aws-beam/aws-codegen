@@ -33,4 +33,10 @@ defmodule AWS.CodeGen.NameTest do
   test "to_snake_case/1 special cases UUID" do
     assert "uuid" = Name.to_snake_case("UUID")
   end
+
+  test "upcase_first/1" do
+    assert "Elixir" = Name.upcase_first("elixir")
+    assert "ElixirLang" = Name.upcase_first("elixirLang")
+    assert "IEx" = Name.upcase_first("iEx")
+  end
 end

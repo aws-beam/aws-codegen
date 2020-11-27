@@ -1,5 +1,6 @@
 defmodule AWS.CodeGen do
   alias AWS.CodeGen.Spec
+
   @moduledoc """
   AWS API Services generator.
 
@@ -14,35 +15,57 @@ defmodule AWS.CodeGen do
   if there is an available implementation for that protocol.
   """
 
+  defmodule Service do
+    @moduledoc false
+
+    defstruct abbreviation: nil,
+              actions: [],
+              api_version: nil,
+              credential_scope: nil,
+              content_type: nil,
+              docstring: nil,
+              decode: nil,
+              encode: nil,
+              endpoint_prefix: nil,
+              is_global: false,
+              json_version: nil,
+              module_name: nil,
+              protocol: nil,
+              signature_version: nil,
+              service_id: nil,
+              signing_name: nil,
+              target_prefix: nil
+  end
+
   # Configuration map which determines what AWS API protocols have an
   # implementation for what language.
   @configuration %{
-    :json => %{
-      :module => AWS.CodeGen.PostService,
-      :template => %{
-        :elixir => "post.ex.eex",
-        :erlang => "post.erl.eex"
+    json: %{
+      module: AWS.CodeGen.PostService,
+      template: %{
+        elixir: "post.ex.eex",
+        erlang: "post.erl.eex"
       }
     },
-    :rest_json => %{
-      :module => AWS.CodeGen.RestService,
-      :template => %{
-        :elixir => "rest.ex.eex",
-        :erlang => "rest.erl.eex"
+    rest_json: %{
+      module: AWS.CodeGen.RestService,
+      template: %{
+        elixir: "rest.ex.eex",
+        erlang: "rest.erl.eex"
       }
     },
-    :query => %{
-      :module => AWS.CodeGen.PostService,
-      :template => %{
-        :elixir => "post.ex.eex",
-        :erlang => "post.erl.eex"
+    query: %{
+      module: AWS.CodeGen.PostService,
+      template: %{
+        elixir: "post.ex.eex",
+        erlang: "post.erl.eex"
       }
     },
-    :rest_xml => %{
-      :module => AWS.CodeGen.RestService,
-      :template => %{
-        :elixir => "rest.ex.eex",
-        :erlang => "rest.erl.eex"
+    rest_xml: %{
+      module: AWS.CodeGen.RestService,
+      template: %{
+        elixir: "rest.ex.eex",
+        erlang: "rest.erl.eex"
       }
     }
   }
@@ -52,13 +75,18 @@ defmodule AWS.CodeGen do
   """
   def generate(language, spec_base_path, template_base_path, output_base_path) do
     endpoints_spec = get_endpoints_spec(spec_base_path)
-    tasks = Enum.map(api_specs(spec_base_path, language),
-      fn(spec) ->
-        output_path = Path.join(output_base_path, spec.filename)
-        args = [spec, language, endpoints_spec, template_base_path, output_path]
-        Task.async(AWS.CodeGen, :generate_code, args)
-      end)
-    Enum.each(tasks, fn(task) -> Task.await(task) end)
+
+    tasks =
+      Enum.map(
+        api_specs(spec_base_path, language),
+        fn spec ->
+          output_path = Path.join(output_base_path, spec.filename)
+          args = [spec, language, endpoints_spec, template_base_path, output_path]
+          Task.async(AWS.CodeGen, :generate_code, args)
+        end
+      )
+
+    Enum.each(tasks, fn task -> Task.await(task) end)
   end
 
   @doc """
@@ -68,7 +96,8 @@ defmodule AWS.CodeGen do
   """
   def generate_code(spec, language, endpoints_spec, template_base_path, output_path) do
     template = @configuration[spec.protocol][:template][language]
-    if not is_nil(template) do
+
+    if template do
       protocol_service = @configuration[spec.protocol][:module]
       template_path = Path.join(template_base_path, template)
       args = [language, spec.module_name, endpoints_spec, spec.api, spec.doc]
@@ -77,13 +106,14 @@ defmodule AWS.CodeGen do
       IO.puts(["Writing ", spec.module_name, " to ", output_path])
       File.write(output_path, code)
     else
-      IO.puts("Failed to generate #{spec.module_name}, protocol #{Atom.to_string(spec.protocol)}")
+      IO.puts("Failed to generate #{spec.module_name}, protocol #{spec.protocol}")
     end
   end
 
   defp api_specs(base_path, language) do
     search_path = Path.join(base_path, "*/*")
     IO.puts("Parsing specs in #{search_path}")
+
     for path <- Path.wildcard(search_path) do
       Spec.parse(path, language)
     end
@@ -91,10 +121,9 @@ defmodule AWS.CodeGen do
 
   defp get_endpoints_spec(base_path) do
     Path.join([base_path, "..", "endpoints", "endpoints.json"])
-    |> Spec.parse_json
+    |> Spec.parse_json()
     |> get_in(["partitions"])
-    |> Enum.filter(fn(x) -> x["partition"] == "aws" end)
-    |> List.first
+    |> Enum.filter(fn x -> x["partition"] == "aws" end)
+    |> List.first()
   end
-
 end
