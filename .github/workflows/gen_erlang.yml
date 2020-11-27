@@ -9,22 +9,23 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    container:
+      image: hexpm/elixir:${{ matrix.elixir }}-erlang-${{ matrix.erlang }}-ubuntu-${{ matrix.ubuntu }}
+
+    name: Elixir ${{ matrix.elixir }} / Erlang ${{ matrix.erlang }} with Ubuntu ${{matrix.ubuntu}}
+
     strategy:
+      fail-fast: false
       matrix:
-        include:
-          - elixir: 1.11.x
-            otp: 23.x
+        elixir: ["1.11.2"]
+        erlang: ["23.1.4"]
+        ubuntu: ["focal-20201008"]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1.4.1
-        with:
-          otp-version: ${{matrix.otp}}
-          elixir-version: ${{matrix.elixir}}
       - name: Install Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get -y install build-essential cmake
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install build-essential cmake
           mix local.rebar --force
           mix local.hex --force
           mix deps.get

@@ -8,19 +8,24 @@ on:
       - master
 jobs:
   build:
-    strategy:
-      matrix:
-        platform: [ubuntu-latest]
-        elixir: ['1.8.2', '1.9.4', '1.10.4', '1.11.1']
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     container:
-      image: elixir:${{ matrix.elixir }}-slim
+      image: hexpm/elixir:${{ matrix.elixir }}-erlang-${{ matrix.erlang }}-ubuntu-${{ matrix.ubuntu }}
+
+    name: Elixir ${{ matrix.elixir }} / Erlang ${{ matrix.erlang }} with Ubuntu ${{matrix.ubuntu}}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        elixir: ["1.11.2"]
+        erlang: ["23.1.4"]
+        ubuntu: ["focal-20201008"]
     steps:
       - uses: actions/checkout@v2
       - name: Install Dependencies
         run: |
           apt-get update
-          apt-get -y install build-essential cmake
+          DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install build-essential cmake
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
