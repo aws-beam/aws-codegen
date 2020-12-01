@@ -3,7 +3,7 @@ defmodule AWS.CodeGen.Spec do
   Parse and process the specfication for an AWS service.
   """
 
-  @module_acronyms ~w(SMS WAF API SES HSM FSx IoT MTurk QLDB DB RDS A2I XRay EC2)
+  @module_acronyms ~w(SMS WAF API SES HSM FSx IoT MTurk QLDB DB RDS A2I XRay EC2 SSO IVS MQ SDB OIDC ACMPCA)
 
   defstruct protocol: nil,
             module_name: nil,
