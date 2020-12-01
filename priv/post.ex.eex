@@ -2,9 +2,11 @@
 # See https://github.com/aws-beam/aws-codegen for more details.
 
 defmodule <%= context.module_name %> do
+  <%= if String.trim(context.docstring) != "" do %>
   @moduledoc """
 <%= context.docstring %>
   """
+  <% end%>
 
   alias AWS.Client
   alias AWS.Request
@@ -25,9 +27,10 @@ defmodule <%= context.module_name %> do
     }
   end
 <%= for action <- context.actions do %>
+  <%= if String.trim(action.docstring) != "" do %>
   @doc """
 <%= action.docstring %>
-  """
+  """<% end %>
   def <%= action.function_name %>(%Client{} = client, input, options \\ []) do
     Request.request_post(client, metadata(), "<%= action.name %>", input, options)
   end
