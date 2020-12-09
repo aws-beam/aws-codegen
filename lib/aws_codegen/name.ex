@@ -1,5 +1,10 @@
 defmodule AWS.CodeGen.Name do
-  @names_to_capitalize ~w(iSCSI BGP CSV NFS VTL UUID)
+  @names_to_capitalize ~w(
+    iSCSI BGP CSV NFS VTL UUID AWS VPCE VPC ACL DB
+    JSON SSE URL DNS VPC MFA SAML ML PHI DASH HLS CM
+    IAM EC2 SMS SSL SMB KMS API DRT CNAME PIN LDAPS HIT
+    SSH RDS ARN ICD10 OTA UI IP CA LB AD ID MD5 AVS
+  )
 
   @doc """
   Convert `CamelCase` or `nerdyCaps` to `snake_case`.
