@@ -1,6 +1,7 @@
 defmodule AWS.CodeGen.RestService do
   alias AWS.CodeGen.Docstring
   alias AWS.CodeGen.Service
+  alias AWS.CodeGen.Shapes
 
   defmodule Action do
     alias AWS.CodeGen.RestService.Parameter
@@ -16,6 +17,7 @@ defmodule AWS.CodeGen.RestService do
               query_parameters: [],
               request_header_parameters: [],
               response_header_parameters: [],
+              send_body_as_binary?: false,
               language: nil
 
     def method(action) do
@@ -172,11 +174,15 @@ defmodule AWS.CodeGen.RestService do
   end
 
   defp collect_actions(language, api_spec, doc_spec) do
+    shapes = api_spec["shapes"]
+
     Enum.map(api_spec["operations"], fn {operation, _metadata} ->
+      operation_spec = api_spec["operations"][operation]
+
       url_parameters = collect_url_parameters(language, api_spec, operation)
       query_parameters = collect_query_parameters(language, api_spec, operation)
       request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
-      method = api_spec["operations"][operation]["http"]["method"]
+      method = operation_spec["http"]["method"]
 
       len_for_method =
         case method do
@@ -187,6 +193,8 @@ defmodule AWS.CodeGen.RestService do
             3
         end
 
+      input_shape = Shapes.get_input_shape(operation_spec)
+
       %Action{
         arity: length(url_parameters) + len_for_method,
         docstring:
@@ -195,8 +203,8 @@ defmodule AWS.CodeGen.RestService do
             doc_spec["operations"][operation]
           ),
         method: method,
-        request_uri: api_spec["operations"][operation]["http"]["requestUri"],
-        success_status_code: api_spec["operations"][operation]["http"]["responseCode"],
+        request_uri: operation_spec["http"]["requestUri"],
+        success_status_code: operation_spec["http"]["responseCode"],
         function_name: AWS.CodeGen.Name.to_snake_case(operation),
         name: operation,
         url_parameters: url_parameters,
@@ -204,6 +212,7 @@ defmodule AWS.CodeGen.RestService do
         request_header_parameters: request_header_parameters,
         response_header_parameters:
           collect_response_header_parameters(language, api_spec, operation),
+        send_body_as_binary?: Shapes.send_body_as_binary?(shapes, input_shape),
         language: language
       }
     end)
