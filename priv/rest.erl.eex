@@ -28,8 +28,8 @@
 <%= if length(action.request_header_parameters) > 0 do %>
     Headers0 =
       [<%= for parameter <- Enum.drop(action.request_header_parameters, -1) do %>
-        {<<"<%= parameter.location_name %>">>, maps:get(<<"<%= parameter.location_name %>">>, HeadersMap, undefined)},<% end %><%= for parameter <- Enum.slice action.request_header_parameters, -1..-1 do %>
-        {<<"<%= parameter.location_name %>">>, maps:get(<<"<%= parameter.location_name %>">>, HeadersMap, undefined)}
+        {<<"<%= parameter.location_name %>">>, <%= if parameter.required do %><%= parameter.code_name %><% else %>maps:get(<<"<%= parameter.location_name %>">>, HeadersMap, undefined)<% end %>},<% end %><%= for parameter <- Enum.slice action.request_header_parameters, -1..-1 do %>
+        {<<"<%= parameter.location_name %>">>, <%= if parameter.required do %><%= parameter.code_name %><% else %>maps:get(<<"<%= parameter.location_name %>">>, HeadersMap, undefined)<% end %>}
       <% end %>],
     Headers = [H || {_, V} = H <- Headers0, V =/= undefined],
 <% else %>
@@ -37,8 +37,8 @@
 <% end %><%= if length(action.query_parameters) > 0 do %>
     Query0_ =
       [<%= for parameter <- Enum.drop(action.query_parameters, -1) do %>
-        {<<"<%= parameter.location_name %>">>, maps:get(<<"<%= parameter.location_name %>">>, QueryMap, undefined)},<% end %><%= for parameter <- Enum.slice action.query_parameters, -1..-1 do %>
-        {<<"<%= parameter.location_name %>">>, maps:get(<<"<%= parameter.location_name %>">>, QueryMap, undefined)}
+        {<<"<%= parameter.location_name %>">>, <%= if parameter.required do %><%= parameter.code_name %><% else %>maps:get(<<"<%= parameter.location_name %>">>, QueryMap, undefined)<% end %>},<% end %><%= for parameter <- Enum.slice action.query_parameters, -1..-1 do %>
+        {<<"<%= parameter.location_name %>">>, <%= if parameter.required do %><%= parameter.code_name %><% else %>maps:get(<<"<%= parameter.location_name %>">>, QueryMap, undefined)<% end %>}
       <% end %>],
     Query_ = [H || {_, V} = H <- Query0_, V =/= undefined],
 <% else %>

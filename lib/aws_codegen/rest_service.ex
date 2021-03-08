@@ -15,7 +15,11 @@ defmodule AWS.CodeGen.RestService do
               name: nil,
               url_parameters: [],
               query_parameters: [],
+              required_query_parameters: [],
+              optional_query_parameters: [],
               request_header_parameters: [],
+              required_request_header_parameters: [],
+              optional_request_header_parameters: [],
               response_header_parameters: [],
               send_body_as_binary?: false,
               language: nil
@@ -141,7 +145,7 @@ defmodule AWS.CodeGen.RestService do
   into the code template.
   """
   def required_function_parameters(action) do
-    function_parameters(action, false)
+    function_parameters(action, true)
   end
 
   @doc """
@@ -155,13 +159,17 @@ defmodule AWS.CodeGen.RestService do
       join_parameters(action.url_parameters, language)
       | case action.method do
           "GET" ->
-            parameters = action.query_parameters ++ action.request_header_parameters
             case required_only do
-              true ->
-                [join_parameters(parameters, language)]
               false ->
-                required_parameters = Enum.filter(parameters, fn param -> param.required end)
-                [join_parameters(required_parameters, language)]
+                [
+                  join_parameters(action.query_parameters, language),
+                  join_parameters(action.request_header_parameters, language)
+                ]
+              true ->
+                [
+                  join_parameters(action.required_query_parameters, language),
+                  join_parameters(action.required_request_header_parameters, language)
+                ]
             end
           _ ->
             []
@@ -193,6 +201,11 @@ defmodule AWS.CodeGen.RestService do
       url_parameters = collect_url_parameters(language, api_spec, operation)
       query_parameters = collect_query_parameters(language, api_spec, operation)
       request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
+      is_required = fn param -> param.required end
+      {required_query_parameters, optional_query_parameters} =
+        Enum.split_with(query_parameters, is_required)
+      {required_request_header_parameters, optional_request_header_parameters} =
+        Enum.split_with(request_header_parameters, is_required)
       method = operation_spec["http"]["method"]
 
       len_for_method =
@@ -202,10 +215,7 @@ defmodule AWS.CodeGen.RestService do
               :elixir ->
                 2 + length(request_header_parameters) + length(query_parameters)
               :erlang ->
-                filterFn = fn param -> param.required end
-                all_parameters = request_header_parameters ++ query_parameters
-                required_parameters = Enum.filter(all_parameters, filterFn)
-                4 + length(required_parameters)
+                4 + length(required_request_header_parameters) + length(required_query_parameters)
             end
 
           _ ->
@@ -228,7 +238,11 @@ defmodule AWS.CodeGen.RestService do
         name: operation,
         url_parameters: url_parameters,
         query_parameters: query_parameters,
+        required_query_parameters: required_query_parameters,
+        optional_query_parameters: optional_query_parameters,
         request_header_parameters: request_header_parameters,
+        required_request_header_parameters: required_request_header_parameters,
+        optional_request_header_parameters: optional_request_header_parameters,
         response_header_parameters:
           collect_response_header_parameters(language, api_spec, operation),
         send_body_as_binary?: Shapes.send_body_as_binary?(shapes, input_shape),
