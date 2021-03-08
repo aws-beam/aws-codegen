@@ -4,7 +4,7 @@
 <%= if context.docstring != "%% @doc" do %><%= context.docstring %><% end %>
 -module(<%= context.module_name %>).
 
--export([<%= Enum.map(context.actions, fn(action) -> ["#{action.function_name}/#{action.arity - 1}", "#{action.function_name}/#{action.arity}"] end) |> List.flatten |> Enum.join(",\n         ") %>]).
+-export([<%= Enum.map(context.actions, fn(action) -> ["#{action.function_name}/#{action.arity - 3}", "#{action.function_name}/#{action.arity - 1}", "#{action.function_name}/#{action.arity}"] end) |> List.flatten |> Enum.join(",\n         ") %>]).
 
 -include_lib("hackney/include/hackney_lib.hrl").
 
@@ -13,18 +13,23 @@
 %%====================================================================
 <%= for action <- context.actions do %>
 <%= action.docstring %><%= if action.method == "GET" do %>
-<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>)
+<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>)
   when is_map(Client) ->
-    <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, []).
-<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Options)
-  when is_map(Client), is_list(Options) ->
+    <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, #{}, #{}).
+
+<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap)
+  when is_map(Client), is_map(QueryMap), is_map(HeadersMap) ->
+    <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, []).
+
+<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, Options)
+  when is_map(Client), is_map(QueryMap), is_map(HeadersMap), is_list(Options) ->
     Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],
     SuccessStatusCode = <%= if is_nil(action.success_status_code), do: "undefined", else: inspect(action.success_status_code) %>,
 <%= if length(action.request_header_parameters) > 0 do %>
     Headers0 =
       [<%= for parameter <- Enum.drop(action.request_header_parameters, -1) do %>
-        {<<"<%= parameter.location_name %>">>, <%= parameter.code_name %>},<% end %><%= for parameter <- Enum.slice action.request_header_parameters, -1..-1 do %>
-        {<<"<%= parameter.location_name %>">>, <%= parameter.code_name %>}
+        {<<"<%= parameter.location_name %>">>, maps:get(<<"<%= parameter.location_name %>">>, HeadersMap, undefined)},<% end %><%= for parameter <- Enum.slice action.request_header_parameters, -1..-1 do %>
+        {<<"<%= parameter.location_name %>">>, maps:get(<<"<%= parameter.location_name %>">>, HeadersMap, undefined)}
       <% end %>],
     Headers = [H || {_, V} = H <- Headers0, V =/= undefined],
 <% else %>
@@ -32,8 +37,8 @@
 <% end %><%= if length(action.query_parameters) > 0 do %>
     Query0_ =
       [<%= for parameter <- Enum.drop(action.query_parameters, -1) do %>
-        {<<"<%= parameter.location_name %>">>, <%= parameter.code_name %>},<% end %><%= for parameter <- Enum.slice action.query_parameters, -1..-1 do %>
-        {<<"<%= parameter.location_name %>">>, <%= parameter.code_name %>}
+        {<<"<%= parameter.location_name %>">>, maps:get(<<"<%= parameter.location_name %>">>, QueryMap, undefined)},<% end %><%= for parameter <- Enum.slice action.query_parameters, -1..-1 do %>
+        {<<"<%= parameter.location_name %>">>, maps:get(<<"<%= parameter.location_name %>">>, QueryMap, undefined)}
       <% end %>],
     Query_ = [H || {_, V} = H <- Query0_, V =/= undefined],
 <% else %>

@@ -137,21 +137,32 @@ defmodule AWS.CodeGen.RestService do
   end
 
   @doc """
-  Render function parameter, if any, in a way that can be inserted directly
+  Render required function parameters, if any, in a way that can be inserted directly
   into the code template.
   """
-  def function_parameters(action) do
+  def required_function_parameters(action) do
+    function_parameters(action, false)
+  end
+
+  @doc """
+  Render function parameters, if any, in a way that can be inserted directly
+  into the code template. It can be asked to only return the required ones.
+  """
+  def function_parameters(action, required_only \\ false) do
     language = action.language
 
     Enum.join([
       join_parameters(action.url_parameters, language)
       | case action.method do
           "GET" ->
-            [
-              join_parameters(action.query_parameters, language),
-              join_parameters(action.request_header_parameters, language)
-            ]
-
+            parameters = action.query_parameters ++ action.request_header_parameters
+            case required_only do
+              true ->
+                [join_parameters(parameters, language)]
+              false ->
+                required_parameters = Enum.filter(parameters, fn param -> param.required end)
+                [join_parameters(required_parameters, language)]
+            end
           _ ->
             []
         end
@@ -187,7 +198,15 @@ defmodule AWS.CodeGen.RestService do
       len_for_method =
         case method do
           "GET" ->
-            2 + length(request_header_parameters) + length(query_parameters)
+            case language do
+              :elixir ->
+                2 + length(request_header_parameters) + length(query_parameters)
+              :erlang ->
+                filterFn = fn param -> param.required end
+                all_parameters = request_header_parameters ++ query_parameters
+                required_parameters = Enum.filter(all_parameters, filterFn)
+                4 + length(required_parameters)
+            end
 
           _ ->
             3
