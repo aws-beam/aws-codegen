@@ -2,7 +2,7 @@ defmodule AWS.CodeGen.ShapesTest do
   use ExUnit.Case
   alias AWS.CodeGen.Shapes
 
-  test "send_body_as_binary?/2" do
+  test "body_as_binary?/2" do
     shapes = %{
       "Body" => %{"type" => "blob"},
       "PutObjectRequest" => %{
@@ -26,9 +26,9 @@ defmodule AWS.CodeGen.ShapesTest do
       }
     }
 
-    assert Shapes.send_body_as_binary?(shapes, "PutObjectRequest")
+    assert Shapes.body_as_binary?(shapes, "PutObjectRequest")
 
-    refute Shapes.send_body_as_binary?(shapes, "PutObjectAclRequest")
-    refute Shapes.send_body_as_binary?(shapes, "AnotherShape")
+    refute Shapes.body_as_binary?(shapes, "PutObjectAclRequest")
+    refute Shapes.body_as_binary?(shapes, "AnotherShape")
   end
 end
