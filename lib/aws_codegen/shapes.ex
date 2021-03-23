@@ -5,9 +5,13 @@ defmodule AWS.CodeGen.Shapes do
     get_in(operation_spec, ["input", "shape"])
   end
 
-  def send_body_as_binary?(shapes, input_shape) do
+  def get_output_shape(operation_spec) do
+    get_in(operation_spec, ["output", "shape"])
+  end
+
+  def body_as_binary?(shapes, shape) do
     with %{"shape" => inner_shape} = inner_spec <-
-           get_in(shapes, [input_shape, "members", "Body"]),
+           get_in(shapes, [shape, "members", "Body"]),
          true <- !Map.has_key?(inner_spec, "location"),
          %{"type" => type} <- Map.get(shapes, inner_shape) do
       type in ~w(blob string)

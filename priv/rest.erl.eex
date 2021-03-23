@@ -21,10 +21,13 @@
   when is_map(Client), is_map(QueryMap), is_map(HeadersMap) ->
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, []).
 
-<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, Options)
-  when is_map(Client), is_map(QueryMap), is_map(HeadersMap), is_list(Options) ->
+<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, Options0)
+  when is_map(Client), is_map(QueryMap), is_map(HeadersMap), is_list(Options0) ->
     Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],
     SuccessStatusCode = <%= if is_nil(action.success_status_code), do: "undefined", else: inspect(action.success_status_code) %>,
+    Options = [{send_body_as_binary, <%= action.send_body_as_binary? %>},
+               {receive_body_as_binary, <%= action.receive_body_as_binary? %>}
+               | Options0],
 <%= if length(action.request_header_parameters) > 0 do %>
     Headers0 =
       [<%= for parameter <- Enum.drop(action.request_header_parameters, -1) do %>
@@ -66,10 +69,14 @@
 <% else %>
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input) ->
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input, []).
-<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input0, Options) ->
+<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input0, Options0) ->
     Method = <%= AWS.CodeGen.RestService.Action.method(action) %>,
     Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],
     SuccessStatusCode = <%= if is_nil(action.success_status_code), do: "undefined", else: inspect(action.success_status_code) %>,
+    Options = [{send_body_as_binary, <%= action.send_body_as_binary? %>},
+               {receive_body_as_binary, <%= action.receive_body_as_binary? %>}
+               | Options0],
+
 <%= if length(action.request_header_parameters) > 0 do %>
     HeadersMapping = [<%= for parameter <- Enum.drop(action.request_header_parameters, -1) do %>
                        {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>},<% end %><%= for parameter <- Enum.slice action.request_header_parameters, -1..-1 do %>
@@ -88,7 +95,7 @@
     Query_ = [],
     Input = Input1,
 <% end %><%= if length(action.response_header_parameters) > 0 do %>
-    case request(Client, Method, Path, Query_, Headers, Input, Options<%= if action.send_body_as_binary? do %> ++ [{should_send_body_as_binary, true}]<% end %>, SuccessStatusCode) of
+    case request(Client, Method, Path, Query_, Headers, Input, Options, SuccessStatusCode) of
       {ok, Body0, {_, ResponseHeaders, _} = Response} ->
         ResponseHeadersParams =
           [<%= for parameter <- Enum.drop action.response_header_parameters, -1 do %>
@@ -106,7 +113,7 @@
       Result ->
         Result
     end.<% else %>
-    request(Client, Method, Path, Query_, Headers, Input, Options<%= if action.send_body_as_binary? do %> ++ [{should_send_body_as_binary, true}]<% end %>, SuccessStatusCode).<% end %>
+    request(Client, Method, Path, Query_, Headers, Input, Options, SuccessStatusCode).<% end %>
 <% end %><% end %>
 %%====================================================================
 %% Internal functions
@@ -132,19 +139,20 @@ request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusCode
     Headers1 = aws_request:add_headers(AdditionalHeaders, Headers0),
 
     Payload =
-      case proplists:get_value(should_send_body_as_binary, Options) of
+      case proplists:get_value(send_body_as_binary, Options) of
         true ->
           maps:get(<<"Body">>, Input, <<"">>);
-        undefined ->
+        false ->
           encode_payload(Input)
       end,
 
     MethodBin = aws_request:method_to_binary(Method),
     SignedHeaders = aws_request:sign_request(Client1, MethodBin, URL, Headers1, Payload),
     Response = hackney:request(Method, URL, SignedHeaders, Payload, Options),
-    handle_response(Response, SuccessStatusCode).
+    DecodeBody = not proplists:get_value(receive_body_as_binary, Options),
+    handle_response(Response, SuccessStatusCode, DecodeBody).
 
-handle_response({ok, StatusCode, ResponseHeaders, Client}, SuccessStatusCode)
+handle_response({ok, StatusCode, ResponseHeaders, Client}, SuccessStatusCode, DecodeBody)
   when StatusCode =:= 200;
        StatusCode =:= 202;
        StatusCode =:= 204;
@@ -154,14 +162,17 @@ handle_response({ok, StatusCode, ResponseHeaders, Client}, SuccessStatusCode)
                         StatusCode =:= SuccessStatusCode ->
             {ok, #{}, {StatusCode, ResponseHeaders, Client}};
         {ok, Body} ->
-            Result = <%= context.decode %>,
+            Result = case DecodeBody of
+                       true -> <%= context.decode %>;
+                       false -> #{<<"Body">> => Body}
+                     end,
             {ok, Result, {StatusCode, ResponseHeaders, Client}}
     end;
-handle_response({ok, StatusCode, ResponseHeaders, Client}, _) ->
+handle_response({ok, StatusCode, ResponseHeaders, Client}, _, _DecodeBody) ->
     {ok, Body} = hackney:body(Client),
     Error = <%= context.decode %>,
     {error, Error, {StatusCode, ResponseHeaders, Client}};
-handle_response({error, Reason}, _) ->
+handle_response({error, Reason}, _, _DecodeBody) ->
   {error, Reason}.
 <%= if context.endpoint_prefix == "s3-control" do %>
 build_host(_AccountId, _EndpointPrefix, #{region := <<"local">>, endpoint := Endpoint}) ->
