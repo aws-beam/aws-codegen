@@ -29,6 +29,7 @@ defmodule AWS.CodeGen do
               endpoint_prefix: nil,
               is_global: false,
               json_version: nil,
+              language: nil,
               module_name: nil,
               protocol: nil,
               signature_version: nil,
@@ -103,13 +104,6 @@ defmodule AWS.CodeGen do
       code = protocol_service.render(context, template_path)
 
       IO.puts(["Writing ", spec.module_name, " to ", output_path])
-
-      code =
-        if language == :elixir do
-          Code.format_string!(code)
-        else
-          code
-        end
 
       File.write(output_path, code)
     else

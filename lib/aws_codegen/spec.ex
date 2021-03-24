@@ -56,6 +56,7 @@ defmodule AWS.CodeGen.Spec do
       |> String.replace(~r/ Service$/, "")
       |> String.replace("dynamodb", "DynamoDB")
       |> String.replace("api.pricing", "API.Pricing")
+      |> String.replace("mobileanalytics", "MobileAnalytics")
       |> String.replace("entitlement.marketplace", "Entitlement.Marketplace")
 
     case language do
@@ -69,6 +70,7 @@ defmodule AWS.CodeGen.Spec do
         "AWS.#{service_name}"
 
       :erlang ->
+        # TODO: fix cases like "mobileanalytics"
         service_name =
           service_name
           |> String.replace(" ", "_")
