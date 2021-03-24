@@ -40,9 +40,11 @@ defmodule AWS.CodeGen.PostService do
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
   """
-  def load_context(language, module_name, endpoints_spec, api_spec, doc_spec) do
-    actions = collect_actions(language, api_spec, doc_spec)
-    endpoint_prefix = api_spec["metadata"]["endpointPrefix"]
+  def load_context(language, %AWS.CodeGen.Spec{} = spec, endpoints_spec) do
+    metadata = spec.api["metadata"]
+    actions = collect_actions(language, spec.api, spec.doc)
+
+    endpoint_prefix = metadata["endpointPrefix"]
     endpoint_info = endpoints_spec["services"][endpoint_prefix]
     is_global = not is_nil(endpoint_info) and not Map.get(endpoint_info, "isRegionalized", true)
 
@@ -51,35 +53,35 @@ defmodule AWS.CodeGen.PostService do
         endpoint_info["endpoints"]["aws-global"]["credentialScope"]["region"]
       end
 
-    json_version = api_spec["metadata"]["jsonVersion"]
-    protocol = api_spec["metadata"]["protocol"]
+    json_version = metadata["jsonVersion"]
+    protocol = metadata["protocol"]
     content_type = @configuration[protocol][:content_type]
     content_type = content_type <> if protocol == "json", do: json_version, else: ""
 
     signing_name =
-      case api_spec["metadata"]["signingName"] do
+      case metadata["signingName"] do
         nil -> endpoint_prefix
         sn -> sn
       end
 
     %Service{
-      abbreviation: api_spec["metadata"]["serviceAbbreviation"],
+      abbreviation: metadata["serviceAbbreviation"],
       actions: actions,
-      api_version: api_spec["metadata"]["apiVersion"],
+      api_version: metadata["apiVersion"],
       credential_scope: credential_scope,
       content_type: content_type,
-      docstring: Docstring.format(language, doc_spec["service"]),
+      docstring: Docstring.format(language, spec.doc["service"]),
       decode: Map.fetch!(@configuration[protocol][language], :decode),
       encode: Map.fetch!(@configuration[protocol][language], :encode),
       endpoint_prefix: endpoint_prefix,
       is_global: is_global,
       json_version: json_version,
-      module_name: module_name,
+      module_name: spec.module_name,
       protocol: protocol,
       signing_name: signing_name,
-      signature_version: api_spec["metadata"]["signatureVersion"],
-      service_id: api_spec["metadata"]["serviceId"],
-      target_prefix: api_spec["metadata"]["targetPrefix"]
+      signature_version: metadata["signatureVersion"],
+      service_id: metadata["serviceId"],
+      target_prefix: metadata["targetPrefix"]
     }
   end
 

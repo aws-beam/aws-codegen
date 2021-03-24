@@ -5,14 +5,25 @@ defmodule AWS.CodeGen.Spec do
 
   @module_acronyms ~w(SMS WAF API SES HSM FSx IoT MTurk QLDB DB RDS A2I XRay EC2 SSO IVS MQ SDB OIDC ACMPCA)
 
+  @type t :: %__MODULE__{
+          protocol: atom(),
+          module_name: binary(),
+          filename: binary(),
+          api: map(),
+          doc: map() | nil
+        }
+
   defstruct protocol: nil,
             module_name: nil,
             filename: nil,
             api: nil,
             doc: nil
 
-  def parse(path, language) do
-    api = path |> Path.join("api-2.json") |> parse_json
+  def parse(path, language, opts \\ []) do
+    api_filename = Keyword.get(opts, :api_filename, "api-2.json")
+    doc_filename = Keyword.get(opts, :doc_filename, "docs-2.json")
+
+    api = path |> Path.join(api_filename) |> parse_json
 
     protocol =
       api["metadata"]["protocol"]
@@ -26,8 +37,8 @@ defmodule AWS.CodeGen.Spec do
       protocol: protocol,
       module_name: module_name,
       filename: filename,
-      api: path |> Path.join("api-2.json") |> parse_json,
-      doc: path |> Path.join("docs-2.json") |> parse_json
+      api: api,
+      doc: path |> Path.join(doc_filename) |> parse_json
     }
   end
 

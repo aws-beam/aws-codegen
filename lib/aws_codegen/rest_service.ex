@@ -98,10 +98,11 @@ defmodule AWS.CodeGen.RestService do
   that can be used to generate code for an AWS service.  `language` must be
   `:elixir` or `:erlang`.
   """
-  def load_context(language, module_name, endpoints_spec, api_spec, doc_spec) do
-    actions = collect_actions(language, api_spec, doc_spec)
-    protocol = api_spec["metadata"]["protocol"]
-    endpoint_prefix = api_spec["metadata"]["endpointPrefix"]
+  def load_context(language, %AWS.CodeGen.Spec{} = spec, endpoints_spec) do
+    metadata = spec.api["metadata"]
+    actions = collect_actions(language, spec.api, spec.doc)
+    protocol = metadata["protocol"]
+    endpoint_prefix = metadata["endpointPrefix"]
     endpoint_info = endpoints_spec["services"][endpoint_prefix]
     is_global = not is_nil(endpoint_info) and not Map.get(endpoint_info, "isRegionalized", true)
 
@@ -110,25 +111,25 @@ defmodule AWS.CodeGen.RestService do
         endpoint_info["endpoints"]["aws-global"]["credentialScope"]["region"]
       end
 
-    signing_name = api_spec["metadata"]["signingName"] || endpoint_prefix
+    signing_name = metadata["signingName"] || endpoint_prefix
 
     %Service{
       actions: actions,
-      api_version: api_spec["metadata"]["apiVersion"],
-      docstring: Docstring.format(language, doc_spec["service"]),
+      api_version: metadata["apiVersion"],
+      docstring: Docstring.format(language, spec.doc["service"]),
       credential_scope: credential_scope,
       content_type: @configuration[protocol][:content_type],
       decode: Map.fetch!(@configuration[protocol][language], :decode),
       encode: Map.fetch!(@configuration[protocol][language], :encode),
       endpoint_prefix: endpoint_prefix,
       is_global: is_global,
-      json_version: api_spec["metadata"]["jsonVersion"],
-      module_name: module_name,
-      protocol: api_spec["metadata"]["protocol"],
+      json_version: metadata["jsonVersion"],
+      module_name: spec.module_name,
+      protocol: metadata["protocol"],
       signing_name: signing_name,
-      signature_version: api_spec["metadata"]["signatureVersion"],
-      service_id: api_spec["metadata"]["serviceId"],
-      target_prefix: api_spec["metadata"]["targetPrefix"]
+      signature_version: metadata["signatureVersion"],
+      service_id: metadata["serviceId"],
+      target_prefix: metadata["targetPrefix"]
     }
   end
 
@@ -164,12 +165,14 @@ defmodule AWS.CodeGen.RestService do
                   join_parameters(action.query_parameters, language),
                   join_parameters(action.request_header_parameters, language)
                 ]
+
               true ->
                 [
                   join_parameters(action.required_query_parameters, language),
                   join_parameters(action.required_request_header_parameters, language)
                 ]
             end
+
           _ ->
             []
         end
@@ -211,6 +214,7 @@ defmodule AWS.CodeGen.RestService do
             case language do
               :elixir ->
                 2 + length(request_header_parameters) + length(query_parameters)
+
               :erlang ->
                 4 + length(required_request_header_parameters) + length(required_query_parameters)
             end

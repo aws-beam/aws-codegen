@@ -73,6 +73,7 @@ defmodule AWS.CodeGen do
   @doc """
   Entrypoint for the code generation.
   """
+  @spec generate(:elixir | :erlang, binary(), binary(), binary()) :: :ok
   def generate(language, spec_base_path, template_base_path, output_base_path) do
     endpoints_spec = get_endpoints_spec(spec_base_path)
 
@@ -81,28 +82,25 @@ defmodule AWS.CodeGen do
         api_specs(spec_base_path, language),
         fn spec ->
           output_path = Path.join(output_base_path, spec.filename)
-          args = [spec, language, endpoints_spec, template_base_path, output_path]
-          Task.async(AWS.CodeGen, :generate_code, args)
+
+          Task.async(fn ->
+            generate_code(spec, language, endpoints_spec, template_base_path, output_path)
+          end)
         end
       )
 
     Enum.each(tasks, fn task -> Task.await(task) end)
   end
 
-  @doc """
-  Generate code for a specific API using `spec`.
-
-  Called throuhg Task.async/3.
-  """
-  def generate_code(spec, language, endpoints_spec, template_base_path, output_path) do
+  defp generate_code(spec, language, endpoints_spec, template_base_path, output_path) do
     template = @configuration[spec.protocol][:template][language]
 
     if template do
       protocol_service = @configuration[spec.protocol][:module]
       template_path = Path.join(template_base_path, template)
-      args = [language, spec.module_name, endpoints_spec, spec.api, spec.doc]
-      context = apply(protocol_service, :load_context, args)
-      code = apply(protocol_service, :render, [context, template_path])
+
+      context = protocol_service.load_context(language, spec, endpoints_spec)
+      code = protocol_service.render(context, template_path)
 
       IO.puts(["Writing ", spec.module_name, " to ", output_path])
 
@@ -119,6 +117,7 @@ defmodule AWS.CodeGen do
     end
   end
 
+  @spec api_specs(binary(), :elixir | :erlang) :: [Spec.t()]
   defp api_specs(base_path, language) do
     search_path = Path.join(base_path, "*/*")
     IO.puts("Parsing specs in #{search_path}")
