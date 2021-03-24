@@ -76,6 +76,7 @@ defmodule AWS.CodeGen.PostService do
       endpoint_prefix: endpoint_prefix,
       is_global: is_global,
       json_version: json_version,
+      language: language,
       module_name: spec.module_name,
       protocol: protocol,
       signing_name: signing_name,
@@ -89,7 +90,13 @@ defmodule AWS.CodeGen.PostService do
   Render a code template.
   """
   def render(context, template_path) do
-    EEx.eval_file(template_path, context: context)
+    rendered = EEx.eval_file(template_path, context: context)
+
+    if context.language == :elixir do
+      Code.format_string!(rendered)
+    else
+      rendered
+    end
   end
 
   defp collect_actions(language, api_spec, doc_spec) do
