@@ -135,19 +135,6 @@ defmodule AWS.CodeGen.RestService do
   end
 
   @doc """
-  Render a code template.
-  """
-  def render(context, template_path) do
-    rendered = EEx.eval_file(template_path, context: context)
-
-    if context.language == :elixir do
-      Code.format_string!(rendered)
-    else
-      rendered
-    end
-  end
-
-  @doc """
   Render required function parameters, if any, in a way that can be inserted directly
   into the code template.
   """

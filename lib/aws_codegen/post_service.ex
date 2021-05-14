@@ -86,19 +86,6 @@ defmodule AWS.CodeGen.PostService do
     }
   end
 
-  @doc """
-  Render a code template.
-  """
-  def render(context, template_path) do
-    rendered = EEx.eval_file(template_path, context: context)
-
-    if context.language == :elixir do
-      Code.format_string!(rendered)
-    else
-      rendered
-    end
-  end
-
   defp collect_actions(language, api_spec, doc_spec) do
     Enum.map(api_spec["operations"], fn {operation, _metadata} ->
       %Action{

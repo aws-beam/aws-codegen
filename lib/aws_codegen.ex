@@ -101,7 +101,7 @@ defmodule AWS.CodeGen do
       template_path = Path.join(template_base_path, template)
 
       context = protocol_service.load_context(language, spec, endpoints_spec)
-      code = protocol_service.render(context, template_path)
+      code = render(context, template_path)
 
       IO.puts(["Writing ", spec.module_name, " to ", output_path])
 
@@ -109,6 +109,22 @@ defmodule AWS.CodeGen do
     else
       IO.puts("Failed to generate #{spec.module_name}, protocol #{spec.protocol}")
     end
+  end
+
+  def render(context, template_path) do
+    rendered = EEx.eval_file(template_path, context: context)
+
+    format_string!(context.language, rendered)
+  end
+
+  defp format_string!(:elixir, rendered) do
+    [Code.format_string!(rendered), ?\n]
+  end
+
+  # TODO: format using the new Erlang formatter:
+  # https://tech.nextroll.com/blog/dev/2020/02/25/erlang-rebar3-format.html
+  defp format_string!(_, rendered) do
+    rendered
   end
 
   @spec api_specs(binary(), :elixir | :erlang) :: [Spec.t()]
