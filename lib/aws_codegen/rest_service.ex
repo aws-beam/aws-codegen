@@ -35,9 +35,9 @@ defmodule AWS.CodeGen.RestService do
         name =
           if action.language == :elixir do
             if multi_segment do
-              Enum.join([~S(#{), "AWS.Util.encode_uri(", parameter.code_name, ", true)", ~S(})])
+              Enum.join([~S(#{), "AWS.Util.encode_multi_segment_uri(", parameter.code_name, ")", ~S(})])
             else
-              Enum.join([~S(#{), "URI.encode(", parameter.code_name, ")", ~S(})])
+              Enum.join([~S(#{), "AWS.Util.encode_uri(", parameter.code_name, ")", ~S(})])
             end
           else
             if multi_segment do
