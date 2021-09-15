@@ -17,6 +17,7 @@ defmodule AWS.CodeGen.RestService do
               query_parameters: [],
               required_query_parameters: [],
               request_header_parameters: [],
+              request_headers_parameters: [],
               required_request_header_parameters: [],
               response_header_parameters: [],
               send_body_as_binary?: false,
@@ -157,9 +158,9 @@ defmodule AWS.CodeGen.RestService do
               false ->
                 [
                   join_parameters(action.query_parameters, language),
-                  join_parameters(action.request_header_parameters, language)
+                  join_parameters(action.request_header_parameters, language),
+                  join_parameters(action.request_headers_parameters, language)
                 ]
-
               true ->
                 [
                   join_parameters(action.required_query_parameters, language),
@@ -197,6 +198,7 @@ defmodule AWS.CodeGen.RestService do
       url_parameters = collect_url_parameters(language, api_spec, operation)
       query_parameters = collect_query_parameters(language, api_spec, operation)
       request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
+      request_headers_parameters = collect_request_headers_parameters(language, api_spec, operation)
       is_required = fn param -> param.required end
       required_query_parameters = Enum.filter(query_parameters, is_required)
       required_request_header_parameters = Enum.filter(request_header_parameters, is_required)
@@ -207,8 +209,7 @@ defmodule AWS.CodeGen.RestService do
           "GET" ->
             case language do
               :elixir ->
-                2 + length(request_header_parameters) + length(query_parameters)
-
+                2 + length(request_header_parameters) + length(request_headers_parameters) + length(query_parameters)
               :erlang ->
                 4 + length(required_request_header_parameters) + length(required_query_parameters)
             end
@@ -236,6 +237,7 @@ defmodule AWS.CodeGen.RestService do
         query_parameters: query_parameters,
         required_query_parameters: required_query_parameters,
         request_header_parameters: request_header_parameters,
+        request_headers_parameters: request_headers_parameters,
         required_request_header_parameters: required_request_header_parameters,
         response_header_parameters:
           collect_response_header_parameters(language, api_spec, operation),
@@ -257,6 +259,10 @@ defmodule AWS.CodeGen.RestService do
 
   defp collect_request_header_parameters(language, api_spec, operation) do
     collect_parameters(language, api_spec, operation, "input", "header")
+  end
+
+  defp collect_request_headers_parameters(language, api_spec, operation) do
+    collect_parameters(language, api_spec, operation, "input", "headers")
   end
 
   defp collect_response_header_parameters(language, api_spec, operation) do

@@ -86,16 +86,25 @@
 <% else %>
     Headers = [],
     Input1 = Input0,
+<% end %><%= if length(action.request_headers_parameters) > 0 do %>
+    CustomHeadersMapping = [<%= for parameter <- Enum.drop(action.request_headers_parameters, -1) do %>
+                             {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>},<% end %><%= for parameter <- Enum.slice action.request_headers_parameters, -1..-1 do %>
+                             {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>}
+                          <% end %>],
+    {CustomHeaders, Input2} = aws_request:build_custom_headers(CustomHeadersMapping, Input1),
+<% else %>
+    CustomHeaders = [],
+    Input2 = Input1,
 <% end %><%= if length(action.query_parameters) > 0 do %>
     QueryMapping = [<%= for parameter <- Enum.drop(action.query_parameters, -1) do %>
                      {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>},<% end %><%= for parameter <- Enum.slice action.query_parameters, -1..-1 do %>
                      {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>}
                    <% end %>],
-    {Query_, Input} = aws_request:build_headers(QueryMapping, Input1),<% else %>
+    {Query_, Input} = aws_request:build_headers(QueryMapping, Input2),<% else %>
     Query_ = [],
-    Input = Input1,
+    Input = Input2,
 <% end %><%= if length(action.response_header_parameters) > 0 do %>
-    case request(Client, Method, Path, Query_, Headers, Input, Options, SuccessStatusCode) of
+    case request(Client, Method, Path, Query_, CustomHeaders ++ Headers, Input, Options, SuccessStatusCode) of
       {ok, Body0, {_, ResponseHeaders, _} = Response} ->
         ResponseHeadersParams =
           [<%= for parameter <- Enum.drop action.response_header_parameters, -1 do %>
@@ -113,7 +122,7 @@
       Result ->
         Result
     end.<% else %>
-    request(Client, Method, Path, Query_, Headers, Input, Options, SuccessStatusCode).<% end %>
+    request(Client, Method, Path, Query_, CustomHeaders ++ Headers, Input, Options, SuccessStatusCode).<% end %>
 <% end %><% end %>
 %%====================================================================
 %% Internal functions
