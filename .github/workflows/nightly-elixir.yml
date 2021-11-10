@@ -1,0 +1,68 @@
+name: Push generated aws-elixir code
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '23 0 * * *' ## Scheduled nightly at 00:23
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: hexpm/elixir:${{ matrix.elixir }}-erlang-${{ matrix.erlang }}-ubuntu-${{ matrix.ubuntu }}
+
+    name: Elixir ${{ matrix.elixir }} / Erlang ${{ matrix.erlang }} with Ubuntu ${{matrix.ubuntu}}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        elixir: ["1.11.2"]
+        erlang: ["23.1.4"]
+        ubuntu: ["focal-20201008"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install build-essential cmake git ca-certificates
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - name: Checkout aws/aws-sdk-go
+        uses: actions/checkout@v2
+        with:
+          repository: aws/aws-sdk-go
+          path: aws/aws-sdk-go/
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: Checkout aws-elixir
+        uses: actions/checkout@v2
+        with:
+          repository: aws-beam/aws-elixir
+          path: aws-beam/aws-elixir
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: Generate aws-elixir
+        env:
+          SPEC_PATH: aws/aws-sdk-go/models/apis
+          TEMPLATE_PATH: priv
+          ELIXIR_OUTPUT_PATH: aws-beam/aws-elixir/lib/aws/generated
+        run: |
+          mkdir -p $ELIXIR_OUTPUT_PATH
+          mix run generate.exs elixir $SPEC_PATH $TEMPLATE_PATH $ELIXIR_OUTPUT_PATH
+      - name: Commit files
+        run: |
+          cd aws-beam/aws-elixir
+          git config --local user.email "aws-elixir@github.com"
+          git config --local user.name "AWS Elixir"
+          git add lib/aws/generated/*
+          if [ -n "$(git status --porcelain)" ]
+          then
+            git commit -m "Update generated code"
+          fi
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: aws-beam/aws-elixir
+          branch: master
+          directory: aws-beam/aws-elixir

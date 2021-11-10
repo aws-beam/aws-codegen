@@ -1,0 +1,71 @@
+name: Push generated aws-erlang code
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '23 0 * * *' ## Scheduled nightly at 00:23
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: hexpm/elixir:${{ matrix.elixir }}-erlang-${{ matrix.erlang }}-ubuntu-${{ matrix.ubuntu }}
+
+    name: Elixir ${{ matrix.elixir }} / Erlang ${{ matrix.erlang }} with Ubuntu ${{matrix.ubuntu}}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        elixir: ["1.11.2"]
+        erlang: ["23.1.4"]
+        ubuntu: ["focal-20201008"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install build-essential cmake git ca-certificates
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - name: Checkout aws/aws-sdk-go
+        uses: actions/checkout@v2
+        with:
+          repository: aws/aws-sdk-go
+          path: aws/aws-sdk-go/
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: Checkout aws-erlang
+        uses: actions/checkout@v2
+        with:
+          repository: aws-beam/aws-erlang
+          path: aws-beam/aws-erlang
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: Generate aws-erlang
+        env:
+          SPEC_PATH: aws/aws-sdk-go/models/apis
+          TEMPLATE_PATH: priv
+          ERLANG_OUTPUT_PATH: aws-beam/aws-erlang/src
+        run: mix run generate.exs erlang $SPEC_PATH $TEMPLATE_PATH $ERLANG_OUTPUT_PATH
+      - name: Install a local copy of rebar3
+        run: mix local.rebar rebar3 aws-beam/aws-erlang
+      - name: Run Erlang tests
+        run: ./rebar3 eunit
+        working-directory: aws-beam/aws-erlang
+      - name: Commit files
+        run: |
+          cd aws-beam/aws-erlang
+          git config --local user.email "aws-erlang@github.com"
+          git config --local user.name "AWS Erlang"
+          git add src/*
+          if [ -n "$(git status --porcelain)" ]
+          then
+            git commit -m "Update generated code"
+          fi
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: aws-beam/aws-erlang
+          branch: master
+          directory: aws-beam/aws-erlang
