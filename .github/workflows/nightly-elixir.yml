@@ -51,13 +51,23 @@ jobs:
           mix run generate.exs elixir $SPEC_PATH $TEMPLATE_PATH $ELIXIR_OUTPUT_PATH
       - name: Commit files
         run: |
-          cd aws-beam/aws-elixir
-          git config --local user.email "aws-elixir@github.com"
-          git config --local user.name "AWS Elixir"
-          git add lib/aws/generated/*
-          if [ -n "$(git status --porcelain)" ]
+          cd aws/aws-sdk-go/
+          git fetch --tags
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          cd ../../
+          cd onno-vos-dev/aws-elixir
+          [[ -f latest-tag-aws-sdk-go ]] && LATEST_TAG_BUILT=$(<latest-tag-aws-sdk-go) || LATEST_TAG_BUILT=''
+          if [ "$LATEST_TAG_BUILT" != "$LATEST_TAG" ] || [ "$LATEST_TAG_BUILT" == "$LATEST_TAG" ]
           then
-            git commit -m "Update generated code"
+            git config --local user.email "aws-elixir@github.com"
+            git config --local user.name "AWS Elixir"
+            git add lib/aws/generated/*
+            if [ -n "$(git status --porcelain)" ]
+            then
+              echo $LATEST_TAG > latest-tag-aws-sdk-go
+              git add latest-tag-aws-sdk-go
+              git commit -m "Update generated code - aws-sdk-go version: $LATEST_TAG"
+            fi
           fi
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0

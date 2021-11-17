@@ -54,13 +54,23 @@ jobs:
         working-directory: aws-beam/aws-erlang
       - name: Commit files
         run: |
+          cd aws/aws-sdk-go/
+          git fetch --tags
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          cd ../../
           cd aws-beam/aws-erlang
-          git config --local user.email "aws-erlang@github.com"
-          git config --local user.name "AWS Erlang"
-          git add src/*
-          if [ -n "$(git status --porcelain)" ]
+          [[ -f latest-tag-aws-sdk-go ]] && LATEST_TAG_BUILT=$(<latest-tag-aws-sdk-go) || LATEST_TAG_BUILT=''
+          if [ "$LATEST_TAG_BUILT" != "$LATEST_TAG" ] || [ "$LATEST_TAG_BUILT" == "$LATEST_TAG" ]
           then
-            git commit -m "Update generated code"
+            git config --local user.email "aws-erlang@github.com"
+            git config --local user.name "AWS Erlang"
+            git add src/*
+            if [ -n "$(git status --porcelain)" ]
+            then
+              echo $LATEST_TAG > latest-tag-aws-sdk-go
+              git add latest-tag-aws-sdk-go
+              git commit -m "Update generated code - aws-sdk-go version: $LATEST_TAG"
+            fi
           fi
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
