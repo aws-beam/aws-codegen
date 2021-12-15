@@ -9,23 +9,23 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: hexpm/elixir:${{ matrix.elixir }}-erlang-${{ matrix.erlang }}-ubuntu-${{ matrix.ubuntu }}
-
-    name: Elixir ${{ matrix.elixir }} / Erlang ${{ matrix.erlang }} with Ubuntu ${{matrix.ubuntu}}
+    name: Elixir ${{ matrix.elixir }} with Ubuntu ${{matrix.ubuntu}}
 
     strategy:
       fail-fast: false
       matrix:
-        elixir: ["1.11.2"]
         erlang: ["23.1.4"]
+        elixir: ["1.11.2"]
         ubuntu: ["focal-20201008"]
     steps:
       - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{matrix.erlang}}
+          elixir-version: ${{matrix.elixir}}
+          rebar3-version: '3.16.1'
       - name: Install Dependencies
         run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install build-essential cmake git ca-certificates
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
@@ -38,29 +38,30 @@ jobs:
       - name: Checkout aws-elixir
         uses: actions/checkout@v2
         with:
-          repository: aws-beam/aws-elixir
-          path: aws-beam/aws-elixir
+          repository: onno-vos-dev/aws-elixir
+          path: onno-vos-dev/aws-elixir
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       - name: Generate aws-elixir
         env:
           SPEC_PATH: aws/aws-sdk-go/models/apis
           TEMPLATE_PATH: priv
-          ELIXIR_OUTPUT_PATH: aws-beam/aws-elixir/lib/aws/generated
+          ELIXIR_OUTPUT_PATH: onno-vos-dev/aws-elixir/lib/aws/generated
         run: |
           mkdir -p $ELIXIR_OUTPUT_PATH
           mix run generate.exs elixir $SPEC_PATH $TEMPLATE_PATH $ELIXIR_OUTPUT_PATH
       - name: Commit files
         run: |
+          OLD_PATH=$(pwd)
           cd aws/aws-sdk-go/
           git fetch --tags
           LATEST_TAG=$(git describe --tags --abbrev=0)
-          cd ../../
+          cd $OLD_PATH
           cd onno-vos-dev/aws-elixir
           [[ -f latest-tag-aws-sdk-go ]] && LATEST_TAG_BUILT=$(<latest-tag-aws-sdk-go) || LATEST_TAG_BUILT=''
           if [ "$LATEST_TAG_BUILT" != "$LATEST_TAG" ] || [ "$LATEST_TAG_BUILT" == "$LATEST_TAG" ]
           then
-            git config --local user.email "aws-elixir@github.com"
-            git config --local user.name "AWS Elixir"
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Actions"
             git add lib/aws/generated/*
             if [ -n "$(git status --porcelain)" ]
             then
@@ -73,6 +74,6 @@ jobs:
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          repository: aws-beam/aws-elixir
+          repository: onno-vos-dev/aws-elixir
           branch: master
-          directory: aws-beam/aws-elixir
+          directory: onno-vos-dev/aws-elixir
