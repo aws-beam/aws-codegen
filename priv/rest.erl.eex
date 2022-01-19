@@ -23,7 +23,8 @@
 
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, Options0)
   when is_map(Client), is_map(QueryMap), is_map(HeadersMap), is_list(Options0) ->
-    Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],
+    Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>
+<%= if Enum.member?(Enum.map(action.url_parameters, fn p -> p.code_name end), "Bucket") do %><% else %>    Bucket = undefined,<% end %><% end %>
     SuccessStatusCode = <%= if is_nil(action.success_status_code), do: "undefined", else: inspect(action.success_status_code) %>,
     Options = [{send_body_as_binary, <%= action.send_body_as_binary? %>},
                {receive_body_as_binary, <%= action.receive_body_as_binary? %>}
@@ -47,7 +48,7 @@
 <% else %>
     Query_ = [],
 <% end %><%= if length(action.response_header_parameters) > 0 do %>
-    case request(Client, get, Path, Query_, Headers, undefined, Options, SuccessStatusCode) of
+    case request(Client, get, Path, Query_, Headers, undefined, Options, SuccessStatusCode<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>, Bucket<% end %>) of
       {ok, Body0, {_, ResponseHeaders, _} = Response} ->
         ResponseHeadersParams =
           [<%= for parameter <- Enum.drop action.response_header_parameters, -1 do %>
@@ -65,13 +66,14 @@
       Result ->
         Result
     end.<% else %>
-    request(Client, get, Path, Query_, Headers, undefined, Options, SuccessStatusCode).<% end %>
+    request(Client, get, Path, Query_, Headers, undefined, Options, SuccessStatusCode<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>, Bucket<% end %>).<% end %>
 <% else %>
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input) ->
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input, []).
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input0, Options0) ->
     Method = <%= AWS.CodeGen.RestService.Action.method(action) %>,
-    Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],
+    Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>
+<%= if Enum.member?(Enum.map(action.url_parameters, fn p -> p.code_name end), "Bucket") do %><% else %>    Bucket = undefined,<% end %><% end %>
     SuccessStatusCode = <%= if is_nil(action.success_status_code), do: "undefined", else: inspect(action.success_status_code) %>,
     Options = [{send_body_as_binary, <%= action.send_body_as_binary? %>},
                {receive_body_as_binary, <%= action.receive_body_as_binary? %>}
@@ -104,7 +106,7 @@
     Query_ = [],
     Input = Input2,
 <% end %><%= if length(action.response_header_parameters) > 0 do %>
-    case request(Client, Method, Path, Query_, CustomHeaders ++ Headers, Input, Options, SuccessStatusCode) of
+    case request(Client, Method, Path, Query_, CustomHeaders ++ Headers, Input, Options, SuccessStatusCode<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>, Bucket<% end %>) of
       <%= if AWS.CodeGen.RestService.Action.method(action) == "head" do %>{ok, {_, ResponseHeaders} = Response} ->
         Body0 = #{},<% else %>{ok, Body0, {_, ResponseHeaders, _} = Response} -><% end %>
         ResponseHeadersParams =
@@ -123,30 +125,31 @@
       Result ->
         Result
     end.<% else %>
-    request(Client, Method, Path, Query_, CustomHeaders ++ Headers, Input, Options, SuccessStatusCode).<% end %>
+    request(Client, Method, Path, Query_, CustomHeaders ++ Headers, Input, Options, SuccessStatusCode<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>, Bucket<% end %>).<% end %>
 <% end %><% end %>
 %%====================================================================
 %% Internal functions
 %%====================================================================
 
 -spec request(aws_client:aws_client(), atom(), iolist(), list(),
-              list(), map() | undefined, list(), pos_integer() | undefined) ->
+              list(), map() | undefined, list(), pos_integer() | undefined<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>, map()<% end %>) ->
     {ok, {integer(), list()}} |
     {ok, Result, {integer(), list(), hackney:client()}} |
     {error, Error, {integer(), list(), hackney:client()}} |
     {error, term()} when
     Result :: map(),
     Error :: map().
-request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusCode) ->
-  RequestFun = fun() -> do_request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusCode) end,
+<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusCode, Bucket) ->
+  RequestFun = fun() -> do_request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusCode, Bucket) end,<% else %>request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusCode) ->
+  RequestFun = fun() -> do_request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusCode) end,<% end %>
   aws_request:request(RequestFun, Options).
 
-do_request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusCode) ->
+do_request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusCode<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>, Bucket<% end %>) ->
     Client1 = Client#{service => <<"<%= context.signing_name %>">><%= if context.is_global do %>,
                       region => <<"<%= context.credential_scope %>">><% end %>},
     <%= if context.endpoint_prefix == "s3-control" do %>AccountId = proplists:get_value(<<"x-amz-account-id">>, Headers0),
-    Host = build_host(AccountId, <<"<%= context.endpoint_prefix %>">>, Client1),<% else %>Host = build_host(<<"<%= context.endpoint_prefix %>">>, Client1),<% end %>
-    URL0 = build_url(Host, Path, Client1),
+    Host = build_host(AccountId, <<"<%= context.endpoint_prefix %>">>, Client1),<% else %><%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>Host = build_host(<<"<%= context.endpoint_prefix %>">>, Client1, Bucket),<%else %>Host = build_host(<<"<%= context.endpoint_prefix %>">>, Client1),<% end %><% end %>
+    URL0 = build_url(Host, Path, Client1<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>, Bucket<% end %>),
     URL = aws_request:add_query(URL0, Query),
     AdditionalHeaders = [ {<<"Host">>, Host}
                         , {<<"Content-Type">>, <<"<%= context.content_type %>">>}
@@ -209,21 +212,56 @@ build_host(undefined, _EndpointPrefix, _Client) ->
 build_host(AccountId, EndpointPrefix, #{region := Region, endpoint := Endpoint}) ->
     aws_util:binary_join([AccountId, EndpointPrefix, Region, Endpoint],
                          <<".">>).<% else %>
-build_host(_EndpointPrefix, #{region := <<"local">>, endpoint := Endpoint}) ->
+<%= if context.endpoint_prefix == "s3" do %><%= if context.is_global do %>
+build_host(EndpointPrefix, #{endpoint := Endpoint}, undefined) ->
+    aws_util:binary_join([EndpointPrefix, Endpoint], <<".">>);
+build_host(EndpointPrefix, #{endpoint := Endpoint}, Bucket) ->
+    aws_util:binary_join([Bucket, EndpointPrefix, Endpoint], <<".">>).<% else %>
+build_host(_EndpointPrefix, #{region := <<"local">>, endpoint := Endpoint}, undefined) ->
+    Endpoint;
+build_host(_EndpointPrefix, #{region := <<"local">>, endpoint := Endpoint}, Bucket) ->
+    <<Bucket/binary, ".", Endpoint/binary>>;
+build_host(_EndpointPrefix, #{region := <<"local">>}, undefined) ->
+    "localhost";
+build_host(_EndpointPrefix, #{region := <<"local">>}, Bucket) ->
+    <<Bucket/binary, ".", "localhost">>;<%= if context.is_global do %>
+build_host(EndpointPrefix, #{endpoint := Endpoint}, undefined) ->
+    aws_util:binary_join([EndpointPrefix, Endpoint], <<".">>);
+build_host(EndpointPrefix, #{endpoint := Endpoint}, Bucket) ->
+    aws_util:binary_join([Bucket, EndpointPrefix, Endpoint], <<".">>).
+<% else %>
+build_host(EndpointPrefix, #{region := Region, endpoint := Endpoint}, undefined) ->
+    aws_util:binary_join([EndpointPrefix, Region, Endpoint], <<".">>);
+build_host(EndpointPrefix, #{region := Region, endpoint := Endpoint}, Bucket) ->
+    aws_util:binary_join([Bucket, EndpointPrefix, Region, Endpoint], <<".">>).<% end %><% end %><% else %>build_host(_EndpointPrefix, #{region := <<"local">>, endpoint := Endpoint}) ->
     Endpoint;
 build_host(_EndpointPrefix, #{region := <<"local">>}) ->
     <<"localhost">>;<%= if context.is_global do %>
 build_host(EndpointPrefix, #{endpoint := Endpoint}) ->
-    aws_util:binary_join([EndpointPrefix, Endpoint], <<".">>).
-<% else %>
+    aws_util:binary_join([EndpointPrefix, Endpoint], <<".">>).<% else %>
 build_host(EndpointPrefix, #{region := Region, endpoint := Endpoint}) ->
-    aws_util:binary_join([EndpointPrefix, Region, Endpoint], <<".">>).
-<% end %><% end %>
-build_url(Host, Path0, Client) ->
+    aws_util:binary_join([EndpointPrefix, Region, Endpoint], <<".">>).<% end %><% end %><% end %>
+
+<%= if context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control" do %>build_url(Host0, Path0, Client, Bucket) ->
+    Proto = maps:get(proto, Client),
+    Path = case Bucket of
+              undefined ->
+                erlang:iolist_to_binary(Path0);
+              _ ->
+                erlang:iolist_to_binary(string:replace(erlang:iolist_to_binary(Path0), <<Bucket/binary, "/">>, <<"">>, all))
+            end,
+    Host = case Bucket of
+          undefined ->
+            erlang:iolist_to_binary(Host0);
+          _ ->
+            erlang:iolist_to_binary(string:replace(erlang:iolist_to_binary(Host0), <<Bucket/binary, ".">>, <<"">>, all))
+        end,
+    Port = maps:get(port, Client),
+    aws_util:binary_join([Proto, <<"://">>, Host, <<":">>, Port, Path], <<"">>).<% else %>build_url(Host, Path0, Client) ->
     Proto = maps:get(proto, Client),
     Path = erlang:iolist_to_binary(Path0),
     Port = maps:get(port, Client),
-    aws_util:binary_join([Proto, <<"://">>, Host, <<":">>, Port, Path], <<"">>).
+    aws_util:binary_join([Proto, <<"://">>, Host, <<":">>, Port, Path], <<"">>).<% end %>
 
 -spec encode_payload(undefined | map()) -> binary().
 encode_payload(undefined) ->
