@@ -56,6 +56,12 @@ defmodule AWS.CodeGen.RestService do
     end
   end
 
+  defmodule Context do
+    def s3_context?(context) do
+      context.endpoint_prefix == "s3" and context.endpoint_prefix != "s3-control"
+    end
+  end
+
   defmodule Parameter do
     defstruct code_name: nil,
               name: nil,
