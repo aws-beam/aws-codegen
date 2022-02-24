@@ -132,7 +132,7 @@
 %%====================================================================
 
 -spec request(aws_client:aws_client(), atom(), iolist(), list(),
-              list(), map() | undefined, list(), pos_integer() | undefined<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>, map()<% end %>) ->
+              list(), map() | undefined, list(), pos_integer() | undefined<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>, binary() | undefined<% end %>) ->
     {ok, {integer(), list()}} |
     {ok, Result, {integer(), list(), hackney:client()}} |
     {error, Error, {integer(), list(), hackney:client()}} |
