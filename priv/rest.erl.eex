@@ -252,7 +252,7 @@ build_host(EndpointPrefix, #{region := Region, endpoint := Endpoint}) ->
               undefined ->
                 erlang:iolist_to_binary(Path0);
               _ ->
-                erlang:iolist_to_binary(string:replace(erlang:iolist_to_binary(Path0), <<Bucket/binary, "/">>, <<"">>, all))
+                erlang:iolist_to_binary(binary:replace(iolist_to_binary(Path0), [Bucket, <<Bucket/binary, "/">>], <<"">>, [global]))
             end,
     Host = case Bucket of
           undefined ->
