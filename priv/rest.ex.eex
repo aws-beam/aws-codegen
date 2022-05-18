@@ -74,7 +74,7 @@ defmodule <%= context.module_name %> do
         metadata()
       <% end %>
 
-    Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, <%= inspect(action.success_status_code) %>)<% else %>
+    Request.request_rest(client, meta, "<%= action.name %>", :get, url_path, query_params, headers, nil, options, <%= inspect(action.success_status_code) %>)<% else %>
   def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.function_parameters(action) %>, input, options \\ []) do
     url_path = "<%= AWS.CodeGen.RestService.Action.url_path(action) %>"<%= if length(action.request_header_parameters) > 0 do %>
     {headers, input} =
@@ -118,6 +118,6 @@ defmodule <%= context.module_name %> do
         metadata()
       <% end %>
 
-    Request.request_rest(client, meta, <%= AWS.CodeGen.RestService.Action.method(action) %>, url_path, query_params, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
+    Request.request_rest(client, meta, "<%= action.name %>", <%= AWS.CodeGen.RestService.Action.method(action) %>, url_path, query_params, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% end %>
 end
