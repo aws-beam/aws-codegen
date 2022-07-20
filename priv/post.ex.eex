@@ -35,4 +35,24 @@ defmodule <%= context.module_name %> do
     Request.request_post(client, metadata(), "<%= action.name %>", input, options)
   end
 <% end %>
+
+  <%=  for {_name, shape} <- context.shapes do %>
+    <%=  if shape.type == "structure" do %>
+    defmodule <%= shape.name %> do
+      defstruct [
+        <%= for {name, %{"shape" => _shape}} <- shape.members do %>
+        :<%= AWS.CodeGen.Name.to_snake_case(name) %>,
+        <% end %>
+      ]
+
+      @type t :: %__MODULE__{
+        <%= for {name, %{"shape" => shape}} <- shape.members do %>
+        <%= AWS.CodeGen.Name.to_snake_case(name) %>: <%= AWS.CodeGen.Types.shape_to_type(shape, context.module_name, context.shapes) %>,
+        <% end %>
+      }
+    end
+    <%  end %>
+
+  <%  end %>
+
 end
