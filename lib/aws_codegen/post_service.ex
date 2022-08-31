@@ -88,7 +88,7 @@ defmodule AWS.CodeGen.PostService do
   end
 
   defp collect_actions(language, api_spec, doc_spec) do
-    Enum.map(api_spec["operations"], fn {operation, _metadata} ->
+    Enum.map(api_spec["operations"], fn {operation, metadata} ->
       %Action{
         arity: 3,
         docstring:
@@ -97,7 +97,7 @@ defmodule AWS.CodeGen.PostService do
             doc_spec["operations"][operation]
           ),
         function_name: AWS.CodeGen.Name.to_snake_case(operation),
-        host_prefix: get_in(operation, ["endpoint", "hostPrefix"]),
+        host_prefix: get_in(metadata, ["endpoint", "hostPrefix"]),
         name: operation
       }
     end)
