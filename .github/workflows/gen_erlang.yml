@@ -45,8 +45,6 @@ jobs:
           TEMPLATE_PATH: priv
           ERLANG_OUTPUT_PATH: aws-beam/aws-erlang/src
         run: mix run generate.exs erlang $SPEC_PATH $TEMPLATE_PATH $ERLANG_OUTPUT_PATH
-      - name: Install a local copy of rebar3
-        run: mix local.rebar rebar3 aws-beam/aws-erlang
       - name: Run Erlang tests
-        run: ./rebar3 eunit
+        run: rebar3 eunit
         working-directory: aws-beam/aws-erlang
