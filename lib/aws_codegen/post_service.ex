@@ -6,6 +6,7 @@ defmodule AWS.CodeGen.PostService do
     defstruct arity: nil,
               docstring: nil,
               function_name: nil,
+              host_prefix: nil,
               name: nil
   end
 
@@ -96,6 +97,7 @@ defmodule AWS.CodeGen.PostService do
             doc_spec["operations"][operation]
           ),
         function_name: AWS.CodeGen.Name.to_snake_case(operation),
+        host_prefix: get_in(operation, ["endpoint", "hostPrefix"]),
         name: operation
       }
     end)
