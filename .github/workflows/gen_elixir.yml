@@ -4,31 +4,30 @@ on:
   push:
     branches:
       - master 
-  # pull_request:
-  # workflow_dispatch:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: hexpm/elixir:${{ matrix.elixir }}-erlang-${{ matrix.erlang }}-ubuntu-${{ matrix.ubuntu }}
-
-    name: Elixir ${{ matrix.elixir }} / Erlang ${{ matrix.erlang }} with Ubuntu ${{matrix.ubuntu}}
+    name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.erlang }}
 
     strategy:
       fail-fast: false
       matrix:
-        elixir: ["1.11.2"]
-        erlang: ["23.1.4"]
-        ubuntu: ["focal-20201008"]
+        elixir: ["1.13.4"]
+        erlang: ["25.0.4"]
+
     steps:
       - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "${{ matrix.erlang }}"
+          elixir-version: "${{ matrix.elixir }}"
       - name: Install Dependencies
         run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install build-essential cmake
-          mix local.rebar --force
-          mix local.hex --force
+          sudo apt-get update
+          DEBIAN_FRONTEND=noninteractive sudo apt-get -y --no-install-recommends install build-essential cmake
           mix deps.get
       - name: Checkout aws/aws-sdk-go
         uses: actions/checkout@v2
