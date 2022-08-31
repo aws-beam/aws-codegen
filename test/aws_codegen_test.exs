@@ -62,7 +62,7 @@ defmodule AWS.CodeGenTest do
                  alias AWS.Request
 
                  def metadata do
-                   %AWS.ServiceMetadata{
+                   %{
                      abbreviation: nil,
                      api_version: "2014-06-05",
                      content_type: "application/x-amz-json-1.1",
@@ -89,9 +89,11 @@ defmodule AWS.CodeGenTest do
 
                    query_params = []
 
+                   meta = metadata()
+
                    Request.request_rest(
                      client,
-                     metadata(),
+                     meta,
                      :post,
                      url_path,
                      query_params,
@@ -128,7 +130,7 @@ defmodule AWS.CodeGenTest do
                  alias AWS.Request
 
                  def metadata do
-                   %AWS.ServiceMetadata{
+                   %{
                      abbreviation: nil,
                      api_version: "2014-06-05",
                      content_type: "application/x-amz-json-1.1",
@@ -162,9 +164,11 @@ defmodule AWS.CodeGenTest do
 
                    query_params = []
 
+                   meta = metadata()
+
                    Request.request_rest(
                      client,
-                     metadata(),
+                     meta,
                      :post,
                      url_path,
                      query_params,
@@ -199,7 +203,7 @@ defmodule AWS.CodeGenTest do
                  alias AWS.Request
 
                  def metadata do
-                   %AWS.ServiceMetadata{
+                   %{
                      abbreviation: nil,
                      api_version: "2014-06-05",
                      content_type: "application/x-amz-json-1.1",
@@ -240,9 +244,11 @@ defmodule AWS.CodeGenTest do
                        true
                      )
 
+                   meta = metadata()
+
                    Request.request_rest(
                      client,
-                     metadata(),
+                     meta,
                      :post,
                      url_path,
                      query_params,
@@ -283,7 +289,7 @@ defmodule AWS.CodeGenTest do
                  alias AWS.Request
 
                  def metadata do
-                   %AWS.ServiceMetadata{
+                   %{
                      abbreviation: nil,
                      api_version: "2014-06-05",
                      content_type: "application/x-amz-json-1.1",
@@ -337,14 +343,73 @@ defmodule AWS.CodeGenTest do
                        true
                      )
 
+                   meta = metadata()
+
+                   Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, 202)
+                 end
+               end
+               """)
+    end
+
+    test "renders the module with endpoint prefix with host prefix", %{specs: specs} do
+      context = setup_context(:elixir, specs)
+
+      [action | _] = context.actions
+
+      action = %{action | host_prefix: "my-host-prefix."}
+
+      result =
+        %{context | actions: [action]}
+        |> AWS.CodeGen.render("priv/rest.ex.eex")
+        |> IO.iodata_to_binary()
+
+      assert result ==
+               String.trim_leading("""
+               # WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
+               # See https://github.com/aws-beam/aws-codegen for more details.
+
+               defmodule AWS.MobileAnalytics do
+                 alias AWS.Client
+                 alias AWS.Request
+
+                 def metadata do
+                   %{
+                     abbreviation: nil,
+                     api_version: "2014-06-05",
+                     content_type: "application/x-amz-json-1.1",
+                     credential_scope: nil,
+                     endpoint_prefix: "mobileanalytics",
+                     global?: false,
+                     protocol: "rest-json",
+                     service_id: nil,
+                     signature_version: "v4",
+                     signing_name: "mobileanalytics",
+                     target_prefix: nil
+                   }
+                 end
+
+                 def put_events(%Client{} = client, input, options \\\\ []) do
+                   url_path = "/2014-06-05/events"
+
+                   {headers, input} =
+                     [
+                       {"clientContext", "x-amz-Client-Context"},
+                       {"clientContextEncoding", "x-amz-Client-Context-Encoding"}
+                     ]
+                     |> Request.build_params(input)
+
+                   query_params = []
+
+                   meta = metadata() |> Map.put_new(:host_prefix, "my-host-prefix.")
+
                    Request.request_rest(
                      client,
-                     metadata(),
-                     :get,
+                     meta,
+                     :post,
                      url_path,
                      query_params,
                      headers,
-                     nil,
+                     input,
                      options,
                      202
                    )

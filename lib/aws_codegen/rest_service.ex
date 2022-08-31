@@ -22,6 +22,7 @@ defmodule AWS.CodeGen.RestService do
               response_header_parameters: [],
               send_body_as_binary?: false,
               receive_body_as_binary?: false,
+              host_prefix: nil,
               language: nil
 
     def method(action) do
@@ -261,6 +262,7 @@ defmodule AWS.CodeGen.RestService do
           collect_response_header_parameters(language, api_spec, operation),
         send_body_as_binary?: Shapes.body_as_binary?(shapes, input_shape),
         receive_body_as_binary?: Shapes.body_as_binary?(shapes, output_shape),
+        host_prefix: get_in(operation_spec, ["endpoint", "hostPrefix"]),
         language: language
       }
     end)

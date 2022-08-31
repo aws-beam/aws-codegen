@@ -23,7 +23,7 @@ defmodule AWS.CodeGen.Spec do
     api_filename = Keyword.get(opts, :api_filename, "api-2.json")
     doc_filename = Keyword.get(opts, :doc_filename, "docs-2.json")
 
-    api = path |> Path.join(api_filename) |> parse_json
+    api = path |> Path.join(api_filename) |> parse_json()
 
     protocol =
       api["metadata"]["protocol"]

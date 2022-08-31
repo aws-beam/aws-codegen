@@ -6,13 +6,13 @@ defmodule <%= context.module_name %> do
   @moduledoc """
 <%= context.docstring %>
   """
-  <% end%>
+  <% end %>
 
   alias AWS.Client
   alias AWS.Request
 
   def metadata do
-    %AWS.ServiceMetadata{
+    %{
       abbreviation: <%= inspect(context.abbreviation) %>,
       api_version: <%= inspect(context.api_version) %>,
       content_type: <%= inspect(context.content_type) %>,
@@ -32,7 +32,14 @@ defmodule <%= context.module_name %> do
 <%= action.docstring %>
   """<% end %>
   def <%= action.function_name %>(%Client{} = client, input, options \\ []) do
-    Request.request_post(client, metadata(), "<%= action.name %>", input, options)
+    meta =
+      <%= if action.host_prefix do %>
+        metadata() |> Map.put_new(:host_prefix, <%= inspect(action.host_prefix) %>)
+      <% else %>
+        metadata()
+      <% end %>
+
+    Request.request_post(client, meta, "<%= action.name %>", input, options)
   end
 <% end %>
 end
