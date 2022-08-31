@@ -24,8 +24,8 @@ jobs:
           elixir-version: "${{ matrix.elixir }}"
       - name: Install Dependencies
         run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install build-essential cmake
+          sudo apt-get update
+          DEBIAN_FRONTEND=noninteractive sudo apt-get -y --no-install-recommends install build-essential cmake
           mix deps.get
       - name: Checkout aws/aws-sdk-go
         uses: actions/checkout@v2
