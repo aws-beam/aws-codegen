@@ -3,7 +3,7 @@ name: Generate aws-erlang
 on:
   push:
     branches:
-      - master 
+      - master
   pull_request:
   workflow_dispatch:
 
@@ -17,6 +17,7 @@ jobs:
       matrix:
         elixir: ["1.13.4"]
         erlang: ["25.0.4"]
+        rebar3: ['3.20.0']
 
     steps:
       - uses: actions/checkout@v2
@@ -24,6 +25,7 @@ jobs:
         with:
           otp-version: "${{ matrix.erlang }}"
           elixir-version: "${{ matrix.elixir }}"
+          rebar3-version: "${{ matrix.rebar3 }}"
       - name: Install Dependencies
         run: |
           sudo apt-get update
