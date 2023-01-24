@@ -215,7 +215,7 @@ defmodule AWS.CodeGen.DocstringTest do
           %% This is a `code' and a multiline is here:
           %%
           %% ```
-          %% puts "hello"
+          %% puts &quot;hello&quot;
           %% '''
           %%
           %% == Section title ==

@@ -36,6 +36,9 @@ defmodule AWS.CodeGen.Docstring do
     |> fix_long_break_lines()
     |> String.trim_trailing()
     |> String.replace(@two_break_lines, "\n%%\n")
+    |> String.replace(~r/&#39;/, "'")
+    |> String.replace("`AVAILABLE`", "`AVAILABLE'") # aws-sdk-go docs are broken for this, hack it to make the edocs work
+    |> String.replace("`PENDING`", "`PENDING'") # aws-sdk-go docs are broken for this, hack it to make the edocs work
   end
 
   defp split_first_sentence_in_one_line(doc) do
@@ -284,7 +287,7 @@ defmodule AWS.CodeGen.Docstring do
       other ->
         other
     end)
-    |> Floki.raw_html(encode: false)
+    |> Floki.raw_html(encode: true)
   end
 
   @doc """
