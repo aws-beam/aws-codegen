@@ -111,6 +111,14 @@ defmodule <%= context.module_name %> do
       )
     <% end %>
 
+    <%= if Enum.member?(["put_bucket_cors", "put_bucket_lifecycle", "put_bucket_tagging", "delete_objects"], action.function_name) do %>
+      options = Keyword.put(
+        options,
+        :append_sha256_content_hash,
+        true
+      )
+    <% end %>
+
     meta =
       <%= if action.host_prefix do %>
         metadata() |> Map.put_new(:host_prefix, <%= inspect(action.host_prefix) %>)
