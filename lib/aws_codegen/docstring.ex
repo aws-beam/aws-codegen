@@ -34,6 +34,7 @@ defmodule AWS.CodeGen.Docstring do
     |> Enum.map(&justify_line(&1, @max_erlang_line_length, "%% "))
     |> Enum.join("\n")
     |> fix_long_break_lines()
+    |> escape_ellipsis_followed_by_dot()
     |> String.trim_trailing()
     |> String.replace(@two_break_lines, "\n%%\n")
     |> String.replace(~r/&#39;/, "'")
@@ -60,6 +61,13 @@ defmodule AWS.CodeGen.Docstring do
   # We added these spaces for each list level.
   defp fix_html_spaces(text) do
     String.replace(text, "&nbsp;", " ")
+  end
+
+  # aws-sdk-go docs may use .... to act as a "wildcard" which breaks edocs with the following error:
+  # warning: found "..." followed by ".", please use parens around "..." instead
+  # so let's do exactly what edoc is suggesting
+  defp escape_ellipsis_followed_by_dot(text) do
+    String.replace(text, "....", "(...).")
   end
 
   defp fix_long_break_lines(text) do
