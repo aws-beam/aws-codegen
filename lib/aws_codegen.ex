@@ -41,6 +41,13 @@ defmodule AWS.CodeGen do
   # Configuration map which determines what AWS API protocols have an
   # implementation for what language.
   @configuration %{
+    ec2: %{
+      module: AWS.CodeGen.PostService,
+      template: %{
+        elixir: "post.ex.eex",
+        erlang: "post.erl.eex"
+      }
+    },
     json: %{
       module: AWS.CodeGen.PostService,
       template: %{

@@ -11,6 +11,17 @@ defmodule AWS.CodeGen.PostService do
   end
 
   @configuration %{
+    "ec2" => %{
+      content_type: "application/x-www-form-urlencoded",
+      elixir: %{
+        decode: "xml",
+        encode: "query"
+      },
+      erlang: %{
+        decode: "aws_util:decode_xml(Body)",
+        encode: "aws_util:encode_query(Input)"
+      }
+    },
     "query" => %{
       content_type: "application/x-www-form-urlencoded",
       elixir: %{
