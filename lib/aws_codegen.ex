@@ -108,11 +108,16 @@ defmodule AWS.CodeGen do
       template_path = Path.join(template_base_path, template)
 
       context = protocol_service.load_context(language, spec, endpoints_spec)
-      code = render(context, template_path)
+      case Map.get(context, :actions) do
+        [] ->
+          IO.puts(["Skipping ", spec.module_name, " due to no actions"])
+        _ ->
+          code = render(context, template_path)
 
       IO.puts(["Writing ", spec.module_name, " to ", output_path])
 
       File.write(output_path, code)
+      end
     else
       IO.puts("Failed to generate #{spec.module_name}, protocol #{spec.protocol}")
     end
