@@ -272,7 +272,7 @@ defmodule AWS.CodeGen.Docstring do
         text = Floki.text(children)
 
         if String.contains?(text, "\n") do
-          "\n```\n#{String.trim_leading(text, "\n")}'''#{@two_break_lines}"
+          "\n```\n#{String.replace(text, "\n", "")}'''"
         else
           ## ex_doc blows up on these sorts of things as it sees them as a reference to a function.
           ## Just ignore them as they refer to aws-sdk-go based implementations and we don't really care about that
@@ -297,9 +297,9 @@ defmodule AWS.CodeGen.Docstring do
             "`#{Floki.text(children)}'"
         end
 
-      other ->
-        other
-    end)
+      {_, _attrs, children} ->
+        "#{Floki.text(children)}"
+      end)
     |> Floki.raw_html(encode: true)
   end
 

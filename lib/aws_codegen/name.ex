@@ -12,6 +12,7 @@ defmodule AWS.CodeGen.Name do
   """
   def to_snake_case(text) do
     text
+    |> String.replace(~r/com\.amazonaws\.[^#]+#/, "")
     |> String.replace(@names_to_capitalize, &String.capitalize(&1))
     |> String.to_charlist()
     |> Enum.map_join(&char_to_snake_case/1)

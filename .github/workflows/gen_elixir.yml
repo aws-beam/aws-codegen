@@ -3,7 +3,7 @@ name: Generate aws-elixir
 on:
   push:
     branches:
-      - master 
+      - master
   pull_request:
   workflow_dispatch:
 
@@ -29,11 +29,11 @@ jobs:
           sudo apt-get update
           DEBIAN_FRONTEND=noninteractive sudo apt-get -y --no-install-recommends install build-essential cmake
           mix deps.get
-      - name: Checkout aws/aws-sdk-go
+      - name: Checkout aws/aws-sdk-go-v2
         uses: actions/checkout@v2
         with:
-          repository: aws/aws-sdk-go
-          path: aws/aws-sdk-go/
+          repository: aws/aws-sdk-go-v2
+          path: aws/aws-sdk-go-v2/
       - name: Checkout aws-elixir
         uses: actions/checkout@v2
         with:
@@ -41,7 +41,7 @@ jobs:
           path: aws-beam/aws-elixir
       - name: Generate aws-elixir
         env:
-          SPEC_PATH: aws/aws-sdk-go/models/apis
+          SPEC_PATH: aws/aws-sdk-go-v2/codegen/sdk-codegen/aws-models
           TEMPLATE_PATH: priv
           ELIXIR_OUTPUT_PATH: aws-beam/aws-elixir/lib/aws/generated
         run: |
