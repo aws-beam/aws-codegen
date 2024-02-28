@@ -211,7 +211,7 @@ defmodule AWS.CodeGen.DocstringTest do
           """
           %% @doc A short description.
           %%
-          %% This is a <a href="https://foo.bar">link</a>.
+          %% This is a link: https://foo.bar.
           %% This is a `code' and a multiline is here:
           %%
           %% ```
