@@ -274,7 +274,13 @@ defmodule AWS.CodeGen.Docstring do
         if String.contains?(text, "\n") do
           "\n```\n#{String.trim_leading(text, "\n")}'''#{@two_break_lines}"
         else
-          "`#{text}'"
+          ## ex_doc blows up on these sorts of things as it sees them as a reference to a function.
+          ## Just ignore them as they refer to aws-sdk-go based implementations and we don't really care about that
+          if String.ends_with?(text, "()") do
+            ""
+          else
+            "`#{text}'"
+          end
         end
 
       {"a", attrs, children} = html_node ->
