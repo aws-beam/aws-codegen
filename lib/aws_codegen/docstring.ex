@@ -283,15 +283,14 @@ defmodule AWS.CodeGen.Docstring do
           end
         end
 
-      {"a", attrs, children} = html_node ->
+      {"a", attrs, children} ->
         case Enum.find(attrs, fn {attr, _} -> attr == "href" end) do
           {_, href} ->
             text = Floki.text(children)
-
             if text == href do
               "[#{href}]"
             else
-              html_node
+              "#{text}: #{href}"
             end
 
           nil ->
