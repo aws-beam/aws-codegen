@@ -94,6 +94,7 @@ defmodule AWS.CodeGenTest do
                    Request.request_rest(
                      client,
                      meta,
+                     \"PutEvents\",
                      :post,
                      url_path,
                      query_params,
@@ -169,6 +170,7 @@ defmodule AWS.CodeGenTest do
                    Request.request_rest(
                      client,
                      meta,
+                     \"PutEvents\",
                      :post,
                      url_path,
                      query_params,
@@ -249,6 +251,7 @@ defmodule AWS.CodeGenTest do
                    Request.request_rest(
                      client,
                      meta,
+                     \"PutEvents\",
                      :post,
                      url_path,
                      query_params,
@@ -345,7 +348,18 @@ defmodule AWS.CodeGenTest do
 
                    meta = metadata()
 
-                   Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, 202)
+                   Request.request_rest(
+                     client,
+                     meta,
+                     \"PutEvents\",
+                     :get,
+                     url_path,
+                     query_params,
+                     headers,
+                     nil,
+                     options,
+                     202
+                   )
                  end
                end
                """)
@@ -405,6 +419,7 @@ defmodule AWS.CodeGenTest do
                    Request.request_rest(
                      client,
                      meta,
+                     \"PutEvents\",
                      :post,
                      url_path,
                      query_params,
