@@ -3,10 +3,7 @@ defmodule AWS.CodeGenTest do
 
   alias AWS.CodeGen.RestService
 
-  # This is the smallest spec for a service.
-  # The original is at: https://github.com/aws/aws-sdk-go/blob/e2d6cb448883e4f4fcc5246650f89bde349041ec/models/apis/mobileanalytics/2014-06-05/api-2.json
-  @service_spec_file "test/fixtures/apis_specs/mobileanalytics-2014-06-05-api-2.json"
-  @service_docs_file "test/fixtures/apis_specs/mobileanalytics-2014-06-05-docs-2.json"
+  @service_spec_file "test/fixtures/apis_specs/cloudtrail-data.json"
   @endpoints_spec %{
     "services" => %{
       "mobileanalytics" => %{
@@ -23,28 +20,24 @@ defmodule AWS.CodeGenTest do
       |> File.read!()
       |> Poison.decode!()
 
-    docs =
-      @service_docs_file
-      |> File.read!()
-      |> Poison.decode!()
-
-    [specs: service_specs, docs: docs]
+    [specs: service_specs]
   end
 
   describe "render/2" do
     defp setup_context(language, specs, docs \\ nil) do
       spec = %AWS.CodeGen.Spec{
         api: specs,
-        doc: docs,
-        module_name: "AWS.MobileAnalytics",
-        filename: "mobile_analytics.ex",
-        protocol: :rest_json
+        module_name: "AWS.CloudTrailData",
+        filename: "cloud_trail_data.ex",
+        protocol: :rest_json,
+        language: :elixir,
+        shape_name: "com.amazonaws.cloudtraildata#CloudTrailDataService"
       }
 
       RestService.load_context(language, spec, @endpoints_spec)
     end
 
-    test "renders the Elixir module without docs", %{specs: specs} do
+    test "renders the Elixir module with docs", %{specs: specs} do
       context = setup_context(:elixir, specs)
 
       result =
@@ -57,73 +50,20 @@ defmodule AWS.CodeGenTest do
                # WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
                # See https://github.com/aws-beam/aws-codegen for more details.
 
-               defmodule AWS.MobileAnalytics do
-                 alias AWS.Client
-                 alias AWS.Request
-
-                 def metadata do
-                   %{
-                     abbreviation: nil,
-                     api_version: "2014-06-05",
-                     content_type: "application/x-amz-json-1.1",
-                     credential_scope: nil,
-                     endpoint_prefix: "mobileanalytics",
-                     global?: false,
-                     protocol: "rest-json",
-                     service_id: nil,
-                     signature_version: "v4",
-                     signing_name: "mobileanalytics",
-                     target_prefix: nil
-                   }
-                 end
-
-                 def put_events(%Client{} = client, input, options \\\\ []) do
-                   url_path = "/2014-06-05/events"
-
-                   {headers, input} =
-                     [
-                       {"clientContext", "x-amz-Client-Context"},
-                       {"clientContextEncoding", "x-amz-Client-Context-Encoding"}
-                     ]
-                     |> Request.build_params(input)
-
-                   query_params = []
-
-                   meta = metadata()
-
-                   Request.request_rest(
-                     client,
-                     meta,
-                     :post,
-                     url_path,
-                     query_params,
-                     headers,
-                     input,
-                     options,
-                     202
-                   )
-                 end
-               end
-               """)
-    end
-
-    test "renders the Elixir module with docs", %{specs: specs, docs: docs} do
-      context = setup_context(:elixir, specs, docs)
-
-      result =
-        context
-        |> AWS.CodeGen.render("priv/rest.ex.eex")
-        |> IO.iodata_to_binary()
-
-      assert result ==
-               String.trim_leading("""
-               # WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
-               # See https://github.com/aws-beam/aws-codegen for more details.
-
-               defmodule AWS.MobileAnalytics do
+               defmodule AWS.CloudTrailData do
                  @moduledoc \"\"\"
-                 Amazon Mobile Analytics is a service for collecting, visualizing, and
-                 understanding app usage data at scale.
+                 The CloudTrail Data Service lets you ingest events into CloudTrail from any
+                 source in your
+                 hybrid environments, such as in-house or SaaS applications hosted on-premises or
+                 in the cloud,
+                 virtual machines, or containers.
+
+                 You can store, access, analyze, troubleshoot and take action on
+                 this data without maintaining multiple log aggregators and reporting tools.
+                 After you run
+                 `PutAuditEvents` to ingest your application activity into CloudTrail, you can
+                 use CloudTrail Lake to search, query, and analyze the data that is logged
+                 from your applications.
                  \"\"\"
 
                  alias AWS.Client
@@ -131,38 +71,38 @@ defmodule AWS.CodeGenTest do
 
                  def metadata do
                    %{
-                     abbreviation: nil,
-                     api_version: "2014-06-05",
+                     api_version: "2021-08-11",
                      content_type: "application/x-amz-json-1.1",
                      credential_scope: nil,
-                     endpoint_prefix: "mobileanalytics",
+                     endpoint_prefix: "cloudtrail-data",
                      global?: false,
                      protocol: "rest-json",
-                     service_id: nil,
+                     service_id: "CloudTrail Data",
                      signature_version: "v4",
-                     signing_name: "mobileanalytics",
+                     signing_name: "cloudtrail-data",
                      target_prefix: nil
                    }
                  end
 
                  @doc \"\"\"
-                 The PutEvents operation records one or more events.
+                 Ingests your application events into CloudTrail Lake.
 
-                 You can have up to 1,500 unique custom events per app, any combination of up to
-                 40 attributes and metrics per custom event, and any number of attribute or
-                 metric values.
+                 A required parameter,
+                 `auditEvents`, accepts the JSON records (also called
+                 *payload*) of events that you want CloudTrail to ingest. You
+                 can add up to 100 of these events (or up to 1 MB) per `PutAuditEvents`
+                 request.
                  \"\"\"
-                 def put_events(%Client{} = client, input, options \\\\ []) do
-                   url_path = "/2014-06-05/events"
+                 def put_audit_events(%Client{} = client, input, options \\\\ []) do
+                   url_path = "/PutAuditEvents"
+                   headers = []
 
-                   {headers, input} =
+                   {query_params, input} =
                      [
-                       {"clientContext", "x-amz-Client-Context"},
-                       {"clientContextEncoding", "x-amz-Client-Context-Encoding"}
+                       {"channelArn", "channelArn"},
+                       {"externalId", "externalId"}
                      ]
                      |> Request.build_params(input)
-
-                   query_params = []
 
                    meta = metadata()
 
@@ -175,7 +115,7 @@ defmodule AWS.CodeGenTest do
                      headers,
                      input,
                      options,
-                     202
+                     200
                    )
                  end
                end
@@ -198,37 +138,59 @@ defmodule AWS.CodeGenTest do
                # WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
                # See https://github.com/aws-beam/aws-codegen for more details.
 
-               defmodule AWS.MobileAnalytics do
+               defmodule AWS.CloudTrailData do
+                 @moduledoc \"\"\"
+                 The CloudTrail Data Service lets you ingest events into CloudTrail from any
+                 source in your
+                 hybrid environments, such as in-house or SaaS applications hosted on-premises or
+                 in the cloud,
+                 virtual machines, or containers.
+
+                 You can store, access, analyze, troubleshoot and take action on
+                 this data without maintaining multiple log aggregators and reporting tools.
+                 After you run
+                 `PutAuditEvents` to ingest your application activity into CloudTrail, you can
+                 use CloudTrail Lake to search, query, and analyze the data that is logged
+                 from your applications.
+                 \"\"\"
+
                  alias AWS.Client
                  alias AWS.Request
 
                  def metadata do
                    %{
-                     abbreviation: nil,
-                     api_version: "2014-06-05",
+                     api_version: "2021-08-11",
                      content_type: "application/x-amz-json-1.1",
                      credential_scope: nil,
-                     endpoint_prefix: "mobileanalytics",
+                     endpoint_prefix: "cloudtrail-data",
                      global?: false,
                      protocol: "rest-json",
-                     service_id: nil,
+                     service_id: "CloudTrail Data",
                      signature_version: "v4",
-                     signing_name: "mobileanalytics",
+                     signing_name: "cloudtrail-data",
                      target_prefix: nil
                    }
                  end
 
-                 def put_events(%Client{} = client, input, options \\\\ []) do
-                   url_path = "/2014-06-05/events"
+                 @doc \"\"\"
+                 Ingests your application events into CloudTrail Lake.
 
-                   {headers, input} =
+                 A required parameter,
+                 `auditEvents`, accepts the JSON records (also called
+                 *payload*) of events that you want CloudTrail to ingest. You
+                 can add up to 100 of these events (or up to 1 MB) per `PutAuditEvents`
+                 request.
+                 \"\"\"
+                 def put_audit_events(%Client{} = client, input, options \\\\ []) do
+                   url_path = "/PutAuditEvents"
+                   headers = []
+
+                   {query_params, input} =
                      [
-                       {"clientContext", "x-amz-Client-Context"},
-                       {"clientContextEncoding", "x-amz-Client-Context-Encoding"}
+                       {"channelArn", "channelArn"},
+                       {"externalId", "externalId"}
                      ]
                      |> Request.build_params(input)
-
-                   query_params = []
 
                    options =
                      Keyword.put(
@@ -255,7 +217,7 @@ defmodule AWS.CodeGenTest do
                      headers,
                      input,
                      options,
-                     202
+                     200
                    )
                  end
                end
@@ -284,50 +246,67 @@ defmodule AWS.CodeGenTest do
                # WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
                # See https://github.com/aws-beam/aws-codegen for more details.
 
-               defmodule AWS.MobileAnalytics do
+               defmodule AWS.CloudTrailData do
+                 @moduledoc \"\"\"
+                 The CloudTrail Data Service lets you ingest events into CloudTrail from any
+                 source in your
+                 hybrid environments, such as in-house or SaaS applications hosted on-premises or
+                 in the cloud,
+                 virtual machines, or containers.
+
+                 You can store, access, analyze, troubleshoot and take action on
+                 this data without maintaining multiple log aggregators and reporting tools.
+                 After you run
+                 `PutAuditEvents` to ingest your application activity into CloudTrail, you can
+                 use CloudTrail Lake to search, query, and analyze the data that is logged
+                 from your applications.
+                 \"\"\"
+
                  alias AWS.Client
                  alias AWS.Request
 
                  def metadata do
                    %{
-                     abbreviation: nil,
-                     api_version: "2014-06-05",
+                     api_version: "2021-08-11",
                      content_type: "application/x-amz-json-1.1",
                      credential_scope: nil,
-                     endpoint_prefix: "mobileanalytics",
+                     endpoint_prefix: "cloudtrail-data",
                      global?: false,
                      protocol: "rest-json",
-                     service_id: nil,
+                     service_id: "CloudTrail Data",
                      signature_version: "v4",
-                     signing_name: "mobileanalytics",
+                     signing_name: "cloudtrail-data",
                      target_prefix: nil
                    }
                  end
 
-                 def put_events(
-                       %Client{} = client,
-                       client_context,
-                       client_context_encoding \\\\ nil,
-                       options \\\\ []
-                     ) do
-                   url_path = "/2014-06-05/events"
+                 @doc \"\"\"
+                 Ingests your application events into CloudTrail Lake.
+
+                 A required parameter,
+                 `auditEvents`, accepts the JSON records (also called
+                 *payload*) of events that you want CloudTrail to ingest. You
+                 can add up to 100 of these events (or up to 1 MB) per `PutAuditEvents`
+                 request.
+                 \"\"\"
+                 def put_audit_events(%Client{} = client, channel_arn, external_id \\\\ nil, options \\\\ []) do
+                   url_path = "/PutAuditEvents"
                    headers = []
-
-                   headers =
-                     if !is_nil(client_context) do
-                       [{"x-amz-Client-Context", client_context} | headers]
-                     else
-                       headers
-                     end
-
-                   headers =
-                     if !is_nil(client_context_encoding) do
-                       [{"x-amz-Client-Context-Encoding", client_context_encoding} | headers]
-                     else
-                       headers
-                     end
-
                    query_params = []
+
+                   query_params =
+                     if !is_nil(external_id) do
+                       [{\"externalId\", external_id} | query_params]
+                     else
+                       query_params
+                     end
+
+                   query_params =
+                     if !is_nil(channel_arn) do
+                       [{\"channelArn\", channel_arn} | query_params]
+                     else
+                       query_params
+                     end
 
                    options =
                      Keyword.put(
@@ -345,7 +324,7 @@ defmodule AWS.CodeGenTest do
 
                    meta = metadata()
 
-                   Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, 202)
+                   Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, 200)
                  end
                end
                """)
@@ -368,37 +347,59 @@ defmodule AWS.CodeGenTest do
                # WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
                # See https://github.com/aws-beam/aws-codegen for more details.
 
-               defmodule AWS.MobileAnalytics do
+               defmodule AWS.CloudTrailData do
+                 @moduledoc \"\"\"
+                 The CloudTrail Data Service lets you ingest events into CloudTrail from any
+                 source in your
+                 hybrid environments, such as in-house or SaaS applications hosted on-premises or
+                 in the cloud,
+                 virtual machines, or containers.
+
+                 You can store, access, analyze, troubleshoot and take action on
+                 this data without maintaining multiple log aggregators and reporting tools.
+                 After you run
+                 `PutAuditEvents` to ingest your application activity into CloudTrail, you can
+                 use CloudTrail Lake to search, query, and analyze the data that is logged
+                 from your applications.
+                 \"\"\"
+
                  alias AWS.Client
                  alias AWS.Request
 
                  def metadata do
                    %{
-                     abbreviation: nil,
-                     api_version: "2014-06-05",
+                     api_version: "2021-08-11",
                      content_type: "application/x-amz-json-1.1",
                      credential_scope: nil,
-                     endpoint_prefix: "mobileanalytics",
+                     endpoint_prefix: "cloudtrail-data",
                      global?: false,
                      protocol: "rest-json",
-                     service_id: nil,
+                     service_id: "CloudTrail Data",
                      signature_version: "v4",
-                     signing_name: "mobileanalytics",
+                     signing_name: "cloudtrail-data",
                      target_prefix: nil
                    }
                  end
 
-                 def put_events(%Client{} = client, input, options \\\\ []) do
-                   url_path = "/2014-06-05/events"
+                 @doc \"\"\"
+                 Ingests your application events into CloudTrail Lake.
 
-                   {headers, input} =
+                 A required parameter,
+                 `auditEvents`, accepts the JSON records (also called
+                 *payload*) of events that you want CloudTrail to ingest. You
+                 can add up to 100 of these events (or up to 1 MB) per `PutAuditEvents`
+                 request.
+                 \"\"\"
+                 def put_audit_events(%Client{} = client, input, options \\\\ []) do
+                   url_path = "/PutAuditEvents"
+                   headers = []
+
+                   {query_params, input} =
                      [
-                       {"clientContext", "x-amz-Client-Context"},
-                       {"clientContextEncoding", "x-amz-Client-Context-Encoding"}
+                       {"channelArn", "channelArn"},
+                       {"externalId", "externalId"}
                      ]
                      |> Request.build_params(input)
-
-                   query_params = []
 
                    meta = metadata() |> Map.put_new(:host_prefix, "my-host-prefix.")
 
@@ -411,7 +412,7 @@ defmodule AWS.CodeGenTest do
                      headers,
                      input,
                      options,
-                     202
+                     200
                    )
                  end
                end

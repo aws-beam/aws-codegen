@@ -9,45 +9,60 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.erlang }}
-
     strategy:
-      fail-fast: false
       matrix:
+        platform: [ubuntu-latest]
         elixir: ["1.13.4"]
         erlang: ["25.0.4"]
         rebar3: ['3.20.0']
-
+    runs-on: ${{ matrix.platform }}
+    services:
+      ddb:
+        image: amazon/dynamodb-local:1.21.0
+        ports:
+          - 8000:8000
+      s3mock:
+        image: adobe/s3mock:2.11.0
+        ports:
+          - 9090:9090
     steps:
-      - uses: actions/checkout@v2
-      - uses: erlef/setup-beam@v1
+      - uses: actions/checkout@v4
+      - name: Set up Erlang / Elixir / Rebar3
+        uses: erlef/setup-beam@v1
         with:
-          otp-version: "${{ matrix.erlang }}"
-          elixir-version: "${{ matrix.elixir }}"
-          rebar3-version: "${{ matrix.rebar3 }}"
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          DEBIAN_FRONTEND=noninteractive sudo apt-get -y --no-install-recommends install build-essential cmake
-          mix deps.get
-      - name: Checkout aws/aws-sdk-go
-        uses: actions/checkout@v2
+          otp-version: ${{matrix.erlang}}
+          elixir-version: ${{matrix.elixir}}
+          rebar3-version: ${{matrix.rebar3}}
+      - name: Checkout aws/aws-sdk-go-v2
+        uses: actions/checkout@v4
         with:
-          repository: aws/aws-sdk-go
-          path: aws/aws-sdk-go/
+          repository: aws/aws-sdk-go-v2
+          path: aws/aws-sdk-go-v2/
       - name: Checkout aws-erlang
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: aws-beam/aws-erlang
           path: aws-beam/aws-erlang
+      - name: Get mix dependencies
+        run: mix deps.get
       - name: Generate aws-erlang
         env:
-          SPEC_PATH: aws/aws-sdk-go/models/apis
+          SPEC_PATH: aws/aws-sdk-go-v2/codegen/sdk-codegen/aws-models
           TEMPLATE_PATH: priv
           ERLANG_OUTPUT_PATH: aws-beam/aws-erlang/src
         run: mix run generate.exs erlang $SPEC_PATH $TEMPLATE_PATH $ERLANG_OUTPUT_PATH
-      - name: Run Erlang tests
+      - name: Compile
+        run: rebar3 compile
+        working-directory: aws-beam/aws-erlang
+      - name: Run EUnit Tests
         run: rebar3 eunit
         working-directory: aws-beam/aws-erlang
-
+      - name: Run Common Tests
+        run: rebar3 ct
+        working-directory: aws-beam/aws-erlang
+        env:
+          DYNAMODB_HOST: localhost
+          S3MOCK_HOST: localhost
+      - name: Produce Documentation
+        run: rebar3 ex_doc
+        working-directory: aws-beam/aws-erlang

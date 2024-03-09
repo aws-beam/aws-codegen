@@ -18,8 +18,7 @@ defmodule AWS.CodeGen do
   defmodule Service do
     @moduledoc false
 
-    defstruct abbreviation: nil,
-              actions: [],
+    defstruct actions: [],
               api_version: nil,
               credential_scope: nil,
               content_type: nil,
@@ -141,16 +140,16 @@ defmodule AWS.CodeGen do
 
   @spec api_specs(binary(), :elixir | :erlang) :: [Spec.t()]
   defp api_specs(base_path, language) do
-    search_path = Path.join(base_path, "*/*")
+    search_path = Path.join(base_path, "*")
     IO.puts("Parsing specs in #{search_path}")
 
-    for path <- Path.wildcard(search_path) do
-      Spec.parse(path, language)
+    for file <- Path.wildcard(search_path) do
+      Spec.parse(file, language)
     end
   end
 
   defp get_endpoints_spec(base_path) do
-    Path.join([base_path, "..", "endpoints", "endpoints.json"])
+    Path.join([base_path, "../../", "smithy-aws-go-codegen/src/main/resources/software/amazon/smithy/aws/go/codegen", "endpoints.json"])
     |> Spec.parse_json()
     |> get_in(["partitions"])
     |> Enum.filter(fn x -> x["partition"] == "aws" end)

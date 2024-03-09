@@ -24,9 +24,9 @@ defmodule AWS.CodeGen.Mixfile do
   defp deps do
     [
       {:earmark, "~> 1.4", only: :dev},
-      {:ex_doc, "~> 0.23.0", only: :dev},
-      {:floki, "~> 0.29"},
-      {:fast_html, "~> 2.0"},
+      {:ex_doc, "~> 0.31.1", only: :dev},
+      {:floki, "~> 0.35"},
+      {:fast_html, "~> 2.3"},
       {:poison, "~> 4.0 or ~> 5.0"}
     ]
   end

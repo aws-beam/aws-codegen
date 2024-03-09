@@ -24,11 +24,13 @@
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, Options0)
   when is_map(Client), is_map(QueryMap), is_map(HeadersMap), is_list(Options0) ->
     Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>
-<%= if "Bucket" in Enum.map(action.url_parameters, & &1.code_name) do %><% else %>    Bucket = undefined,<% end %><% end %>
-    SuccessStatusCode = <%= if is_nil(action.success_status_code), do: "undefined", else: inspect(action.success_status_code) %>,
-    Options = [{send_body_as_binary, <%= action.send_body_as_binary? %>},
-               {receive_body_as_binary, <%= action.receive_body_as_binary? %>}
-               | Options0],
+<%= if !String.contains?("Bucket", AWS.CodeGen.RestService.required_function_parameters(action)) do %><% else %>    Bucket = undefined,<% end %><% end %>
+    SuccessStatusCode = <%= inspect(action.success_status_code) %>,
+    {SendBodyAsBinary, Options1} = proplists_take(send_body_as_binary, Options0, <%= action.send_body_as_binary? %>),
+    {ReceiveBodyAsBinary, Options2} = proplists_take(receive_body_as_binary, Options1, <%= action.receive_body_as_binary? %>),
+    Options = [{send_body_as_binary, SendBodyAsBinary},
+               {receive_body_as_binary, ReceiveBodyAsBinary}
+               | Options2],
 <%= if length(action.request_header_parameters) > 0 do %>
     Headers0 =
       [<%= for parameter <- Enum.drop(action.request_header_parameters, -1) do %>
@@ -73,12 +75,14 @@
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input0, Options0) ->
     Method = <%= AWS.CodeGen.RestService.Action.method(action) %>,
     Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>
-<%= if "Bucket" in Enum.map(action.url_parameters, & &1.code_name) do %><% else %>    Bucket = undefined,<% end %><% end %>
-    SuccessStatusCode = <%= if is_nil(action.success_status_code), do: "undefined", else: inspect(action.success_status_code) %>,
-    Options = [{send_body_as_binary, <%= action.send_body_as_binary? %>},
-               {receive_body_as_binary, <%= action.receive_body_as_binary? %>},
+<%= if !String.contains?("Bucket", AWS.CodeGen.RestService.required_function_parameters(action)) do %><% else %>    Bucket = undefined,<% end %><% end %>
+    SuccessStatusCode = <%= inspect(action.success_status_code) %>,
+    {SendBodyAsBinary, Options1} = proplists_take(send_body_as_binary, Options0, <%= action.send_body_as_binary? %>),
+    {ReceiveBodyAsBinary, Options2} = proplists_take(receive_body_as_binary, Options1, <%= action.receive_body_as_binary? %>),
+    Options = [{send_body_as_binary, SendBodyAsBinary},
+               {receive_body_as_binary, ReceiveBodyAsBinary},
                {append_sha256_content_hash, <%= Enum.member?(["put_bucket_cors", "put_bucket_lifecycle", "put_bucket_tagging", "delete_objects"], action.function_name) %>}
-               | Options0],
+               | Options2],
 <%= if length(action.request_header_parameters) > 0 do %>
     HeadersMapping = [<%= for parameter <- Enum.drop(action.request_header_parameters, -1) do %>
                        {<<"<%= parameter.location_name %>">>, <<"<%= parameter.name %>">>},<% end %><%= for parameter <- Enum.slice action.request_header_parameters, -1..-1 do %>
@@ -130,6 +134,11 @@
 %%====================================================================
 %% Internal functions
 %%====================================================================
+
+-spec proplists_take(any(), proplists:proplists(), any()) -> {any(), proplists:proplists()}.
+proplists_take(Key, Proplist, Default) ->
+  Value = proplists:get_value(Key, Proplist, Default),
+  {Value, proplists:delete(Key, Proplist)}.
 
 -spec request(aws_client:aws_client(), atom(), iolist(), list(),
               list(), map() | undefined, list(), pos_integer() | undefined<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>, binary() | undefined<% end %>) ->
