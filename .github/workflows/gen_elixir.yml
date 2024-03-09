@@ -47,3 +47,8 @@ jobs:
         run: |
           mkdir -p $ELIXIR_OUTPUT_PATH
           mix run generate.exs elixir $SPEC_PATH $TEMPLATE_PATH $ELIXIR_OUTPUT_PATH
+      - name: Test aws-elixir
+        run: |
+          mix deps.get
+          mix test
+        working-directory: aws-beam/aws-elixir
