@@ -17,6 +17,7 @@ defmodule AWS.CodeGen.Docstring do
     |> Enum.map(&justify_line(&1, @max_elixir_line_length))
     |> Enum.join("\n")
     |> fix_broken_markdown_links()
+    |> fix_elixir_lookalike_format_strings()
     |> fix_html_spaces()
     |> fix_long_break_lines()
     |> transform_subtitles()
@@ -56,6 +57,10 @@ defmodule AWS.CodeGen.Docstring do
   # Since performance is not an issue here, we are doing this post processing.
   defp fix_broken_markdown_links(text) do
     String.replace(text, ~r/\[([^\n]+)\n\s\s([^]]+)\]/, "[\\1 \\2]")
+  end
+
+  defp fix_elixir_lookalike_format_strings(text) do
+    String.replace(text, ~r/#\{(.*?)\}/, "\\1")
   end
 
   # We added these spaces for each list level.
