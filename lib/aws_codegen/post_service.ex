@@ -177,17 +177,16 @@ defmodule AWS.CodeGen.PostService do
          members: shape["members"],
          min: shape["min"],
          enum: shape["enum"],
-         is_input: is_input?(name, shape)
+         is_input: is_input?(shape)
        }}
     end)
     |> Enum.into(%{})
   end
 
-  defp is_input?(name, shape) do
+  defp is_input?(shape) do
     if Map.has_key?(shape, "traits") do
       traits = shape["traits"]
       if Map.has_key?(traits, "smithy.api#input") do
-        IO.puts("Found shape: #{name} with input: true!!!")
         true
       else
         false

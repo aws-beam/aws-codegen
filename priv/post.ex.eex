@@ -43,7 +43,7 @@ end) %>
   @doc """
 <%= action.docstring %>
   """<% end %>
-  @spec <%= action.function_name %>(map(), <%= AWS.CodeGen.Util.function_argument_type(action)%>, list()) :: <%= AWS.CodeGen.Util.return_type(action)%>
+  @spec <%= action.function_name %>(map(), <%= AWS.CodeGen.Util.function_argument_type(context.language, action)%>, list()) :: <%= AWS.CodeGen.Util.return_type(context.language, action)%>
   def <%= action.function_name %>(%Client{} = client, input, options \\ []) do
     meta =
       <%= if action.host_prefix do %>

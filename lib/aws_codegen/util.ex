@@ -1,7 +1,5 @@
 defmodule AWS.CodeGen.Util do
 
-  alias AWS.CodeGen.PostService.Shape
-
   def service_docs(service) do
     with "<p></p>" <- service["traits"]["smithy.api#documentation"], do: ""
   end
@@ -66,7 +64,7 @@ defmodule AWS.CodeGen.Util do
                                         fn {_name, shape_member}, a ->
                                           target = shape_member["target"]
                                           shape_member_type = AWS.CodeGen.Types.shape_to_type(context, target, context.module_name, context.shapes)
-                                          Map.put(a, is_required(shape.is_input, shape_member, target), shape_member_type)
+                                          Map.put(a, is_required(context.language, shape.is_input, shape_member, target), shape_member_type)
                                         end)
                     if reserved_type(type) do
                       Map.put(acc, "#{String.downcase(String.replace(context.module_name, "AWS.", ""))}_#{type}", types)
@@ -79,7 +77,7 @@ defmodule AWS.CodeGen.Util do
                 end)
   end
 
-  defp is_required(is_input, shape, target) do
+  defp is_required(:elixir, is_input, shape, target) do
     trimmed_name = String.replace(target, ~r/com\.amazonaws\.[^#]+#/, "")
     if is_input do
       if Map.has_key?(shape, "traits") do
@@ -95,10 +93,23 @@ defmodule AWS.CodeGen.Util do
       "\"#{trimmed_name}\""
     end
   end
+  defp is_required(:erlang, _is_input, _shape, target) do
+    # There is no optional/1 | required/1 type of thing in Erlang.
+    # Instead we'd use := | => but let's deal with that problem later...
+    trimmed_name = String.replace(target, ~r/com\.amazonaws\.[^#]+#/, "")
+    "\"#{trimmed_name}\""
+  end
 
-  def function_argument_type(action) do
+  def function_argument_type(:elixir, action) do
     case Map.get(action.input, "target") do
       "smithy.api#Unit" -> "%{}"
+      type ->
+        "#{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}()"
+    end
+  end
+  def function_argument_type(:erlang, action) do
+    case Map.get(action.input, "target") do
+      "smithy.api#Unit" -> "\#{}"
       type ->
         "#{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}()"
     end
@@ -121,6 +132,25 @@ defmodule AWS.CodeGen.Util do
             []
           end
         Enum.join([normal, "{:error, {:unexpected_response, any()}}" | errors], " | ")
+    end
+  end
+  def return_type(:erlang, action) do
+    case Map.get(action.output, "target") do
+      "smithy.api#Unit" -> "[]"
+      type ->
+        normal = "{ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), tuple()}"
+        errors =
+          if is_list(action.errors) do
+            Enum.map(action.errors,
+            fn %{"target" => error_type} ->
+              "{error, #{AWS.CodeGen.Name.to_snake_case(String.replace(error_type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), tuple()}"
+              _ ->
+                ""
+            end )
+          else
+            []
+          end
+        Enum.join([normal, "{error, any()}" | errors], " |\n    ")
     end
   end
 
