@@ -59,10 +59,20 @@ defmodule AWS.CodeGen.RestServiceTest do
                %RestService.Action{
                  arity: 3,
                  docstring: "  Ingests your application events into CloudTrail Lake.\n\n  A required parameter,\n  `auditEvents`, accepts the JSON records (also called\n  *payload*) of events that you want CloudTrail to ingest. You\n  can add up to 100 of these events (or up to 1 MB) per `PutAuditEvents`\n  request.",
-                 function_name: "put_audit_events",
+                 errors: [
+                  %{"target" => "com.amazonaws.cloudtraildata#ChannelInsufficientPermission"},
+                  %{"target" => "com.amazonaws.cloudtraildata#ChannelNotFound"},
+                  %{"target" => "com.amazonaws.cloudtraildata#ChannelUnsupportedSchema"},
+                  %{"target" => "com.amazonaws.cloudtraildata#DuplicatedAuditEventId"},
+                  %{"target" => "com.amazonaws.cloudtraildata#InvalidChannelARN"},
+                  %{"target" => "com.amazonaws.cloudtraildata#UnsupportedOperationException"}
+                ],
+                function_name: "put_audit_events",
                  language: :elixir,
                  method: "POST",
                  name: "com.amazonaws.cloudtraildata#PutAuditEvents",
+                 input: %{"target" => "com.amazonaws.cloudtraildata#PutAuditEventsRequest"},
+                 output: %{"target" => "com.amazonaws.cloudtraildata#PutAuditEventsResponse"},
                  query_parameters: [
                   %RestService.Parameter{
                     code_name: "channel_arn",
