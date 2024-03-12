@@ -135,7 +135,7 @@
 %% Internal functions
 %%====================================================================
 
--spec proplists_take(any(), proplists:proplists(), any()) -> {any(), proplists:proplists()}.
+-spec proplists_take(any(), proplists:proplist(), any()) -> {any(), proplists:proplist()}.
 proplists_take(Key, Proplist, Default) ->
   Value = proplists:get_value(Key, Proplist, Default),
   {Value, proplists:delete(Key, Proplist)}.
