@@ -11,6 +11,19 @@ defmodule <%= context.module_name %> do
   alias AWS.Client
   alias AWS.Request
 
+ <%= for {type_name, type_fields} <- AWS.CodeGen.Util.types(context) do %>
+@typedoc """
+
+## Example:
+<%= type_name %>() :: %{
+<%= Enum.map_join(type_fields, ",\n", fn {field_name, field_type} ->
+  ~s{  #{field_name} => #{field_type}}
+end) %>
+}
+"""
+@type <%= "#{type_name}()" %> :: %{String.t => any()}
+<% end %>
+
   def metadata do
     %{
       api_version: <%= inspect(context.api_version) %>,
@@ -30,6 +43,7 @@ defmodule <%= context.module_name %> do
   @doc """
 <%= action.docstring %>
   """<% end %>
+  @spec <%= action.function_name %>(map(), <%= AWS.CodeGen.Util.function_argument_type(action)%>, list()) :: <%= AWS.CodeGen.Util.return_type(action)%>
   def <%= action.function_name %>(%Client{} = client, input, options \\ []) do
     meta =
       <%= if action.host_prefix do %>

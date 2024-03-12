@@ -33,6 +33,7 @@ defmodule AWS.CodeGen do
               protocol: nil,
               signature_version: nil,
               service_id: nil,
+              shapes: %{},
               signing_name: nil,
               target_prefix: nil
   end
