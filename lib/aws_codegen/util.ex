@@ -30,4 +30,27 @@ defmodule AWS.CodeGen.Util do
     service["traits"]["aws.api#service"]["sdkId"]
   end
 
+  def input_keys(action, context) do
+    shapes = context.shapes
+    input_shape = action.input["target"]
+    maybe_shape = Enum.filter(shapes, fn {name, _shape} -> input_shape == name end)
+    case maybe_shape do
+      [] ->
+        []
+      [{_name, shape}] ->
+        Enum.reduce(shape.members,
+                    [],
+                    fn {name, %{"traits" => traits}}, acc ->
+                        if Map.has_key?(traits, "smithy.api#required") do
+                          [name <> " Required: true" | acc]
+                        else
+                          [name <> " Required: false" | acc]
+                        end
+                       {name, _shape}, acc ->
+                          [name <> " Required: false" | acc]
+                    end)
+        |> Enum.reverse()
+    end
+  end
+
 end

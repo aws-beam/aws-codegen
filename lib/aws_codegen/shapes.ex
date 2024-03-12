@@ -1,5 +1,15 @@
 defmodule AWS.CodeGen.Shapes do
-  @moduledoc false
+
+  defmodule Shape do
+    defstruct name: nil,
+            type: nil,
+            members: [],
+            member: [],
+            enum: [],
+            min: nil,
+            required: [],
+            is_input: nil
+  end
 
   def get_input_shape(operation_spec) do
     get_in(operation_spec, ["input", "target"])
@@ -7,6 +17,22 @@ defmodule AWS.CodeGen.Shapes do
 
   def get_output_shape(operation_spec) do
     get_in(operation_spec, ["output", "target"])
+  end
+
+  def collect_shapes(_language, api_spec) do
+    api_spec["shapes"]
+    |> Map.new(fn {name, shape} ->
+      {name,
+       %Shape{
+         name: name,
+         type: shape["type"],
+         member: shape["member"],
+         members: shape["members"],
+         min: shape["min"],
+         enum: shape["enum"],
+         is_input: is_input?(shape)
+       }}
+    end)
   end
 
   def body_as_binary?(shapes, shape) do
@@ -21,6 +47,10 @@ defmodule AWS.CodeGen.Shapes do
     else
       false
     end
+  end
+
+  def is_input?(shape) do
+    !Map.has_key?(shape, "traits") or Map.has_key?(shape["traits"], "smithy.api#input")
   end
 
 end

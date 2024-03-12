@@ -23,7 +23,10 @@ defmodule AWS.CodeGen.RestService do
               send_body_as_binary?: false,
               receive_body_as_binary?: false,
               host_prefix: nil,
-              language: nil
+              language: nil,
+              input: nil,
+              output: nil,
+              errors: []
 
     def method(action) do
       result = action.method |> String.downcase() |> String.to_atom()
@@ -145,7 +148,8 @@ defmodule AWS.CodeGen.RestService do
       signing_name: signing_name,
       signature_version: AWS.CodeGen.Util.get_signature_version(service),
       service_id: AWS.CodeGen.Util.get_service_id(service),
-      target_prefix: nil, ##TODO: metadata["targetPrefix"]
+      target_prefix: nil, ##TODO: metadata["targetPrefix"],
+      shapes: Shapes.collect_shapes(language, spec.api)
     }
   end
 
@@ -275,7 +279,10 @@ defmodule AWS.CodeGen.RestService do
         send_body_as_binary?: Shapes.body_as_binary?(shapes, input_shape),
         receive_body_as_binary?: Shapes.body_as_binary?(shapes, output_shape),
         host_prefix: operation_spec["traits"]["smithy.api#endpoint"]["hostPrefix"],
-        language: language
+        language: language,
+        input: operation_spec["input"],
+        output: operation_spec["output"],
+        errors: operation_spec["errors"]
       }
     end)
     |> Enum.sort(fn a, b -> a.function_name < b.function_name end)
