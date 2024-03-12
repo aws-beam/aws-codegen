@@ -23,7 +23,10 @@ defmodule AWS.CodeGen.RestService do
               send_body_as_binary?: false,
               receive_body_as_binary?: false,
               host_prefix: nil,
-              language: nil
+              language: nil,
+              input: nil,
+              output: nil,
+              errors: []
 
     def method(action) do
       result = action.method |> String.downcase() |> String.to_atom()
@@ -145,7 +148,8 @@ defmodule AWS.CodeGen.RestService do
       signing_name: signing_name,
       signature_version: AWS.CodeGen.Util.get_signature_version(service),
       service_id: AWS.CodeGen.Util.get_service_id(service),
-      target_prefix: nil, ##TODO: metadata["targetPrefix"]
+      target_prefix: nil, ##TODO: metadata["targetPrefix"],
+      shapes: collect_shapes(language, spec.api)
     }
   end
 
@@ -155,6 +159,60 @@ defmodule AWS.CodeGen.RestService do
   """
   def required_function_parameters(action) do
     function_parameters(action, true)
+  end
+
+  def required_function_parameter_types(action) do
+    function_parameter_types(action, true)
+  end
+
+  def required_query_map_types(action) do
+    function_parameter_types(action, true)
+  end
+
+  def function_parameter_types(action, required_only \\ false) do
+    language = action.language
+    Enum.join([
+      join_parameter_types(action.url_parameters, language)
+      | case action.method do
+          "GET" ->
+            case required_only do
+              false ->
+                [
+                  join_parameter_types(action.query_parameters, language),
+                  join_parameter_types(action.request_header_parameters, language),
+                  join_parameter_types(action.request_headers_parameters, language)
+                ]
+
+              true ->
+                [
+                  join_parameter_types(action.required_query_parameters, language),
+                  join_parameter_types(action.required_request_header_parameters, language)
+                ]
+            end
+
+          _ ->
+            []
+        end
+    ])
+  end
+
+  defp join_parameter_types(parameters, language) do
+    Enum.join(
+      Enum.map(
+        parameters,
+        fn parameter ->
+          if not parameter.required and language == :elixir do
+            ", String.t() | nil"
+          else
+            if language == :elixir do
+              ", String.t()"
+            else
+            ", binary() | list()"
+            end
+          end
+        end
+      )
+    )
   end
 
   @doc """
@@ -275,7 +333,10 @@ defmodule AWS.CodeGen.RestService do
         send_body_as_binary?: Shapes.body_as_binary?(shapes, input_shape),
         receive_body_as_binary?: Shapes.body_as_binary?(shapes, output_shape),
         host_prefix: operation_spec["traits"]["smithy.api#endpoint"]["hostPrefix"],
-        language: language
+        language: language,
+        input: operation_spec["input"],
+        output: operation_spec["output"],
+        errors: operation_spec["errors"]
       }
     end)
     |> Enum.sort(fn a, b -> a.function_name < b.function_name end)
@@ -361,6 +422,48 @@ defmodule AWS.CodeGen.RestService do
       location_name: data,
       required: required
     }
+  end
+
+  defmodule Shape do
+    defstruct name: nil,
+              type: nil,
+              members: [],
+              member: [],
+              enum: [],
+              min: nil,
+              required: [],
+              is_input: nil
+  end
+
+  defp collect_shapes(_language, api_spec) do
+    api_spec["shapes"]
+    |> Enum.sort(fn {name_a, _}, {name_b, _} -> name_a < name_b end)
+    |> Enum.map(fn {name, shape} ->
+      {name,
+       %Shape{
+         name: name,
+         type: shape["type"],
+         member: shape["member"],
+         members: shape["members"],
+         min: shape["min"],
+         enum: shape["enum"],
+         is_input: is_input?(shape)
+       }}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp is_input?(shape) do
+    if Map.has_key?(shape, "traits") do
+      traits = shape["traits"]
+      if Map.has_key?(traits, "smithy.api#input") do
+        true
+      else
+        false
+      end
+    else
+      true
+    end
   end
 
 end

@@ -8,19 +8,37 @@
 
 -include_lib("hackney/include/hackney_lib.hrl").
 
+<%= for {type_name, type_fields} <- AWS.CodeGen.Util.types(context) do %>
+<%= if Map.keys(type_fields) == [] do %>%% Example:
+%% <%= type_name %>() :: #{}
+-type <%= "#{type_name}()" %> :: #{}.<% else %>
+%% Example:
+%% <%= type_name %>() :: #{
+<%= Enum.map_join(type_fields, ",\n", fn {field_name, field_type} ->
+  ~s{%%   #{field_name}#{field_type}}
+end) %>
+%% }
+-type <%= "#{type_name}()" %> :: #{binary() => any()}.<% end %><% end %>
+
 %%====================================================================
 %% API
 %%====================================================================
 <%= for action <- context.actions do %>
 <%= action.docstring %><%= if action.method == "GET" do %>
+-spec <%= action.function_name %>(map()<%= AWS.CodeGen.RestService.required_function_parameter_types(action) %>) ->
+    <%= AWS.CodeGen.Util.return_type(context.language, action)%>.
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>)
   when is_map(Client) ->
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, #{}, #{}).
 
+-spec <%= action.function_name %>(map()<%= AWS.CodeGen.RestService.required_function_parameter_types(action) %>, map(), map()) ->
+    <%= AWS.CodeGen.Util.return_type(context.language, action)%>.
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap)
   when is_map(Client), is_map(QueryMap), is_map(HeadersMap) ->
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, []).
 
+-spec <%= action.function_name %>(map()<%= AWS.CodeGen.RestService.required_function_parameter_types(action) %>, map(), map(), proplists:proplist()) ->
+    <%= AWS.CodeGen.Util.return_type(context.language, action)%>.
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, Options0)
   when is_map(Client), is_map(QueryMap), is_map(HeadersMap), is_list(Options0) ->
     Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>
@@ -70,8 +88,13 @@
     end.<% else %>
     request(Client, get, Path, Query_, Headers, undefined, Options, SuccessStatusCode<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>, Bucket<% end %>).<% end %>
 <% else %>
+-spec <%= action.function_name %>(map()<%= AWS.CodeGen.RestService.required_function_parameter_types(action) %>, <%= AWS.CodeGen.Util.function_argument_type(context.language, action)%>) ->
+    <%= AWS.CodeGen.Util.return_type(context.language, action)%>.
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input) ->
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input, []).
+
+-spec <%= action.function_name %>(map()<%= AWS.CodeGen.RestService.required_function_parameter_types(action) %>, <%= AWS.CodeGen.Util.function_argument_type(context.language, action)%>, proplists:proplist()) ->
+    <%= AWS.CodeGen.Util.return_type(context.language, action)%>.
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input0, Options0) ->
     Method = <%= AWS.CodeGen.RestService.Action.method(action) %>,
     Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>
@@ -135,7 +158,7 @@
 %% Internal functions
 %%====================================================================
 
--spec proplists_take(any(), proplists:proplists(), any()) -> {any(), proplists:proplists()}.
+-spec proplists_take(any(), proplists:proplist(), any()) -> {any(), proplists:proplist()}.
 proplists_take(Key, Proplist, Default) ->
   Value = proplists:get_value(Key, Proplist, Default),
   {Value, proplists:delete(Key, Proplist)}.

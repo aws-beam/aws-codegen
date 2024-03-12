@@ -8,14 +8,29 @@
 
 -include_lib("hackney/include/hackney_lib.hrl").
 
+<%= for {type_name, type_fields} <- AWS.CodeGen.Util.types(context) do %>
+%% Example:
+%% <%= type_name %>() :: #{
+<%= Enum.map_join(type_fields, ",\n", fn {field_name, field_type} ->
+  ~s{%%   #{field_name}#{field_type}}
+end) %>
+%% }
+-type <%= "#{type_name}()" %> :: #{binary() => any()}.
+<% end %>
+
 %%====================================================================
 %% API
 %%====================================================================
 <%= for action <- context.actions do %>
 <%= action.docstring %>
+-spec <%= action.function_name %>(map(), <%= AWS.CodeGen.Util.function_argument_type(context.language, action)%>) ->
+    <%= AWS.CodeGen.Util.return_type(context.language, action)%>.
 <%= action.function_name %>(Client, Input)
   when is_map(Client), is_map(Input) ->
     <%= action.function_name %>(Client, Input, []).
+
+-spec <%= action.function_name %>(map(), <%= AWS.CodeGen.Util.function_argument_type(context.language, action)%>, proplists:proplist()) ->
+    <%= AWS.CodeGen.Util.return_type(context.language, action)%>.
 <%= action.function_name %>(Client, Input, Options)
   when is_map(Client), is_map(Input), is_list(Options) ->
     request(Client, <<"<%= action.name %>">>, Input, Options).

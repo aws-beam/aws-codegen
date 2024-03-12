@@ -1,13 +1,29 @@
 defmodule AWS.CodeGen.PostService do
   alias AWS.CodeGen.Docstring
   alias AWS.CodeGen.Service
+  alias AWS.CodeGen.Shapes
+  alias AWS.CodeGen.Name
 
   defmodule Action do
     defstruct arity: nil,
               docstring: nil,
               function_name: nil,
+              input: nil,
+              output: nil,
+              errors: %{},
               host_prefix: nil,
               name: nil
+  end
+
+  defmodule Shape do
+    defstruct name: nil,
+              type: nil,
+              members: [],
+              member: [],
+              enum: [],
+              min: nil,
+              required: [],
+              is_input: nil
   end
 
   @configuration %{
@@ -57,6 +73,7 @@ defmodule AWS.CodeGen.PostService do
     service = spec.api["shapes"][spec.shape_name]
     traits = service["traits"]
     actions = collect_actions(language, spec.api)
+    shapes = collect_shapes(language, spec.api)
     endpoint_prefix = traits["aws.api#service"]["endpointPrefix"] || traits["aws.api#service"]["arnNamespace"]
     endpoint_info = endpoints_spec["services"][endpoint_prefix]
     is_global = not is_nil(endpoint_info) and not Map.get(endpoint_info, "isRegionalized", true)
@@ -89,6 +106,7 @@ defmodule AWS.CodeGen.PostService do
       language: language,
       module_name: spec.module_name,
       protocol: protocol |> to_string() |> String.replace("_", "-"),
+      shapes: shapes,
       signing_name: signing_name,
       signature_version: AWS.CodeGen.Util.get_signature_version(service),
       service_id: AWS.CodeGen.Util.get_service_id(service),
@@ -137,10 +155,45 @@ defmodule AWS.CodeGen.PostService do
           ),
         function_name: AWS.CodeGen.Name.to_snake_case(operation),
         host_prefix: operation_spec["traits"]["smithy.api#endpoint"]["hostPrefix"],
-        name: String.replace(operation, ~r/com\.amazonaws\.[^#]+#/, "")
+        name: String.replace(operation, ~r/com\.amazonaws\.[^#]+#/, ""),
+        input: operation_spec["input"],
+        output: operation_spec["output"],
+        errors: operation_spec["errors"]
       }
     end)
     |> Enum.sort(fn a, b -> a.function_name < b.function_name end)
     |> Enum.uniq()
   end
+
+  defp collect_shapes(_language, api_spec) do
+    api_spec["shapes"]
+    |> Enum.sort(fn {name_a, _}, {name_b, _} -> name_a < name_b end)
+    |> Enum.map(fn {name, shape} ->
+      {name,
+       %Shape{
+         name: name,
+         type: shape["type"],
+         member: shape["member"],
+         members: shape["members"],
+         min: shape["min"],
+         enum: shape["enum"],
+         is_input: is_input?(shape)
+       }}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp is_input?(shape) do
+    if Map.has_key?(shape, "traits") do
+      traits = shape["traits"]
+      if Map.has_key?(traits, "smithy.api#input") do
+        true
+      else
+        false
+      end
+    else
+      true
+    end
+  end
+
 end

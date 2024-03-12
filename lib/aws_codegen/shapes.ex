@@ -1,4 +1,5 @@
 defmodule AWS.CodeGen.Shapes do
+  alias AWS.CodeGen.Name
   @moduledoc false
 
   def get_input_shape(operation_spec) do
