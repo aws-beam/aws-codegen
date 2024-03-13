@@ -136,7 +136,7 @@ defmodule AWS.CodeGen.Util do
   end
 
   def return_type(:elixir, action) do
-    case Map.get(action.output, "target") do
+    case Map.fetch!(action.output, "target") do
       "smithy.api#Unit" ->
         normal = "{:ok, nil, any()}"
         errors =
