@@ -438,7 +438,7 @@ defmodule AWS.CodeGen.RestService do
   defp collect_shapes(_language, api_spec) do
     api_spec["shapes"]
     |> Enum.sort(fn {name_a, _}, {name_b, _} -> name_a < name_b end)
-    |> Enum.map(fn {name, shape} ->
+    |> Map.new(fn {name, shape} ->
       {name,
        %Shape{
          name: name,
@@ -450,7 +450,6 @@ defmodule AWS.CodeGen.RestService do
          is_input: is_input?(shape)
        }}
     end)
-    |> Enum.into(%{})
   end
 
   defp is_input?(shape) do
