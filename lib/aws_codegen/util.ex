@@ -141,12 +141,7 @@ defmodule AWS.CodeGen.Util do
         normal = "{:ok, nil, any()}"
         errors =
           if is_list(action.errors) do
-            Enum.map(action.errors,
-            fn %{"target" => error_type} ->
-              "{:error, #{AWS.CodeGen.Name.to_snake_case(String.replace(error_type, ~r/com\.amazonaws\.[^#]+#/, ""))}()}"
-              _ ->
-                ""
-            end )
+            ["{:error, #{action.function_name}_errors()}"]
           else
             []
           end
@@ -155,12 +150,7 @@ defmodule AWS.CodeGen.Util do
         normal = "{:ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), any()}"
         errors =
           if is_list(action.errors) do
-            Enum.map(action.errors,
-            fn %{"target" => error_type} ->
-              "{:error, #{AWS.CodeGen.Name.to_snake_case(String.replace(error_type, ~r/com\.amazonaws\.[^#]+#/, ""))}()}"
-              _ ->
-                ""
-            end )
+            ["{:error, #{action.function_name}_errors()}"]
           else
             []
           end
@@ -173,12 +163,7 @@ defmodule AWS.CodeGen.Util do
         normal = "{ok, undefined, tuple()}"
         errors =
           if is_list(action.errors) do
-            Enum.map(action.errors,
-            fn %{"target" => error_type} ->
-              "{error, #{AWS.CodeGen.Name.to_snake_case(String.replace(error_type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), tuple()}"
-              _ ->
-                ""
-            end )
+            ["{error, #{action.function_name}_errors(), tuple()}"]
           else
             []
           end
@@ -187,12 +172,7 @@ defmodule AWS.CodeGen.Util do
         normal = "{ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), tuple()}"
         errors =
           if is_list(action.errors) do
-            Enum.map(action.errors,
-            fn %{"target" => error_type} ->
-              "{error, #{AWS.CodeGen.Name.to_snake_case(String.replace(error_type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), tuple()}"
-              _ ->
-                ""
-            end )
+            ["{error, #{action.function_name}_errors(), tuple()}"]
           else
             []
           end

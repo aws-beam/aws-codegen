@@ -17,6 +17,28 @@ end) %>
 %% }
 -type <%= "#{type_name}()" %> :: #{binary() => any()}.
 <% end %>
+<%= Enum.map(context.actions,
+             fn action ->
+                errors = action.errors
+                if not is_nil(errors) do
+                    errors_snakecased = errors |> Enum.map(fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.amazonaws\.[^#]+#/, "")) end)
+                    all_types = AWS.CodeGen.Util.types(context)
+                    error_types = Enum.reduce(all_types,
+                                             [],
+                                             fn {type_name, _type_fields}, acc ->
+                                               if Enum.member?(errors_snakecased, type_name) do
+                                                 ["#{type_name}()" | acc]
+                                               else
+                                                 acc
+                                               end
+                                              end
+                                            )
+                   "-type #{action.function_name}_errors() ::\n    #{Enum.join(error_types, " | \n    ")}."
+                end
+             end)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("\n\n")
+%>
 
 %%====================================================================
 %% API
