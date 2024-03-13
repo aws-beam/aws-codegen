@@ -15,15 +15,15 @@ defmodule <%= context.module_name %> do
 @typedoc """
 
 ## Example:
-    <%= if map_size(type_fields) == 0 do %>
+<%= if map_size(type_fields) == 0 do %>
     <%= "#{type_name}() :: %{}" %>
-    <% else %>
+<% else %>
     <%= "#{type_name}() :: %{" %>
     <%= Enum.map_join(type_fields, ",\n    ", fn {field_name, field_type} ->
       ~s{  #{field_name}#{field_type}}
     end) %>
     }
-    <% end %>
+<% end %>
 """
 @type <%= if map_size(type_fields) == 0 do "#{type_name}() :: %{}" else "#{type_name}() :: %{String.t => any()}" end %>
 <% end %>
