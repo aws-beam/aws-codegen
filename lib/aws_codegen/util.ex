@@ -201,11 +201,7 @@ defmodule AWS.CodeGen.Util do
   end
 
   def reserved_type(type) do
-    if type == "node" || type == "term" || type == "function" || type == "reference" do
-      true
-    else
-      false
-    end
+    type == "node" || type == "term" || type == "function" || type == "reference"
   end
 
 end
