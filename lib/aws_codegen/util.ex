@@ -121,7 +121,7 @@ defmodule AWS.CodeGen.Util do
   end
 
   def function_argument_type(:elixir, action) do
-    case Map.get(action.input, "target") do
+    case Map.fetch!(action.input, "target") do
       "smithy.api#Unit" -> "%{}"
       type ->
         "#{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}()"
