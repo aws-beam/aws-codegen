@@ -183,11 +183,7 @@ defmodule AWS.CodeGen.PostService do
   end
 
   defp is_input?(shape) do
-    if Map.has_key?(shape, "traits") do
-      Map.has_key?(shape["traits"], "smithy.api#input")
-    else
-      true
-    end
+    !Map.has_key?(shape, "traits") or Map.has_key?(shape["traits"], "smithy.api#input")
   end
 
 end
