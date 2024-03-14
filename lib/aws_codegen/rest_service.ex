@@ -162,38 +162,33 @@ defmodule AWS.CodeGen.RestService do
   end
 
   def required_function_parameter_types(action) do
-    function_parameter_types(action, true)
+    function_parameter_types(action.method, action, true)
   end
 
   def required_query_map_types(action) do
-    function_parameter_types(action, true)
+    function_parameter_types(action.method, action, true)
   end
 
-  def function_parameter_types(action, required_only \\ false) do
+  def function_parameter_types("GET", action, false = _required_only) do
     language = action.language
-    Enum.join([
-      join_parameter_types(action.url_parameters, language)
-      | case action.method do
-          "GET" ->
-            case required_only do
-              false ->
-                [
-                  join_parameter_types(action.query_parameters, language),
-                  join_parameter_types(action.request_header_parameters, language),
-                  join_parameter_types(action.request_headers_parameters, language)
-                ]
-
-              true ->
-                [
-                  join_parameter_types(action.required_query_parameters, language),
-                  join_parameter_types(action.required_request_header_parameters, language)
-                ]
-            end
-
-          _ ->
-            []
-        end
-    ])
+    Enum.join(
+      [join_parameter_types(action.url_parameters, language),
+       join_parameter_types(action.query_parameters, language),
+       join_parameter_types(action.request_header_parameters, language),
+       join_parameter_types(action.request_headers_parameters, language)
+      ])
+  end
+  def function_parameter_types("GET", action, true = _required_only) do
+    language = action.language
+    Enum.join(
+      [join_parameter_types(action.url_parameters, language),
+       join_parameter_types(action.required_query_parameters, language),
+       join_parameter_types(action.required_request_header_parameters, language)
+      ])
+  end
+  def function_parameter_types(_method, action, _required_only) do
+    language = action.language
+    join_parameter_types(action.url_parameters, language)
   end
 
   defp join_parameter_types(parameters, language) do

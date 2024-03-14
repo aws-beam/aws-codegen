@@ -70,7 +70,7 @@ defmodule <%= context.module_name %> do
   @doc """
 <%= action.docstring %>
   """<% end %><%= if action.method == "GET" do %>
-  @spec <%= action.function_name %>(map()<%= AWS.CodeGen.RestService.function_parameter_types(action)%>, list()) :: <%= AWS.CodeGen.Util.return_type(context.language, action)%>
+  @spec <%= action.function_name %>(map()<%= AWS.CodeGen.RestService.function_parameter_types(action.method, action, false)%>, list()) :: <%= AWS.CodeGen.Util.return_type(context.language, action)%>
   def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.function_parameters(action) %>, options \\ []) do
     url_path = "<%= AWS.CodeGen.RestService.Action.url_path(action) %>"
     headers = []<%= for parameter <- action.request_header_parameters do %>
@@ -115,7 +115,7 @@ defmodule <%= context.module_name %> do
       <% end %>
 
     Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, <%= inspect(action.success_status_code) %>)<% else %>
-@spec <%= action.function_name %>(map()<%= AWS.CodeGen.RestService.function_parameter_types(action)%>, <%= AWS.CodeGen.Util.function_argument_type(context.language, action)%>, list()) :: <%= AWS.CodeGen.Util.return_type(context.language, action)%>
+@spec <%= action.function_name %>(map()<%= AWS.CodeGen.RestService.function_parameter_types(action.method, action, false)%>, <%= AWS.CodeGen.Util.function_argument_type(context.language, action)%>, list()) :: <%= AWS.CodeGen.Util.return_type(context.language, action)%>
 def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.function_parameters(action) %>, input, options \\ []) do
     url_path = "<%= AWS.CodeGen.RestService.Action.url_path(action) %>"<%= if length(action.request_header_parameters) > 0 do %>
     {headers, input} =
