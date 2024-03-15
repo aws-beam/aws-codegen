@@ -191,23 +191,22 @@ defmodule AWS.CodeGen.RestService do
     join_parameter_types(action.url_parameters, language)
   end
 
-  defp join_parameter_types(parameters, language) do
+  defp join_parameter_types(parameters, :elixir) do
     Enum.join(
       Enum.map(
         parameters,
         fn parameter ->
-          if not parameter.required and language == :elixir do
+          if not parameter.required do
             ", String.t() | nil"
           else
-            if language == :elixir do
-              ", String.t()"
-            else
-            ", binary() | list()"
-            end
+            ", String.t()"
           end
         end
       )
     )
+  end
+  defp join_parameter_types(parameters, :erlang) do
+    Enum.join(Enum.map(parameters, fn _parameter -> ", binary() | list()" end))
   end
 
   @doc """
