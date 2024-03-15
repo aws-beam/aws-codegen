@@ -149,7 +149,7 @@ defmodule AWS.CodeGen.RestService do
       signature_version: AWS.CodeGen.Util.get_signature_version(service),
       service_id: AWS.CodeGen.Util.get_service_id(service),
       target_prefix: nil, ##TODO: metadata["targetPrefix"],
-      shapes: collect_shapes(language, spec.api)
+      shapes: Shapes.collect_shapes(language, spec.api)
     }
   end
 
@@ -416,42 +416,6 @@ defmodule AWS.CodeGen.RestService do
       location_name: data,
       required: required
     }
-  end
-
-  defmodule Shape do
-    defstruct name: nil,
-              type: nil,
-              members: [],
-              member: [],
-              enum: [],
-              min: nil,
-              required: [],
-              is_input: nil
-  end
-
-  defp collect_shapes(_language, api_spec) do
-    api_spec["shapes"]
-    |> Enum.sort(fn {name_a, _}, {name_b, _} -> name_a < name_b end)
-    |> Map.new(fn {name, shape} ->
-      {name,
-       %Shape{
-         name: name,
-         type: shape["type"],
-         member: shape["member"],
-         members: shape["members"],
-         min: shape["min"],
-         enum: shape["enum"],
-         is_input: is_input?(shape)
-       }}
-    end)
-  end
-
-  defp is_input?(shape) do
-    if Map.has_key?(shape, "traits") do
-      Map.has_key?(shape["traits"], "smithy.api#input")
-    else
-      true
-    end
   end
 
 end

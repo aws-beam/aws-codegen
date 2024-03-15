@@ -2,7 +2,6 @@ defmodule AWS.CodeGen.PostService do
   alias AWS.CodeGen.Docstring
   alias AWS.CodeGen.Service
   alias AWS.CodeGen.Shapes
-  alias AWS.CodeGen.Name
 
   defmodule Action do
     defstruct arity: nil,
@@ -13,17 +12,6 @@ defmodule AWS.CodeGen.PostService do
               errors: %{},
               host_prefix: nil,
               name: nil
-  end
-
-  defmodule Shape do
-    defstruct name: nil,
-              type: nil,
-              members: [],
-              member: [],
-              enum: [],
-              min: nil,
-              required: [],
-              is_input: nil
   end
 
   @configuration %{
@@ -73,7 +61,7 @@ defmodule AWS.CodeGen.PostService do
     service = spec.api["shapes"][spec.shape_name]
     traits = service["traits"]
     actions = collect_actions(language, spec.api)
-    shapes = collect_shapes(language, spec.api)
+    shapes = Shapes.collect_shapes(language, spec.api)
     endpoint_prefix = traits["aws.api#service"]["endpointPrefix"] || traits["aws.api#service"]["arnNamespace"]
     endpoint_info = endpoints_spec["services"][endpoint_prefix]
     is_global = not is_nil(endpoint_info) and not Map.get(endpoint_info, "isRegionalized", true)
@@ -163,27 +151,6 @@ defmodule AWS.CodeGen.PostService do
     end)
     |> Enum.sort(fn a, b -> a.function_name < b.function_name end)
     |> Enum.uniq()
-  end
-
-  defp collect_shapes(_language, api_spec) do
-    api_spec["shapes"]
-    |> Enum.sort(fn {name_a, _}, {name_b, _} -> name_a < name_b end)
-    |> Map.new(fn {name, shape} ->
-      {name,
-       %Shape{
-         name: name,
-         type: shape["type"],
-         member: shape["member"],
-         members: shape["members"],
-         min: shape["min"],
-         enum: shape["enum"],
-         is_input: is_input?(shape)
-       }}
-    end)
-  end
-
-  defp is_input?(shape) do
-    !Map.has_key?(shape, "traits") or Map.has_key?(shape["traits"], "smithy.api#input")
   end
 
 end
