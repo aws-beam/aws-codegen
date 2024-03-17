@@ -3,9 +3,11 @@
 
 <%= if context.docstring != "%% @doc" do %><%= context.docstring %><% end %>
 -module(<%= context.module_name %>).
-
+<%= if context.module_name == "aws_apigatewaymanagementapi" do %>
+-export([<%= Enum.map(context.actions, fn(action) -> if action.method == "GET" do ["#{action.function_name}/#{action.arity - 2}"] else [] end ++ ["#{action.function_name}/#{action.arity}", "#{action.function_name}/#{action.arity + 1}"] end) |> List.flatten |> Enum.join(",\n         ") %>]).
+<% else %>
 -export([<%= Enum.map(context.actions, fn(action) -> if action.method == "GET" do ["#{action.function_name}/#{action.arity - 3}"] else [] end ++ ["#{action.function_name}/#{action.arity - 1}", "#{action.function_name}/#{action.arity}"] end) |> List.flatten |> Enum.join(",\n         ") %>]).
-
+<% end %>
 -include_lib("hackney/include/hackney_lib.hrl").
 
 <%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
@@ -48,23 +50,23 @@ end) %>
 %%====================================================================
 <%= for action <- context.actions do %>
 <%= action.docstring %><%= if action.method == "GET" do %>
--spec <%= action.function_name %>(aws_client:aws_client()<%= AWS.CodeGen.Types.required_function_parameter_types(action) %>) ->
+-spec <%= action.function_name %>(aws_client:aws_client()<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, list() | binary()<% end %><%= AWS.CodeGen.Types.required_function_parameter_types(action) %>) ->
     <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
-<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>)
+<%= action.function_name %>(Client<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, Stage<% end %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>)
   when is_map(Client) ->
-    <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, #{}, #{}).
+    <%= action.function_name %>(Client<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, Stage<% end %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>, #{}, #{}).
 
--spec <%= action.function_name %>(aws_client:aws_client()<%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, map(), map()) ->
+-spec <%= action.function_name %>(aws_client:aws_client()<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, list() | binary()<% end %><%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, map(), map()) ->
     <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
-<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap)
+<%= action.function_name %>(Client<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, Stage<% end %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap)
   when is_map(Client), is_map(QueryMap), is_map(HeadersMap) ->
-    <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, []).
+    <%= action.function_name %>(Client<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, Stage<% end %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, []).
 
--spec <%= action.function_name %>(aws_client:aws_client()<%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, map(), map(), proplists:proplist()) ->
+-spec <%= action.function_name %>(aws_client:aws_client()<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, list() | binary()<% end %><%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, map(), map(), proplists:proplist()) ->
     <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
-<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, Options0)
+<%= action.function_name %>(Client<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, Stage<% end %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, Options0)
   when is_map(Client), is_map(QueryMap), is_map(HeadersMap), is_list(Options0) ->
-    Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>
+    Path = ["<%= if context.module_name == "aws_apigatewaymanagementapi" do %>/", Stage, "<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>
 <%= if !String.contains?("Bucket", AWS.CodeGen.RestService.required_function_parameters(action)) do %><% else %>    Bucket = undefined,<% end %><% end %>
     SuccessStatusCode = <%= inspect(action.success_status_code) %>,
     {SendBodyAsBinary, Options1} = proplists_take(send_body_as_binary, Options0, <%= action.send_body_as_binary? %>),
@@ -111,16 +113,16 @@ end) %>
     end.<% else %>
     request(Client, get, Path, Query_, Headers, undefined, Options, SuccessStatusCode<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>, Bucket<% end %>).<% end %>
 <% else %>
--spec <%= action.function_name %>(aws_client:aws_client()<%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>) ->
+-spec <%= action.function_name %>(aws_client:aws_client()<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, list() | binary()<% end %><%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>) ->
     <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
-<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input) ->
-    <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input, []).
+<%= action.function_name %>(Client<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, Stage<% end %><%= AWS.CodeGen.RestService.function_parameters(action) %>, Input) ->
+    <%= action.function_name %>(Client<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, Stage<% end %><%= AWS.CodeGen.RestService.function_parameters(action) %>, Input, []).
 
--spec <%= action.function_name %>(aws_client:aws_client()<%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, proplists:proplist()) ->
+-spec <%= action.function_name %>(aws_client:aws_client()<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, list() | binary()<% end %><%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, proplists:proplist()) ->
     <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
-<%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input0, Options0) ->
+<%= action.function_name %>(Client<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, Stage<% end %><%= AWS.CodeGen.RestService.function_parameters(action) %>, Input0, Options0) ->
     Method = <%= AWS.CodeGen.RestService.Action.method(action) %>,
-    Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>
+    Path = ["<%= if context.module_name == "aws_apigatewaymanagementapi" do %>/", Stage, "<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>
 <%= if !String.contains?("Bucket", AWS.CodeGen.RestService.required_function_parameters(action)) do %><% else %>    Bucket = undefined,<% end %><% end %>
     SuccessStatusCode = <%= inspect(action.success_status_code) %>,
     {SendBodyAsBinary, Options1} = proplists_take(send_body_as_binary, Options0, <%= action.send_body_as_binary? %>),
