@@ -32,7 +32,7 @@ defmodule <%= context.module_name %> do
              fn action ->
                 errors = action.errors
                 if not is_nil(errors) do
-                    errors_snakecased = errors |> Enum.map(fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.amazonaws\.[^#]+#/, "")) end)
+                    errors_snakecased = Enum.map(errors, fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.amazonaws\.[^#]+#/, "")) end)
                     all_types = AWS.CodeGen.Types.types(context)
                     error_types = Enum.reduce(all_types,
                                              [],
