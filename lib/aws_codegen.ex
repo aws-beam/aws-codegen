@@ -33,6 +33,7 @@ defmodule AWS.CodeGen do
               protocol: nil,
               signature_version: nil,
               service_id: nil,
+              shapes: %{},
               signing_name: nil,
               target_prefix: nil
   end
@@ -96,7 +97,7 @@ defmodule AWS.CodeGen do
         end
       )
 
-    Enum.each(tasks, fn task -> Task.await(task, 60_000) end)
+    Enum.each(tasks, fn task -> Task.await(task, 120_000) end)
   end
 
   defp generate_code(spec, language, endpoints_spec, template_base_path, output_path) do

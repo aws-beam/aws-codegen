@@ -8,19 +8,60 @@
 
 -include_lib("hackney/include/hackney_lib.hrl").
 
+<%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
+<%= if Enum.empty?(type_fields) do %>%% Example:
+%% <%= type_name %>() :: #{}
+-type <%= "#{type_name}()" %> :: #{}.<% else %>
+%% Example:
+%% <%= type_name %>() :: #{
+<%= Enum.map_join(type_fields, ",\n", fn {field_name, field_type} ->
+  ~s{%%   #{field_name}#{field_type}}
+end) %>
+%% }
+-type <%= "#{type_name}()" %> :: #{binary() => any()}.<% end %>
+<% end %>
+<%= Enum.map(context.actions,
+             fn action ->
+                errors = action.errors
+                if not is_nil(errors) do
+                    errors_snakecased = errors |> Enum.map(fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.amazonaws\.[^#]+#/, "")) end)
+                    all_types = AWS.CodeGen.Types.types(context)
+                    error_types = Enum.reduce(all_types,
+                                             [],
+                                             fn {type_name, _type_fields}, acc ->
+                                               if Enum.member?(errors_snakecased, type_name) do
+                                                 ["#{type_name}()" | acc]
+                                               else
+                                                 acc
+                                               end
+                                              end
+                                            )
+                   "-type #{action.function_name}_errors() ::\n    #{Enum.join(error_types, " | \n    ")}."
+                end
+             end)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("\n\n")
+%>
+
 %%====================================================================
 %% API
 %%====================================================================
 <%= for action <- context.actions do %>
 <%= action.docstring %><%= if action.method == "GET" do %>
+-spec <%= action.function_name %>(aws_client:aws_client()<%= AWS.CodeGen.Types.required_function_parameter_types(action) %>) ->
+    <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>)
   when is_map(Client) ->
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, #{}, #{}).
 
+-spec <%= action.function_name %>(aws_client:aws_client()<%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, map(), map()) ->
+    <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap)
   when is_map(Client), is_map(QueryMap), is_map(HeadersMap) ->
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, []).
 
+-spec <%= action.function_name %>(aws_client:aws_client()<%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, map(), map(), proplists:proplist()) ->
+    <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, QueryMap, HeadersMap, Options0)
   when is_map(Client), is_map(QueryMap), is_map(HeadersMap), is_list(Options0) ->
     Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>
@@ -70,8 +111,13 @@
     end.<% else %>
     request(Client, get, Path, Query_, Headers, undefined, Options, SuccessStatusCode<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>, Bucket<% end %>).<% end %>
 <% else %>
+-spec <%= action.function_name %>(aws_client:aws_client()<%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>) ->
+    <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input) ->
     <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input, []).
+
+-spec <%= action.function_name %>(aws_client:aws_client()<%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, proplists:proplist()) ->
+    <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
 <%= action.function_name %>(Client<%= AWS.CodeGen.RestService.function_parameters(action) %>, Input0, Options0) ->
     Method = <%= AWS.CodeGen.RestService.Action.method(action) %>,
     Path = ["<%= AWS.CodeGen.RestService.Action.url_path(action) %>"],<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>
@@ -135,7 +181,7 @@
 %% Internal functions
 %%====================================================================
 
--spec proplists_take(any(), proplists:proplists(), any()) -> {any(), proplists:proplists()}.
+-spec proplists_take(any(), proplists:proplist(), any()) -> {any(), proplists:proplist()}.
 proplists_take(Key, Proplist, Default) ->
   Value = proplists:get_value(Key, Proplist, Default),
   {Value, proplists:delete(Key, Proplist)}.
