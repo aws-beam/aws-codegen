@@ -270,17 +270,15 @@ defmodule AWS.CodeGen.Types do
   end
 
   defp join_parameter_types(parameters, :elixir) do
-    Enum.join(
-      Enum.map(
-        parameters,
-        fn parameter ->
-          if not parameter.required do
-            ", String.t() | nil"
-          else
-            ", String.t()"
-          end
+    Enum.map_join(
+      parameters,
+      fn parameter ->
+        if not parameter.required do
+          ", String.t() | nil"
+        else
+          ", String.t()"
         end
-      )
+      end
     )
   end
   defp join_parameter_types(parameters, :erlang) do
