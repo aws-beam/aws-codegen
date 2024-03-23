@@ -9,7 +9,7 @@
 -include_lib("hackney/include/hackney_lib.hrl").
 
 <%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
-<%= if Map.keys(type_fields) == [] do %>%% Example:
+<%= if Enum.empty?(type_fields) do %>%% Example:
 %% <%= type_name %>() :: #{}
 -type <%= "#{type_name}()" %> :: #{}.<% else %>
 %% Example:
