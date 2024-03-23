@@ -15,7 +15,7 @@ defmodule <%= context.module_name %> do
 @typedoc """
 
 ## Example:
-<%= if map_size(type_fields) == 0 do %>
+<%= if Enum.empty?(type_fields) do %>
     <%= "#{type_name}() :: %{}" %>
 <% else %>
     <%= "#{type_name}() :: %{" %>
