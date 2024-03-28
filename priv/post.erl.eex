@@ -8,14 +8,51 @@
 
 -include_lib("hackney/include/hackney_lib.hrl").
 
+<%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
+%% Example:
+%% <%= type_name %>() :: #{
+<%= Enum.map_join(type_fields, ",\n", fn {field_name, field_type} ->
+  ~s{%%   #{field_name}#{field_type}}
+end) %>
+%% }
+-type <%= "#{type_name}()" %> :: #{binary() => any()}.
+<% end %>
+<%= Enum.map(context.actions,
+             fn action ->
+                errors = action.errors
+                if not is_nil(errors) do
+                    errors_snakecased = errors |> Enum.map(fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.amazonaws\.[^#]+#/, "")) end)
+                    all_types = AWS.CodeGen.Types.types(context)
+                    error_types = Enum.reduce(all_types,
+                                             [],
+                                             fn {type_name, _type_fields}, acc ->
+                                               if Enum.member?(errors_snakecased, type_name) do
+                                                 ["#{type_name}()" | acc]
+                                               else
+                                                 acc
+                                               end
+                                              end
+                                            )
+                   "-type #{action.function_name}_errors() ::\n    #{Enum.join(error_types, " | \n    ")}."
+                end
+             end)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("\n\n")
+%>
+
 %%====================================================================
 %% API
 %%====================================================================
 <%= for action <- context.actions do %>
 <%= action.docstring %>
+-spec <%= action.function_name %>(aws_client:aws_client(), <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>) ->
+    <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
 <%= action.function_name %>(Client, Input)
   when is_map(Client), is_map(Input) ->
     <%= action.function_name %>(Client, Input, []).
+
+-spec <%= action.function_name %>(aws_client:aws_client(), <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, proplists:proplist()) ->
+    <%= AWS.CodeGen.Types.return_type(context.language, action)%>.
 <%= action.function_name %>(Client, Input, Options)
   when is_map(Client), is_map(Input), is_list(Options) ->
     request(Client, <<"<%= action.name %>">>, Input, Options).

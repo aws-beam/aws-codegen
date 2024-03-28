@@ -42,7 +42,8 @@ defmodule AWS.CodeGen.RestServiceTest do
                content_type: "application/x-amz-json-1.1",
                credential_scope: nil,
                decode: "json",
-               docstring: "  The CloudTrail Data Service lets you ingest events into CloudTrail from any\n  source in your\n  hybrid environments, such as in-house or SaaS applications hosted on-premises or\n  in the cloud,\n  virtual machines, or containers.\n\n  You can store, access, analyze, troubleshoot and take action on\n  this data without maintaining multiple log aggregators and reporting tools.\n  After you run\n  `PutAuditEvents` to ingest your application activity into CloudTrail, you can\n  use CloudTrail Lake to search, query, and analyze the data that is logged\n  from your applications.",
+               docstring:
+                 "  The CloudTrail Data Service lets you ingest events into CloudTrail from any\n  source in your\n  hybrid environments, such as in-house or SaaS applications hosted on-premises or\n  in the cloud,\n  virtual machines, or containers.\n\n  You can store, access, analyze, troubleshoot and take action on\n  this data without maintaining multiple log aggregators and reporting tools.\n  After you run\n  `PutAuditEvents` to ingest your application activity into CloudTrail, you can\n  use CloudTrail Lake to search, query, and analyze the data that is logged\n  from your applications.",
                encode: "json",
                endpoint_prefix: "cloudtrail-data",
                is_global: false,
@@ -58,36 +59,47 @@ defmodule AWS.CodeGen.RestServiceTest do
       assert action ==
                %RestService.Action{
                  arity: 3,
-                 docstring: "  Ingests your application events into CloudTrail Lake.\n\n  A required parameter,\n  `auditEvents`, accepts the JSON records (also called\n  *payload*) of events that you want CloudTrail to ingest. You\n  can add up to 100 of these events (or up to 1 MB) per `PutAuditEvents`\n  request.",
+                 docstring:
+                   "  Ingests your application events into CloudTrail Lake.\n\n  A required parameter,\n  `auditEvents`, accepts the JSON records (also called\n  *payload*) of events that you want CloudTrail to ingest. You\n  can add up to 100 of these events (or up to 1 MB) per `PutAuditEvents`\n  request.",
+                 errors: [
+                   %{"target" => "com.amazonaws.cloudtraildata#ChannelInsufficientPermission"},
+                   %{"target" => "com.amazonaws.cloudtraildata#ChannelNotFound"},
+                   %{"target" => "com.amazonaws.cloudtraildata#ChannelUnsupportedSchema"},
+                   %{"target" => "com.amazonaws.cloudtraildata#DuplicatedAuditEventId"},
+                   %{"target" => "com.amazonaws.cloudtraildata#InvalidChannelARN"},
+                   %{"target" => "com.amazonaws.cloudtraildata#UnsupportedOperationException"}
+                 ],
                  function_name: "put_audit_events",
                  language: :elixir,
                  method: "POST",
                  name: "com.amazonaws.cloudtraildata#PutAuditEvents",
+                 input: %{"target" => "com.amazonaws.cloudtraildata#PutAuditEventsRequest"},
+                 output: %{"target" => "com.amazonaws.cloudtraildata#PutAuditEventsResponse"},
                  query_parameters: [
-                  %RestService.Parameter{
-                    code_name: "channel_arn",
-                    location_name: "channelArn",
-                    name: "channelArn",
-                    required: true
-                  },
-                  %RestService.Parameter{
-                    code_name: "external_id",
-                    location_name: "externalId",
-                    name: "externalId",
-                    required: false
-                  }
-                ],
+                   %RestService.Parameter{
+                     code_name: "channel_arn",
+                     location_name: "channelArn",
+                     name: "channelArn",
+                     required: true
+                   },
+                   %RestService.Parameter{
+                     code_name: "external_id",
+                     location_name: "externalId",
+                     name: "externalId",
+                     required: false
+                   }
+                 ],
                  receive_body_as_binary?: false,
                  request_header_parameters: [],
                  request_uri: "/PutAuditEvents",
                  required_query_parameters: [
-                  %RestService.Parameter{
-                    code_name: "channel_arn",
-                    location_name: "channelArn",
-                    name: "channelArn",
-                    required: true
-                  }
-                ],
+                   %RestService.Parameter{
+                     code_name: "channel_arn",
+                     location_name: "channelArn",
+                     name: "channelArn",
+                     required: true
+                   }
+                 ],
                  required_request_header_parameters: [],
                  response_header_parameters: [],
                  send_body_as_binary?: false,

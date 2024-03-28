@@ -22,37 +22,44 @@ defmodule AWS.CodeGen.Spec do
             shape_name: nil
 
   def parse(api_filename, language) do
-    api_name = api_filename
-               |> Path.basename()
-               |> String.replace(["-", ".json"], "")
+    api_name =
+      api_filename
+      |> Path.basename()
+      |> String.replace(["-", ".json"], "")
+
     api = parse_json(api_filename)
+
     service_name =
       api
       |> find_service()
       |> String.replace("com.amazonaws.#{api_name}#", "")
+
     traits = api["shapes"]["com.amazonaws." <> api_name <> "#" <> service_name]["traits"]
 
-    protocol = Enum.find_value(traits, fn {k, _v} ->
-                 case String.split(k, "#") do
-                   ["aws.protocols", protocol] -> protocol
-                   _ -> nil
-                 end
-               end)
-               |> String.replace("restJson1", "rest_json")
-               |> String.replace(["awsJson1_0", "awsJson1_1"], "json")
-               |> String.replace("awsQuery", "query")
-               |> String.replace("restXml", "rest_xml")
-               |> String.replace("ec2Query", "ec2")
-               |> then(fn value->
-                 if value in ~w(rest_json json query rest_xml ec2) do
-                   value
-                 else
-                   raise "the protocol #{value} is not valid"
-                 end
-               end)
-               |> String.to_atom()
+    protocol =
+      Enum.find_value(traits, fn {k, _v} ->
+        case String.split(k, "#") do
+          ["aws.protocols", protocol] -> protocol
+          _ -> nil
+        end
+      end)
+      |> String.replace("restJson1", "rest_json")
+      |> String.replace(["awsJson1_0", "awsJson1_1"], "json")
+      |> String.replace("awsQuery", "query")
+      |> String.replace("restXml", "rest_xml")
+      |> String.replace("ec2Query", "ec2")
+      |> then(fn value ->
+        if value in ~w(rest_json json query rest_xml ec2) do
+          value
+        else
+          raise "the protocol #{value} is not valid"
+        end
+      end)
+      |> String.to_atom()
+
     module_name = module_name(traits, language)
     filename = filename(module_name, language)
+
     %AWS.CodeGen.Spec{
       protocol: protocol,
       module_name: module_name,

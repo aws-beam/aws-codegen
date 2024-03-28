@@ -39,8 +39,10 @@ defmodule AWS.CodeGen.Docstring do
     |> String.trim_trailing()
     |> String.replace(@two_break_lines, "\n%%\n")
     |> String.replace(~r/&#39;/, "'")
-    |> String.replace("`AVAILABLE`", "`AVAILABLE'") # aws-sdk-go docs are broken for this, hack it to make the edocs work
-    |> String.replace("`PENDING`", "`PENDING'") # aws-sdk-go docs are broken for this, hack it to make the edocs work
+    # aws-sdk-go docs are broken for this, hack it to make the edocs work
+    |> String.replace("`AVAILABLE`", "`AVAILABLE'")
+    # aws-sdk-go docs are broken for this, hack it to make the edocs work
+    |> String.replace("`PENDING`", "`PENDING'")
   end
 
   defp split_first_sentence_in_one_line(doc) do
@@ -292,6 +294,7 @@ defmodule AWS.CodeGen.Docstring do
         case Enum.find(attrs, fn {attr, _} -> attr == "href" end) do
           {_, href} ->
             text = Floki.text(children)
+
             if text == href do
               "[#{href}]"
             else
@@ -304,7 +307,7 @@ defmodule AWS.CodeGen.Docstring do
 
       {_, _attrs, children} ->
         "#{Floki.text(children)}"
-      end)
+    end)
     |> Floki.raw_html(encode: true)
   end
 

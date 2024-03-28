@@ -11,6 +11,46 @@ defmodule <%= context.module_name %> do
   alias AWS.Client
   alias AWS.Request
 
+ <%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
+@typedoc """
+
+## Example:
+    <%= if map_size(type_fields) == 0 do %>
+    <%= "#{type_name}() :: %{}" %>
+    <% else %>
+    <%= "#{type_name}() :: %{" %>
+    <%= Enum.map_join(type_fields, ",\n    ", fn {field_name, field_type} ->
+      ~s{  #{field_name}#{field_type}}
+    end) %>
+    }
+    <% end %>
+"""
+@type <%= if map_size(type_fields) == 0 do "#{type_name}() :: %{}" else "#{type_name}() :: %{String.t => any()}" end %>
+<% end %>
+
+<%= Enum.map(context.actions,
+             fn action ->
+                errors = action.errors
+                if not is_nil(errors) do
+                    errors_snakecased = Enum.map(errors, fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.amazonaws\.[^#]+#/, "")) end)
+                    all_types = AWS.CodeGen.Types.types(context)
+                    error_types = Enum.reduce(all_types,
+                                             [],
+                                             fn {type_name, _type_fields}, acc ->
+                                               if Enum.member?(errors_snakecased, type_name) do
+                                                 ["#{type_name}()" | acc]
+                                               else
+                                                 acc
+                                               end
+                                              end
+                                            )
+                   "@type #{action.function_name}_errors() :: #{Enum.join(error_types, " | ")}"
+                end
+             end)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("\n\n")
+%>
+
   def metadata do
     %{
       api_version: <%= inspect(context.api_version) %>,
@@ -30,6 +70,7 @@ defmodule <%= context.module_name %> do
   @doc """
 <%= action.docstring %>
   """<% end %>
+  @spec <%= action.function_name %>(map(), <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, list()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
   def <%= action.function_name %>(%Client{} = client, input, options \\ []) do
     meta =
       <%= if action.host_prefix do %>
