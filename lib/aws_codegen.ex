@@ -108,15 +108,17 @@ defmodule AWS.CodeGen do
       template_path = Path.join(template_base_path, template)
 
       context = protocol_service.load_context(language, spec, endpoints_spec)
+
       case Map.get(context, :actions) do
         [] ->
           IO.puts(["Skipping ", spec.module_name, " due to no actions"])
+
         _ ->
           code = render(context, template_path)
 
-      IO.puts(["Writing ", spec.module_name, " to ", output_path])
+          IO.puts(["Writing ", spec.module_name, " to ", output_path])
 
-      File.write(output_path, code)
+          File.write(output_path, code)
       end
     else
       IO.puts("Failed to generate #{spec.module_name}, protocol #{spec.protocol}")
@@ -150,7 +152,12 @@ defmodule AWS.CodeGen do
   end
 
   defp get_endpoints_spec(base_path) do
-    Path.join([base_path, "../../", "smithy-aws-go-codegen/src/main/resources/software/amazon/smithy/aws/go/codegen", "endpoints.json"])
+    Path.join([
+      base_path,
+      "../../",
+      "smithy-aws-go-codegen/src/main/resources/software/amazon/smithy/aws/go/codegen",
+      "endpoints.json"
+    ])
     |> Spec.parse_json()
     |> get_in(["partitions"])
     |> Enum.filter(fn x -> x["partition"] == "aws" end)

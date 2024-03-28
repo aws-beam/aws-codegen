@@ -8,30 +8,30 @@ defmodule AWS.CodeGen.ShapesTest do
         "type" => "structure",
         "members" => %{
           "ACL" => %{
-            "target" => "com.amazonaws.s3#ObjectCannedACL",
+            "target" => "com.amazonaws.s3#ObjectCannedACL"
           },
           "Body" => %{
-            "target" => "com.amazonaws.s3#StreamingBlob",
+            "target" => "com.amazonaws.s3#StreamingBlob"
           }
         }
       },
       "com.amazonaws.s3#StreamingBlob" => %{
         "type" => "blob",
         "traits" => %{
-            "smithy.api#streaming" => %{}
+          "smithy.api#streaming" => %{}
         }
       },
       "com.amazonaws.s3#PutObjectAclRequest" => %{
         "type" => "structure",
         "members" => %{
           "ACL" => %{
-            "target" => "com.amazonaws.s3#ObjectCannedACL",
+            "target" => "com.amazonaws.s3#ObjectCannedACL"
           },
           "AccessControlPolicy" => %{
-            "target" => "com.amazonaws.s3#AccessControlPolicy",
+            "target" => "com.amazonaws.s3#AccessControlPolicy"
           }
         }
-      },
+      }
     }
 
     assert Shapes.body_as_binary?(shapes, "com.amazonaws.s3#PutObjectRequest")

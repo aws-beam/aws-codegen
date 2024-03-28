@@ -120,7 +120,10 @@ defmodule AWS.CodeGen.RestService do
     traits = service["traits"]
     actions = collect_actions(language, spec.api)
     protocol = spec.protocol
-    endpoint_prefix = traits["aws.api#service"]["endpointPrefix"] || traits["aws.api#service"]["arnNamespace"] ##TODO: for some reason this field is not always present and docs are not clear on what to do
+    ## TODO: for some reason this field is not always present and docs are not clear on what to do
+    endpoint_prefix =
+      traits["aws.api#service"]["endpointPrefix"] || traits["aws.api#service"]["arnNamespace"]
+
     endpoint_info = endpoints_spec["services"][endpoint_prefix]
     is_global = not is_nil(endpoint_info) and not Map.get(endpoint_info, "isRegionalized", true)
 
@@ -148,7 +151,8 @@ defmodule AWS.CodeGen.RestService do
       signing_name: signing_name,
       signature_version: AWS.CodeGen.Util.get_signature_version(service),
       service_id: AWS.CodeGen.Util.get_service_id(service),
-      target_prefix: nil, ##TODO: metadata["targetPrefix"],
+      ## TODO: metadata["targetPrefix"],
+      target_prefix: nil,
       shapes: Shapes.collect_shapes(language, spec.api)
     }
   end
@@ -167,6 +171,7 @@ defmodule AWS.CodeGen.RestService do
   """
   def function_parameters(action, required_only \\ false) do
     language = action.language
+
     Enum.join([
       join_parameters(action.url_parameters, language)
       | case action.method do
@@ -214,12 +219,22 @@ defmodule AWS.CodeGen.RestService do
       Enum.reduce(shapes, [], fn {_, shape}, acc ->
         case shape["type"] do
           "service" ->
-
             List.wrap(shape["operations"]) ++ acc
+
           "resource" ->
-            [shape["operations"], shape["collectionOperations"], shape["create"], shape["put"], shape["read"], shape["update"], shape["delete"], shape["list"]]
+            [
+              shape["operations"],
+              shape["collectionOperations"],
+              shape["create"],
+              shape["put"],
+              shape["read"],
+              shape["update"],
+              shape["delete"],
+              shape["list"]
+            ]
             |> Enum.reject(&is_nil/1)
             |> Kernel.++(acc)
+
           _ ->
             acc
         end
@@ -257,6 +272,7 @@ defmodule AWS.CodeGen.RestService do
 
       input_shape = Shapes.get_input_shape(operation_spec)
       output_shape = Shapes.get_output_shape(operation_spec)
+
       %Action{
         arity: length(url_parameters) + len_for_method,
         docstring:
@@ -298,12 +314,16 @@ defmodule AWS.CodeGen.RestService do
   end
 
   defp collect_url_parameters(language, api_spec, operation) do
-    url_params = collect_parameters(language, api_spec, operation, "input", "smithy.api#httpLabel")
+    url_params =
+      collect_parameters(language, api_spec, operation, "input", "smithy.api#httpLabel")
+
     url_params
   end
 
   defp collect_query_parameters(language, api_spec, operation) do
-    query_params = collect_parameters(language, api_spec, operation, "input", "smithy.api#httpQueryParams")
+    query_params =
+      collect_parameters(language, api_spec, operation, "input", "smithy.api#httpQueryParams")
+
     params = collect_parameters(language, api_spec, operation, "input", "smithy.api#httpQuery")
     query_params ++ params
   end
@@ -318,13 +338,18 @@ defmodule AWS.CodeGen.RestService do
 
   defp collect_parameters(language, api_spec, operation, data_type, param_type) do
     shape_name = api_spec["shapes"][operation][data_type]["target"]
+
     if shape_name do
       case api_spec["shapes"][shape_name] do
         nil ->
           []
+
         shape ->
           required_members =
-            for {name, %{"traits" => traits}} <- shape["members"], Map.has_key?(traits, "smithy.api#required"), do: name
+            for {name, %{"traits" => traits}} <- shape["members"],
+                Map.has_key?(traits, "smithy.api#required"),
+                do: name
+
           shape["members"]
           |> Enum.filter(filter_fn(param_type))
           |> Enum.map(fn {name, x} ->
@@ -356,6 +381,7 @@ defmodule AWS.CodeGen.RestService do
       required: required
     }
   end
+
   defp build_parameter(language, {name, data}, required) do
     %Parameter{
       code_name:
@@ -369,5 +395,4 @@ defmodule AWS.CodeGen.RestService do
       required: required
     }
   end
-
 end

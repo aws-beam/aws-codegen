@@ -1,5 +1,4 @@
 defmodule AWS.CodeGen.Types do
-
   alias AWS.CodeGen.Shapes.Shape
 
   def types(context) do
@@ -36,11 +35,17 @@ defmodule AWS.CodeGen.Types do
 
   defp process_shape_member(context, shape, name, shape_member, a) do
     target = shape_member["target"]
+
     if Map.has_key?(shape_member, "traits") and has_http_label_trait(shape_member["traits"]) do
       a
     else
       shape_member_type = shape_to_type(context, target, context.module_name, context.shapes)
-      Map.put(a, is_required(context.language, shape.is_input, shape_member, name), shape_member_type)
+
+      Map.put(
+        a,
+        is_required(context.language, shape.is_input, shape_member, name),
+        shape_member_type
+      )
     end
   end
 
@@ -95,9 +100,10 @@ defmodule AWS.CodeGen.Types do
 
       _ ->
         case all_shapes[shape_name] do
-
           %Shape{type: "structure"} ->
-            type = "#{AWS.CodeGen.Name.to_snake_case(String.replace(shape_name, ~r/com\.amazonaws\.[^#]+#/, ""))}"
+            type =
+              "#{AWS.CodeGen.Name.to_snake_case(String.replace(shape_name, ~r/com\.amazonaws\.[^#]+#/, ""))}"
+
             if reserved_type(type) do
               "#{String.downcase(String.replace(context.module_name, ["aws_", "AWS."], ""))}_#{type}()"
             else
@@ -106,6 +112,7 @@ defmodule AWS.CodeGen.Types do
 
           %Shape{type: "list", member: member} ->
             type = "#{shape_to_type(context, member["target"], module_name, all_shapes)}"
+
             if reserved_type(type) do
               "list(#{String.downcase(String.replace(context.module_name, ["aws_", "AWS."], ""))}_#{type}())"
             else
@@ -134,7 +141,11 @@ defmodule AWS.CodeGen.Types do
   defp shape_to_type(:erlang, "XmlString" <> _rest, _), do: "string"
   defp shape_to_type(:elixir, "NullablePositiveInteger", _), do: "nil | non_neg_integer()"
   defp shape_to_type(:erlang, "NullablePositiveInteger", _), do: "undefined | non_neg_integer()"
-  defp shape_to_type(_, %Shape{type: type}, _module_name) when type in ["float", "double", "long"], do: "float()"
+
+  defp shape_to_type(_, %Shape{type: type}, _module_name)
+       when type in ["float", "double", "long"],
+       do: "float()"
+
   defp shape_to_type(_, %Shape{type: "timestamp"}, _module_name), do: "non_neg_integer()"
   defp shape_to_type(_, %Shape{type: "map"}, _module_name), do: "map()"
   defp shape_to_type(_, %Shape{type: "blob"}, _module_name), do: "binary()"
@@ -148,6 +159,7 @@ defmodule AWS.CodeGen.Types do
 
   defp is_required(:elixir, is_input, shape, target) do
     trimmed_name = String.replace(target, ~r/com\.amazonaws\.[^#]+#/, "")
+
     if is_input do
       if Map.has_key?(shape, "traits") do
         if Map.has_key?(shape["traits"], "smithy.api#required") do
@@ -162,8 +174,10 @@ defmodule AWS.CodeGen.Types do
       "\"#{trimmed_name}\" => "
     end
   end
+
   defp is_required(:erlang, is_input, shape, target) do
     trimmed_name = String.replace(target, ~r/com\.amazonaws\.[^#]+#/, "")
+
     if is_input do
       if Map.has_key?(shape, "traits") do
         if Map.has_key?(shape["traits"], "smithy.api#required") do
@@ -185,14 +199,19 @@ defmodule AWS.CodeGen.Types do
 
   def function_argument_type(:elixir, action) do
     case Map.fetch!(action.input, "target") do
-      "smithy.api#Unit" -> "%{}"
+      "smithy.api#Unit" ->
+        "%{}"
+
       type ->
         "#{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}()"
     end
   end
+
   def function_argument_type(:erlang, action) do
     case Map.fetch!(action.input, "target") do
-      "smithy.api#Unit" -> "\#{}"
+      "smithy.api#Unit" ->
+        "\#{}"
+
       type ->
         "#{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}()"
     end
@@ -202,43 +221,56 @@ defmodule AWS.CodeGen.Types do
     case Map.fetch!(action.output, "target") do
       "smithy.api#Unit" ->
         normal = "{:ok, nil, any()}"
+
         errors =
           if is_list(action.errors) do
             ["{:error, #{action.function_name}_errors()}"]
           else
             []
           end
+
         Enum.join([normal, "{:error, {:unexpected_response, any()}}" | errors], " | \n")
+
       type ->
-        normal = "{:ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), any()}"
+        normal =
+          "{:ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), any()}"
+
         errors =
           if is_list(action.errors) do
             ["{:error, #{action.function_name}_errors()}"]
           else
             []
           end
+
         Enum.join([normal, "{:error, {:unexpected_response, any()}}" | errors], " | \n")
     end
   end
+
   def return_type(:erlang, action) do
     case Map.get(action.output, "target") do
       "smithy.api#Unit" ->
         normal = "{ok, undefined, tuple()}"
+
         errors =
           if is_list(action.errors) do
             ["{error, #{action.function_name}_errors(), tuple()}"]
           else
             []
           end
+
         Enum.join([normal, "{error, any()}" | errors], " |\n    ")
+
       type ->
-        normal = "{ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), tuple()}"
+        normal =
+          "{ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), tuple()}"
+
         errors =
           if is_list(action.errors) do
             ["{error, #{action.function_name}_errors(), tuple()}"]
           else
             []
           end
+
         Enum.join([normal, "{error, any()}" | errors], " |\n    ")
     end
   end
@@ -249,21 +281,25 @@ defmodule AWS.CodeGen.Types do
 
   def function_parameter_types("GET", action, false = _required_only) do
     language = action.language
-    Enum.join(
-      [join_parameter_types(action.url_parameters, language),
-       join_parameter_types(action.query_parameters, language),
-       join_parameter_types(action.request_header_parameters, language),
-       join_parameter_types(action.request_headers_parameters, language)
-      ])
+
+    Enum.join([
+      join_parameter_types(action.url_parameters, language),
+      join_parameter_types(action.query_parameters, language),
+      join_parameter_types(action.request_header_parameters, language),
+      join_parameter_types(action.request_headers_parameters, language)
+    ])
   end
+
   def function_parameter_types("GET", action, true = _required_only) do
     language = action.language
-    Enum.join(
-      [join_parameter_types(action.url_parameters, language),
-       join_parameter_types(action.required_query_parameters, language),
-       join_parameter_types(action.required_request_header_parameters, language)
-      ])
+
+    Enum.join([
+      join_parameter_types(action.url_parameters, language),
+      join_parameter_types(action.required_query_parameters, language),
+      join_parameter_types(action.required_request_header_parameters, language)
+    ])
   end
+
   def function_parameter_types(_method, action, _required_only) do
     language = action.language
     join_parameter_types(action.url_parameters, language)
@@ -281,8 +317,8 @@ defmodule AWS.CodeGen.Types do
       end
     )
   end
+
   defp join_parameter_types(parameters, :erlang) do
     Enum.join(Enum.map(parameters, fn _parameter -> ", binary() | list()" end))
   end
-
 end
