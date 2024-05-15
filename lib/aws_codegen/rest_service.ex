@@ -132,6 +132,11 @@ defmodule AWS.CodeGen.RestService do
         endpoint_info["endpoints"]["aws-global"]["credentialScope"]["region"]
       end
 
+    hostname =
+      if is_global do
+        endpoint_info["endpoints"]["aws-global"]["hostname"]
+      end
+
     signing_name = traits["aws.auth#sigv4"]["name"] || endpoint_prefix
 
     %Service{
@@ -144,6 +149,7 @@ defmodule AWS.CodeGen.RestService do
       encode: Map.fetch!(@configuration[protocol][language], :encode),
       endpoint_prefix: endpoint_prefix,
       is_global: is_global,
+      hostname: hostname,
       json_version: AWS.CodeGen.Util.get_json_version(service),
       language: language,
       module_name: spec.module_name,

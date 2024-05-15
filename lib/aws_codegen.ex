@@ -27,6 +27,7 @@ defmodule AWS.CodeGen do
               encode: nil,
               endpoint_prefix: nil,
               is_global: false,
+              hostname: nil,
               json_version: nil,
               language: nil,
               module_name: nil,
