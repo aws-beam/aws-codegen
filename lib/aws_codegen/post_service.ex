@@ -74,6 +74,11 @@ defmodule AWS.CodeGen.PostService do
         endpoint_info["endpoints"]["aws-global"]["credentialScope"]["region"]
       end
 
+    hostname =
+      if is_global do
+        endpoint_info["endpoints"]["aws-global"]["hostname"]
+      end
+
     json_version = AWS.CodeGen.Util.get_json_version(service)
     protocol = spec.protocol |> to_string()
     content_type = @configuration[protocol][:content_type]
@@ -96,6 +101,7 @@ defmodule AWS.CodeGen.PostService do
       encode: Map.fetch!(@configuration[protocol][language], :encode),
       endpoint_prefix: endpoint_prefix,
       is_global: is_global,
+      hostname: hostname,
       json_version: json_version,
       language: language,
       module_name: spec.module_name,

@@ -58,6 +58,7 @@ defmodule <%= context.module_name %> do
       credential_scope: <%= inspect(context.credential_scope) %>,
       endpoint_prefix: <%= inspect(context.endpoint_prefix) %>,
       global?: <%= inspect(context.is_global) %>,
+      hostname: <%= inspect(context.hostname) %>,
       protocol: <%= inspect(context.protocol) %>,
       service_id: <%= inspect(context.service_id) %>,
       signature_version: <%= inspect(context.signature_version) %>,
