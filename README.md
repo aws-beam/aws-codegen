@@ -75,5 +75,5 @@ Alternatively you can install XCode's Command Line Developer Tools package:
 
     $ xcode-select --install
 
-[aws-sdk-go]: https://github.com/aws/aws-sdk-go
+[aws-sdk-go]: https://github.com/aws/aws-sdk-go-v2
 [brew]: https://brew.sh/
