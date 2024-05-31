@@ -385,10 +385,14 @@ defmodule AWS.CodeGen.RestService do
   def extract_param_docs_snippet(docs) do
     case Floki.parse_fragment(docs) do
       {:ok, [{"p", _attrs, inner_content} | _rest]} ->
-        inner_content |> sanitize_html() |> Floki.raw_html()
+        inner_content
+        |> sanitize_html()
+        |> Floki.text()
 
       {:ok, [first_node | _rest]} ->
-        first_node |> sanitize_html() |> Floki.raw_html()
+        first_node
+        |> sanitize_html()
+        |> Floki.text()
 
       {:error, _} ->
         ""
