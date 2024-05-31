@@ -70,17 +70,36 @@ defmodule <%= context.module_name %> do
   <%= if String.trim(action.docstring) != "" do %>
   @doc """
 <%= action.docstring %>
+
+  ## Required positional parameters:<%= for parameter <- action.url_parameters do %>
+   • :<%= parameter.code_name %> (t:<%= parameter.type %>) <%= parameter.location_name %><% end %>
+
+  ## Optional parameters:<%= for parameter <- action.query_parameters do %>
+   • :<%= parameter.code_name %> (t:<%= parameter.type %>) <%= parameter.location_name %><% end
+   %><%= for parameter <- action.request_header_parameters do %>
+   • :<%= parameter.code_name %> (t:<%= parameter.type %>) <%= parameter.location_name %><% end
+   %><%= for parameter <- action.request_headers_parameters do %>
+   • :<%= parameter.code_name %> (t:<%= parameter.type %>) <%= parameter.location_name %><% end %>
   """<% end %><%= if action.method == "GET" do %>
-  @spec <%= action.function_name %>(map()<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, String.t()<% end %><%= AWS.CodeGen.Types.function_parameter_types(action.method, action, false)%>, list()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
-  def <%= action.function_name %>(%Client{} = client<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, stage<% end %><%= AWS.CodeGen.RestService.function_parameters(action) %>, options \\ []) do
+  @spec <%= action.function_name %>(AWS.Client.t()<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, String.t()<% end %><%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
+  def <%= action.function_name %>(%Client{} = client<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, stage<% end %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>, options \\ []) do
     url_path = "<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>/#{stage}<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"
+
+    # NOTE: We can't use validate!/2 here because the user might pass options to the client too...
+    # options = Keyword.validate!(options, [<%= Enum.map(action.query_parameters ++ action.request_header_parameters ++ action.request_headers_parameters, &(&1.code_name <> ": nil")) |> Enum.join(", ") %>
+    # ])
+
     headers = []<%= for parameter <- action.request_header_parameters do %>
+
+    {<%= parameter.code_name %>, options} = Keyword.pop(options, :<%= parameter.code_name %>, nil)
     headers = if !is_nil(<%= parameter.code_name %>) do
       [{"<%= parameter.location_name %>", <%= parameter.code_name %>} | headers]
     else
       headers
     end<% end %>
     query_params = []<%= for parameter <- Enum.reverse(action.query_parameters) do %>
+
+    {<%= parameter.code_name %>, options} = Keyword.pop(options, :<%= parameter.code_name %>, nil)
     query_params = if !is_nil(<%= parameter.code_name %>) do
       [{"<%= parameter.location_name %>", <%= parameter.code_name %>} | query_params]
     else
@@ -116,8 +135,8 @@ defmodule <%= context.module_name %> do
       <% end %>
 
     Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, <%= inspect(action.success_status_code) %>)<% else %>
-@spec <%= action.function_name %>(map()<%= AWS.CodeGen.Types.function_parameter_types(action.method, action, false)%>, <%= if context.module_name == "AWS.ApiGatewayManagementApi" do %> String.t(), <% end %><%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, list()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
-def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.function_parameters(action) %>, <%= if context.module_name == "AWS.ApiGatewayManagementApi" do %> stage, <% end %>input, options \\ []) do
+@spec <%= action.function_name %>(AWS.Client.t()<%= AWS.CodeGen.Types.required_function_parameter_types(action)%>, <%= if context.module_name == "AWS.ApiGatewayManagementApi" do %> String.t(), <% end %><%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
+def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, <%= if context.module_name == "AWS.ApiGatewayManagementApi" do %> stage, <% end %>input, options \\ []) do
     url_path = "<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>/#{stage}<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"<%= if length(action.request_header_parameters) > 0 do %>
     {headers, input} =
       [<%= for parameter <- action.request_header_parameters do %>

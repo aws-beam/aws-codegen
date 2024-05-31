@@ -76,7 +76,8 @@ defmodule AWS.CodeGen.RestService do
     defstruct code_name: nil,
               name: nil,
               location_name: nil,
-              required: false
+              required: false,
+              type: nil
 
     def multi_segment?(parameter, request_uri) do
       {:ok, re} = Regex.compile("{#{parameter.location_name}\\+}")
@@ -360,12 +361,53 @@ defmodule AWS.CodeGen.RestService do
           |> Enum.filter(filter_fn(param_type))
           |> Enum.map(fn {name, x} ->
             required = Enum.member?(required_members, name)
-            build_parameter(language, {name, x["traits"][param_type]}, required)
+
+            tynfo = get_type_info(x, api_spec)
+
+            build_parameter(language, {name, x["traits"][param_type]}, required, tynfo)
           end)
       end
     else
       []
     end
+  end
+
+  def get_type_info(x, api_spec) do
+    t = x["target"]
+    type = api_spec["shapes"][t]
+
+    build_type_details(type, api_spec)
+  end
+
+  def build_type_details(type, _api_spec) when is_binary(type) do
+    type
+  end
+
+  # If the timestamp has traits such as `http-date`, or `date-time` include them.
+  def build_type_details(%{"type" => "timestamp", "traits" => _} = type, _api_spec) do
+    fmt = type["traits"]["smithy.api#timestampFormat"]
+
+    "timestamp[#{fmt}]"
+  end
+
+  def build_type_details(%{"type" => "enum"} = type, _api_spec) do
+    keys =
+      type["members"]
+      |> Map.keys()
+
+    ~s/enum["#{Enum.join(keys, "|")}"]/
+  end
+
+  def build_type_details(%{"type" => "list"} = type, api_spec) do
+    deets =
+      type["member"]["target"]
+      |> build_type_details(api_spec)
+
+    "list[#{deets}]"
+  end
+
+  def build_type_details(type, api_spec) do
+    type["type"]
   end
 
   defp filter_fn(location) do
@@ -374,7 +416,7 @@ defmodule AWS.CodeGen.RestService do
     end
   end
 
-  defp build_parameter(language, {name, %{}}, required) do
+  defp build_parameter(language, {name, %{}}, required, type) do
     %Parameter{
       code_name:
         if language == :elixir do
@@ -384,11 +426,12 @@ defmodule AWS.CodeGen.RestService do
         end,
       name: name,
       location_name: name,
-      required: required
+      required: required,
+      type: type
     }
   end
 
-  defp build_parameter(language, {name, data}, required) do
+  defp build_parameter(language, {name, data}, required, type) do
     %Parameter{
       code_name:
         if language == :elixir do
@@ -398,7 +441,8 @@ defmodule AWS.CodeGen.RestService do
         end,
       name: name,
       location_name: data,
-      required: required
+      required: required,
+      type: type
     }
   end
 end
