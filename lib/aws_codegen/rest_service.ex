@@ -77,7 +77,8 @@ defmodule AWS.CodeGen.RestService do
               name: nil,
               location_name: nil,
               required: false,
-              type: nil
+              type: nil,
+              docs: nil
 
     def multi_segment?(parameter, request_uri) do
       {:ok, re} = Regex.compile("{#{parameter.location_name}\\+}")
@@ -364,12 +365,54 @@ defmodule AWS.CodeGen.RestService do
 
             tynfo = get_type_info(x, api_spec)
 
-            build_parameter(language, {name, x["traits"][param_type]}, required, tynfo)
+            docs = get_in(x, ["traits", "smithy.api#documentation"])
+
+            docs =
+              if is_nil(docs) do
+                ""
+              else
+                extract_param_docs_snippet(docs)
+              end
+
+            build_parameter(language, {name, x["traits"][param_type]}, required, tynfo, docs)
           end)
       end
     else
       []
     end
+  end
+
+  def extract_param_docs_snippet(docs) do
+    case Floki.parse_fragment(docs) do
+      {:ok, [{"p", _attrs, inner_content} | _rest]} ->
+        inner_content |> sanitize_html() |> Floki.raw_html()
+
+      {:ok, [first_node | _rest]} ->
+        first_node |> sanitize_html() |> Floki.raw_html()
+
+      {:error, _} ->
+        ""
+    end
+  end
+
+  def sanitize_html(tree) do
+    tree
+    # NOTE: This doesn't work, because it only updates the inner part of the tag.
+    # |> Floki.find_and_update("code", fn
+    #   {"code", inner} ->
+    #     "`#{inner}`"
+    #
+    #   other ->
+    #     IO.inspect(other)
+    #     other
+    # end)
+    |> Floki.find_and_update("p", fn
+      {"p", inner} ->
+        inner
+
+      other ->
+        other
+    end)
   end
 
   def get_type_info(x, api_spec) do
@@ -416,7 +459,7 @@ defmodule AWS.CodeGen.RestService do
     end
   end
 
-  defp build_parameter(language, {name, %{}}, required, type) do
+  defp build_parameter(language, {name, %{}}, required, type, docs) do
     %Parameter{
       code_name:
         if language == :elixir do
@@ -427,11 +470,12 @@ defmodule AWS.CodeGen.RestService do
       name: name,
       location_name: name,
       required: required,
-      type: type
+      type: type,
+      docs: docs
     }
   end
 
-  defp build_parameter(language, {name, data}, required, type) do
+  defp build_parameter(language, {name, data}, required, type, docs) do
     %Parameter{
       code_name:
         if language == :elixir do
@@ -442,7 +486,8 @@ defmodule AWS.CodeGen.RestService do
       name: name,
       location_name: data,
       required: required,
-      type: type
+      type: type,
+      docs: docs
     }
   end
 end
