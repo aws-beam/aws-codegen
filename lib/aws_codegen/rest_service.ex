@@ -9,7 +9,7 @@ defmodule AWS.CodeGen.RestService do
     defstruct arity: nil,
               docstring: nil,
               docstring_header: nil,
-              docstring_rest: nil,
+              docs_url: nil,
               method: nil,
               request_uri: nil,
               success_status_code: nil,
@@ -225,6 +225,18 @@ defmodule AWS.CodeGen.RestService do
   defp collect_actions(language, api_spec) do
     shapes = api_spec["shapes"]
 
+    service_name =
+      shapes
+      |> Map.keys()
+      |> List.first()
+      |> then(fn name ->
+        name
+        |> String.split("#")
+        |> hd()
+        |> String.split(".")
+        |> List.last()
+      end)
+
     operations =
       Enum.reduce(shapes, [], fn {_, shape}, acc ->
         case shape["type"] do
@@ -260,6 +272,10 @@ defmodule AWS.CodeGen.RestService do
       function_name = AWS.CodeGen.Name.to_snake_case(operation)
       request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
 
+      # The AWS Docs sometimes use an arbitrary service name, so we cannot build direct urls. Instead we just link to a search
+      docs_url =
+        "https://docs.aws.amazon.com/search/doc-search.html?searchPath=documentation&searchQuery=#{service_name}%20#{operation |> String.split("#") |> List.last()}&this_doc_guide=API%2520Reference"
+
       is_required = fn param -> param.required end
       required_query_parameters = Enum.filter(query_parameters, is_required)
       required_request_header_parameters = Enum.filter(request_header_parameters, is_required)
@@ -289,23 +305,10 @@ defmodule AWS.CodeGen.RestService do
           operation_spec["traits"]["smithy.api#documentation"]
         )
 
-      [docstring_header, docstring_rest] =
-        case String.split(docstring, "\n", parts: 2, trim: true) do
-          [a, b] ->
-            [a, b]
-
-          [a] ->
-            [a, ""]
-
-          [] ->
-            ["", ""]
-        end
-
       %Action{
         arity: length(url_parameters) + len_for_method,
         docstring: docstring,
-        docstring_header: docstring_header,
-        docstring_rest: docstring_rest,
+        docs_url: docs_url,
         method: method,
         request_uri: request_uri,
         success_status_code: success_status_code(operation_spec),
