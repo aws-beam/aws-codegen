@@ -8,6 +8,8 @@ defmodule AWS.CodeGen.RestService do
 
     defstruct arity: nil,
               docstring: nil,
+              docstring_header: nil,
+              docstring_rest: nil,
               method: nil,
               request_uri: nil,
               success_status_code: nil,
@@ -281,13 +283,29 @@ defmodule AWS.CodeGen.RestService do
       input_shape = Shapes.get_input_shape(operation_spec)
       output_shape = Shapes.get_output_shape(operation_spec)
 
+      docstring =
+        Docstring.format(
+          language,
+          operation_spec["traits"]["smithy.api#documentation"]
+        )
+
+      [docstring_header, docstring_rest] =
+        case String.split(docstring, "\n", parts: 2, trim: true) do
+          [a, b] ->
+            [a, b]
+
+          [a] ->
+            [a, ""]
+
+          [] ->
+            ["", ""]
+        end
+
       %Action{
         arity: length(url_parameters) + len_for_method,
-        docstring:
-          Docstring.format(
-            language,
-            operation_spec["traits"]["smithy.api#documentation"]
-          ),
+        docstring: docstring,
+        docstring_header: docstring_header,
+        docstring_rest: docstring_rest,
         method: method,
         request_uri: request_uri,
         success_status_code: success_status_code(operation_spec),

@@ -69,7 +69,7 @@ defmodule <%= context.module_name %> do
 
   <%= if String.trim(action.docstring) != "" do %>
   @doc """
-<%= action.docstring %>
+<%= action.docstring_header %>
 
   ## Required positional parameters:<%= for parameter <- action.url_parameters do %>
   <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end %>
@@ -80,6 +80,9 @@ defmodule <%= context.module_name %> do
   <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
    %><%= for parameter <- action.request_headers_parameters do %>
   <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end %>
+<%= if action.docstring_rest != "" do %>
+## Details
+<%= action.docstring_rest %><% end %>
   """<% end %><%= if action.method == "GET" do %>
   @spec <%= action.function_name %>(AWS.Client.t()<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, String.t()<% end %><%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
   def <%= action.function_name %>(%Client{} = client<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, stage<% end %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>, options \\ []) do
