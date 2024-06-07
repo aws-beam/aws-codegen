@@ -84,12 +84,13 @@ defmodule AWS.CodeGen.PostService do
     content_type = @configuration[protocol][:content_type]
     content_type = content_type <> if protocol == "json", do: json_version, else: ""
 
-    signing_name =
+    maybe_signing_name =
       if String.starts_with?(endpoint_prefix, "api.") do
         String.replace(endpoint_prefix, "api.", "")
       else
         endpoint_prefix
       end
+    signing_name = traits["aws.auth#sigv4"]["name"] || maybe_signing_name
 
     %Service{
       actions: actions,
