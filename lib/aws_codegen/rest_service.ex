@@ -8,6 +8,8 @@ defmodule AWS.CodeGen.RestService do
 
     defstruct arity: nil,
               docstring: nil,
+              docstring_header: nil,
+              docs_url: nil,
               method: nil,
               request_uri: nil,
               success_status_code: nil,
@@ -76,7 +78,9 @@ defmodule AWS.CodeGen.RestService do
     defstruct code_name: nil,
               name: nil,
               location_name: nil,
-              required: false
+              required: false,
+              type: nil,
+              docs: nil
 
     def multi_segment?(parameter, request_uri) do
       {:ok, re} = Regex.compile("{#{parameter.location_name}\\+}")
@@ -221,6 +225,18 @@ defmodule AWS.CodeGen.RestService do
   defp collect_actions(language, api_spec) do
     shapes = api_spec["shapes"]
 
+    service_name =
+      shapes
+      |> Map.keys()
+      |> List.first()
+      |> then(fn name ->
+        name
+        |> String.split("#")
+        |> hd()
+        |> String.split(".")
+        |> List.last()
+      end)
+
     operations =
       Enum.reduce(shapes, [], fn {_, shape}, acc ->
         case shape["type"] do
@@ -256,6 +272,10 @@ defmodule AWS.CodeGen.RestService do
       function_name = AWS.CodeGen.Name.to_snake_case(operation)
       request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
 
+      # The AWS Docs sometimes use an arbitrary service name, so we cannot build direct urls. Instead we just link to a search
+      docs_url =
+        "https://docs.aws.amazon.com/search/doc-search.html?searchPath=documentation&searchQuery=#{service_name}%20#{operation |> String.split("#") |> List.last()}&this_doc_guide=API%2520Reference"
+
       is_required = fn param -> param.required end
       required_query_parameters = Enum.filter(query_parameters, is_required)
       required_request_header_parameters = Enum.filter(request_header_parameters, is_required)
@@ -279,13 +299,16 @@ defmodule AWS.CodeGen.RestService do
       input_shape = Shapes.get_input_shape(operation_spec)
       output_shape = Shapes.get_output_shape(operation_spec)
 
+      docstring =
+        Docstring.format(
+          language,
+          operation_spec["traits"]["smithy.api#documentation"]
+        )
+
       %Action{
         arity: length(url_parameters) + len_for_method,
-        docstring:
-          Docstring.format(
-            language,
-            operation_spec["traits"]["smithy.api#documentation"]
-          ),
+        docstring: docstring,
+        docs_url: docs_url,
         method: method,
         request_uri: request_uri,
         success_status_code: success_status_code(operation_spec),
@@ -360,12 +383,99 @@ defmodule AWS.CodeGen.RestService do
           |> Enum.filter(filter_fn(param_type))
           |> Enum.map(fn {name, x} ->
             required = Enum.member?(required_members, name)
-            build_parameter(language, {name, x["traits"][param_type]}, required)
+
+            tynfo = get_type_info(x, api_spec)
+
+            docs = get_in(x, ["traits", "smithy.api#documentation"])
+
+            docs =
+              if is_nil(docs) do
+                ""
+              else
+                extract_param_docs_snippet(docs)
+              end
+
+            build_parameter(language, {name, x["traits"][param_type]}, required, tynfo, docs)
           end)
       end
     else
       []
     end
+  end
+
+  def extract_param_docs_snippet(docs) do
+    case Floki.parse_fragment(docs) do
+      {:ok, [{"p", _attrs, inner_content} | _rest]} ->
+        inner_content
+        |> sanitize_html()
+        |> Floki.text()
+
+      {:ok, [first_node | _rest]} ->
+        first_node
+        |> sanitize_html()
+        |> Floki.text()
+
+      {:error, _} ->
+        ""
+    end
+  end
+
+  def sanitize_html(tree) do
+    tree
+    # NOTE: This doesn't work, because it only updates the inner part of the tag.
+    # |> Floki.find_and_update("code", fn
+    #   {"code", inner} ->
+    #     "`#{inner}`"
+    #
+    #   other ->
+    #     IO.inspect(other)
+    #     other
+    # end)
+    |> Floki.find_and_update("p", fn
+      {"p", inner} ->
+        inner
+
+      other ->
+        other
+    end)
+  end
+
+  def get_type_info(x, api_spec) do
+    t = x["target"]
+    type = api_spec["shapes"][t]
+
+    build_type_details(type, api_spec)
+  end
+
+  def build_type_details(type, _api_spec) when is_binary(type) do
+    type
+  end
+
+  # If the timestamp has traits such as `http-date`, or `date-time` include them.
+  def build_type_details(%{"type" => "timestamp", "traits" => _} = type, _api_spec) do
+    fmt = type["traits"]["smithy.api#timestampFormat"]
+
+    "timestamp[#{fmt}]"
+  end
+
+  def build_type_details(%{"type" => "enum"} = type, _api_spec) do
+    keys =
+      type["members"]
+      |> Map.keys()
+
+    ~s/enum["#{Enum.join(keys, "|")}"]/
+  end
+
+  def build_type_details(%{"type" => "list"} = type, api_spec) do
+    deets =
+      type["member"]["target"]
+      |> build_type_details(api_spec)
+
+    "list[#{deets}]"
+  end
+
+  def build_type_details(type, api_spec) do
+    type["type"]
   end
 
   defp filter_fn(location) do
@@ -374,7 +484,7 @@ defmodule AWS.CodeGen.RestService do
     end
   end
 
-  defp build_parameter(language, {name, %{}}, required) do
+  defp build_parameter(language, {name, %{}}, required, type, docs) do
     %Parameter{
       code_name:
         if language == :elixir do
@@ -384,11 +494,13 @@ defmodule AWS.CodeGen.RestService do
         end,
       name: name,
       location_name: name,
-      required: required
+      required: required,
+      type: type,
+      docs: docs
     }
   end
 
-  defp build_parameter(language, {name, data}, required) do
+  defp build_parameter(language, {name, data}, required, type, docs) do
     %Parameter{
       code_name:
         if language == :elixir do
@@ -398,7 +510,9 @@ defmodule AWS.CodeGen.RestService do
         end,
       name: name,
       location_name: data,
-      required: required
+      required: required,
+      type: type,
+      docs: docs
     }
   end
 end

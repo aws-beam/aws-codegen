@@ -1,4 +1,5 @@
 defmodule AWS.CodeGen do
+  alias AWS.CodeGen.RestService.Parameter
   alias AWS.CodeGen.Spec
 
   @moduledoc """
@@ -130,6 +131,15 @@ defmodule AWS.CodeGen do
     rendered = EEx.eval_file(template_path, context: context)
 
     format_string!(context.language, rendered)
+  end
+
+  @param_quoted_elixir EEx.compile_string(
+                         ~s|* `:<%= parameter.code_name %>` (`t:<%= parameter.type %>`) <%= parameter.docs %>|
+                       )
+  def render_parameter(:elixir, %Parameter{} = parameter) do
+    Code.eval_quoted(@param_quoted_elixir, parameter: parameter)
+    |> then(&elem(&1, 0))
+    |> Excribe.format(width: 80, hanging: 4, pretty: true)
   end
 
   defp format_string!(:elixir, rendered) do
