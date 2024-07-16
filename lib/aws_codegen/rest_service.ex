@@ -18,9 +18,11 @@ defmodule AWS.CodeGen.RestService do
               url_parameters: [],
               query_parameters: [],
               required_query_parameters: [],
+              optional_query_parameters: [],
               request_header_parameters: [],
               request_headers_parameters: [],
               required_request_header_parameters: [],
+              optional_request_header_parameters: [],
               response_header_parameters: [],
               send_body_as_binary?: false,
               receive_body_as_binary?: false,
@@ -279,6 +281,10 @@ defmodule AWS.CodeGen.RestService do
       is_required = fn param -> param.required end
       required_query_parameters = Enum.filter(query_parameters, is_required)
       required_request_header_parameters = Enum.filter(request_header_parameters, is_required)
+
+      is_not_required = fn param -> not param.required end
+      optional_query_parameters = Enum.filter(query_parameters, is_not_required)
+      optional_request_header_parameters = Enum.filter(request_header_parameters, is_not_required)
       method = operation_spec["traits"]["smithy.api#http"]["method"]
 
       len_for_method =
@@ -317,8 +323,10 @@ defmodule AWS.CodeGen.RestService do
         url_parameters: url_parameters,
         query_parameters: query_parameters,
         required_query_parameters: required_query_parameters,
+        optional_query_parameters: optional_query_parameters,
         request_header_parameters: request_header_parameters,
         required_request_header_parameters: required_request_header_parameters,
+        optional_request_header_parameters: optional_request_header_parameters,
         response_header_parameters:
           collect_response_header_parameters(language, api_spec, operation),
         send_body_as_binary?: Shapes.body_as_binary?(shapes, input_shape),
