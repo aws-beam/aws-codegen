@@ -6,6 +6,7 @@ defmodule AWS.CodeGen.PostService do
   defmodule Action do
     defstruct arity: nil,
               docstring: nil,
+              docs_url: nil,
               function_name: nil,
               input: nil,
               output: nil,
@@ -159,6 +160,9 @@ defmodule AWS.CodeGen.PostService do
     Enum.map(operations, fn operation ->
       operation_spec = shapes[operation]
 
+      # The AWS Docs sometimes use an arbitrary service name, so we cannot build direct urls. Instead we just link to a search
+      docs_url = Docstring.docs_url(shapes, operation)
+
       %Action{
         arity: 3,
         docstring:
@@ -166,6 +170,7 @@ defmodule AWS.CodeGen.PostService do
             language,
             operation_spec["traits"]["smithy.api#documentation"]
           ),
+        docs_url: docs_url,
         function_name: AWS.CodeGen.Name.to_snake_case(operation),
         host_prefix: operation_spec["traits"]["smithy.api#endpoint"]["hostPrefix"],
         name: String.replace(operation, ~r/com\.amazonaws\.[^#]+#/, ""),

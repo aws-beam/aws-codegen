@@ -382,4 +382,22 @@ defmodule AWS.CodeGen.Docstring do
 
     List.flatten(lines ++ [current])
   end
+
+  def docs_url(shapes, operation) do
+    service_name =
+      shapes
+      |> Map.keys()
+      |> List.first()
+      |> then(fn name ->
+        name
+        |> String.split("#")
+        |> hd()
+        |> String.split(".")
+        |> List.last()
+      end)
+
+    op_name = operation |> String.split("#") |> List.last()
+
+    "https://docs.aws.amazon.com/search/doc-search.html?searchPath=documentation&searchQuery=#{service_name}%20#{op_name}&this_doc_guide=API%2520Reference"
+  end
 end
