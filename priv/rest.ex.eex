@@ -11,19 +11,19 @@ defmodule <%= context.module_name %> do
   alias AWS.Client
   alias AWS.Request
 
- <%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
+<% types = AWS.CodeGen.Types.types(context) %>
+
+<%= for {type_name, type_fields} <- types do %>
 @typedoc """
 
 ## Example:
-<%= if Enum.empty?(type_fields) do %>
-    <%= "#{type_name}() :: %{}" %>
-<% else %>
-    <%= "#{type_name}() :: %{" %>
-    <%= Enum.map_join(type_fields, ",\n    ", fn {field_name, field_type} ->
-      ~s{  #{field_name}#{field_type}}
-    end) %>
+    <%= if Enum.empty?(type_fields) do %>
+    <%= type_name %>() :: %{}
+    <% else %>
+    <%= type_name %>() :: %{
+      <%= AWS.CodeGen.ElixirHelpers.render_type_fields(type_name, type_fields, 6) %>
     }
-<% end %>
+    <% end %>
 """
 @type <%= if Enum.empty?(type_fields) do "#{type_name}() :: %{}" else "#{type_name}() :: %{String.t => any()}" end %>
 <% end %>
@@ -67,7 +67,7 @@ defmodule <%= context.module_name %> do
     }
   end<%= for action <- context.actions do %>
 
-  <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context)
+  <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context, types)
   %><%= if action.method == "GET" do %>
   @spec <%= action.function_name %>(AWS.Client.t()<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, String.t()<% end %><%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
   def <%= action.function_name %>(%Client{} = client<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, stage<% end %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>, options \\ []) do
