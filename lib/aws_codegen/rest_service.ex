@@ -16,6 +16,11 @@ defmodule AWS.CodeGen.RestService do
               function_name: nil,
               name: nil,
               url_parameters: [],
+              has_body?: false,
+              # body_required?: false,
+              body_parameters: [],
+              required_body_parameters: [],
+              optional_body_parameters: [],
               query_parameters: [],
               required_query_parameters: [],
               optional_query_parameters: [],
@@ -204,7 +209,20 @@ defmodule AWS.CodeGen.RestService do
             end
 
           _ ->
-            []
+            case required_only do
+              false ->
+                [
+                  join_parameters(action.query_parameters, language),
+                  join_parameters(action.request_header_parameters, language),
+                  join_parameters(action.request_headers_parameters, language)
+                ]
+
+              true ->
+                [
+                  join_parameters(action.required_query_parameters, language),
+                  join_parameters(action.required_request_header_parameters, language)
+                ]
+            end
         end
     ])
   end
@@ -258,6 +276,7 @@ defmodule AWS.CodeGen.RestService do
       operation_spec = shapes[operation]
       request_uri = operation_spec["traits"]["smithy.api#http"]["uri"]
       url_parameters = collect_url_parameters(language, api_spec, operation)
+      body_parameters = collect_body_parameters(language, api_spec, operation)
       query_parameters = collect_query_parameters(language, api_spec, operation)
       function_name = AWS.CodeGen.Name.to_snake_case(operation)
       request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
@@ -265,13 +284,13 @@ defmodule AWS.CodeGen.RestService do
       # The AWS Docs sometimes use an arbitrary service name, so we cannot build direct urls. Instead we just link to a search
       docs_url = Docstring.docs_url(shapes, operation)
 
-      is_required = fn param -> param.required end
-      required_query_parameters = Enum.filter(query_parameters, is_required)
-      required_request_header_parameters = Enum.filter(request_header_parameters, is_required)
+      {required_query_params, opt_query_params} = split_parameters(query_parameters)
 
-      is_not_required = fn param -> not param.required end
-      optional_query_parameters = Enum.filter(query_parameters, is_not_required)
-      optional_request_header_parameters = Enum.filter(request_header_parameters, is_not_required)
+      {required_request_header_params, opt_request_header_params} =
+        split_parameters(request_header_parameters)
+
+      {required_body_params, opt_body_params} = split_parameters(body_parameters)
+
       method = operation_spec["traits"]["smithy.api#http"]["method"]
 
       len_for_method =
@@ -279,10 +298,10 @@ defmodule AWS.CodeGen.RestService do
           "GET" ->
             case language do
               :elixir ->
-                2 + length(request_header_parameters) + length(query_parameters)
+                2 + length(required_request_header_params) + length(required_query_params)
 
               :erlang ->
-                4 + length(required_request_header_parameters) + length(required_query_parameters)
+                4 + length(required_request_header_params) + length(required_query_params)
             end
 
           _ ->
@@ -298,6 +317,9 @@ defmodule AWS.CodeGen.RestService do
           operation_spec["traits"]["smithy.api#documentation"]
         )
 
+      has_body? = not Enum.empty?(body_parameters)
+      send_body_as_binary? = Shapes.body_as_binary?(shapes, input_shape)
+
       %Action{
         arity: length(url_parameters) + len_for_method,
         docstring: docstring,
@@ -309,14 +331,19 @@ defmodule AWS.CodeGen.RestService do
         name: operation,
         url_parameters: url_parameters,
         query_parameters: query_parameters,
-        required_query_parameters: required_query_parameters,
-        optional_query_parameters: optional_query_parameters,
+        body_parameters: body_parameters,
+        required_body_parameters: required_body_params,
+        optional_body_parameters: opt_body_params,
+        has_body?: has_body?,
+        # body_required?: not send_body_as_binary? and Enum.empty?(required_body_params),
+        required_query_parameters: required_query_params,
+        optional_query_parameters: opt_query_params,
         request_header_parameters: request_header_parameters,
-        required_request_header_parameters: required_request_header_parameters,
-        optional_request_header_parameters: optional_request_header_parameters,
+        required_request_header_parameters: required_request_header_params,
+        optional_request_header_parameters: opt_request_header_params,
         response_header_parameters:
           collect_response_header_parameters(language, api_spec, operation),
-        send_body_as_binary?: Shapes.body_as_binary?(shapes, input_shape),
+        send_body_as_binary?: send_body_as_binary?,
         receive_body_as_binary?: Shapes.body_as_binary?(shapes, output_shape),
         host_prefix: operation_spec["traits"]["smithy.api#endpoint"]["hostPrefix"],
         language: language,
@@ -344,12 +371,24 @@ defmodule AWS.CodeGen.RestService do
     url_params
   end
 
+  defp collect_body_parameters(language, api_spec, operation) do
+    url_params =
+      collect_parameters(language, api_spec, operation, "input", "smithy.api#httpPayload")
+
+    url_params
+  end
+
   defp collect_query_parameters(language, api_spec, operation) do
     query_params =
       collect_parameters(language, api_spec, operation, "input", "smithy.api#httpQueryParams")
 
     params = collect_parameters(language, api_spec, operation, "input", "smithy.api#httpQuery")
     query_params ++ params
+  end
+
+  @spec split_parameters(any()) :: {list(any), list(any)}
+  def split_parameters(params) do
+    Enum.split_with(params, & &1.required)
   end
 
   defp collect_request_header_parameters(language, api_spec, operation) do
@@ -360,7 +399,7 @@ defmodule AWS.CodeGen.RestService do
     collect_parameters(language, api_spec, operation, "output", "smithy.api#httpHeader")
   end
 
-  defp collect_parameters(language, api_spec, operation, data_type, param_type) do
+  def collect_parameters(language, api_spec, operation, data_type, param_type) do
     shape_name = api_spec["shapes"][operation][data_type]["target"]
 
     if shape_name do

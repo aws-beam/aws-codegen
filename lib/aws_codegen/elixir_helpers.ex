@@ -50,13 +50,20 @@ defmodule AWS.CodeGen.ElixirHelpers do
     %><%= for parameter <- action.required_query_parameters do %>
     <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
     %><%= for parameter <- action.required_request_header_parameters do %>
-    <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end %>
+    <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
+    %><%= if action.send_body_as_binary? do %>
+    * `:input` (`t:binary`)
+    <% else %><%= if action.has_body? do %>
+    * `:input` (`t:map`):<%= for parameter <- action.required_body_parameters do %>
+      <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
+      %><%= for parameter <- action.optional_body_parameters do %>
+      <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
+    %><% end
+    %><% end %>
 
     ## Optional parameters:<%= for parameter <- action.optional_query_parameters do %>
     <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
     %><%= for parameter <- action.optional_request_header_parameters do %>
-    <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
-    %><%= for parameter <- action.request_headers_parameters do %>
     <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end %>
     """<% end %>
   })
@@ -96,5 +103,57 @@ defmodule AWS.CodeGen.ElixirHelpers do
       )
 
     res
+  end
+
+  def render_guards(action) do
+    required_params =
+      action.required_query_parameters ++ action.required_request_header_parameters
+
+    body_guard =
+      cond do
+        action.send_body_as_binary? ->
+          # TODO: Distinguish between optional and required http bodies.
+          "is_binary(input) or is_nil(input)"
+
+        action.has_body? ->
+          # TODO: Distinguish between optional and required http bodies.
+          "is_map(input) or is_nil(input)"
+
+        true ->
+          ""
+      end
+
+    req_guards =
+      required_params
+      |> Enum.map(fn param ->
+        case param.type do
+          "integer" ->
+            "is_integer(#{param.code_name})"
+
+          "long" ->
+            "is_integer(#{param.code_name})"
+
+          "string" ->
+            "is_binary(#{param.code_name})"
+
+          "list[" <> _ ->
+            "is_binary(#{param.code_name})"
+        end
+      end)
+      |> Enum.join(" and ")
+
+    cond do
+      body_guard == "" and req_guards == "" ->
+        ""
+
+      body_guard == "" ->
+        "when " <> req_guards
+
+      req_guards == "" ->
+        "when " <> body_guard
+
+      true ->
+        "when (" <> body_guard <> ") and " <> req_guards
+    end
   end
 end

@@ -10,9 +10,25 @@ defmodule AWS.CodeGen.PostService do
               function_name: nil,
               input: nil,
               output: nil,
+              url_parameters: [],
+              has_body?: false,
+              # body_required?: false,
+              body_parameters: [],
+              required_body_parameters: [],
+              optional_body_parameters: [],
+              query_parameters: [],
+              required_query_parameters: [],
+              optional_query_parameters: [],
+              request_header_parameters: [],
+              request_headers_parameters: [],
+              required_request_header_parameters: [],
+              optional_request_header_parameters: [],
               errors: %{},
               host_prefix: nil,
-              name: nil
+              name: nil,
+              send_body_as_binary?: false,
+              language: nil,
+              method: :post
   end
 
   @configuration %{
@@ -127,6 +143,16 @@ defmodule AWS.CodeGen.PostService do
     end
   end
 
+  defp collect_params(language, api_spec, operation) do
+    AWS.CodeGen.RestService.collect_parameters(
+      language,
+      api_spec,
+      operation,
+      "members",
+      "smithy.api#input"
+    )
+  end
+
   defp collect_actions(language, api_spec) do
     shapes = api_spec["shapes"]
 
@@ -163,6 +189,12 @@ defmodule AWS.CodeGen.PostService do
       # The AWS Docs sometimes use an arbitrary service name, so we cannot build direct urls. Instead we just link to a search
       docs_url = Docstring.docs_url(shapes, operation)
 
+      # input_shape = Shapes.get_input_shape(operation_spec)
+
+      params =
+        collect_params(language, api_spec, operation)
+        |> dbg()
+
       %Action{
         arity: 3,
         docstring:
@@ -176,7 +208,8 @@ defmodule AWS.CodeGen.PostService do
         name: String.replace(operation, ~r/com\.amazonaws\.[^#]+#/, ""),
         input: operation_spec["input"],
         output: operation_spec["output"],
-        errors: operation_spec["errors"]
+        errors: operation_spec["errors"],
+        language: language
       }
     end)
     |> Enum.sort(fn a, b -> a.function_name < b.function_name end)
