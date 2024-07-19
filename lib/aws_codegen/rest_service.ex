@@ -276,7 +276,16 @@ defmodule AWS.CodeGen.RestService do
       operation_spec = shapes[operation]
       request_uri = operation_spec["traits"]["smithy.api#http"]["uri"]
       url_parameters = collect_url_parameters(language, api_spec, operation)
-      body_parameters = collect_body_parameters(language, api_spec, operation)
+
+      body_parameters =
+        collect_body_parameters(language, api_spec, operation)
+
+      # if operation in [
+      #      "com.amazonaws.apigatewayv2#ReimportApi"
+      #    ] do
+      #   dbg({url_parameters, body_parameters})
+      # end
+
       query_parameters = collect_query_parameters(language, api_spec, operation)
       function_name = AWS.CodeGen.Name.to_snake_case(operation)
       request_header_parameters = collect_request_header_parameters(language, api_spec, operation)
@@ -317,7 +326,7 @@ defmodule AWS.CodeGen.RestService do
           operation_spec["traits"]["smithy.api#documentation"]
         )
 
-      has_body? = not Enum.empty?(body_parameters)
+      has_body? = method != "GET" and not Enum.empty?(body_parameters)
       send_body_as_binary? = Shapes.body_as_binary?(shapes, input_shape)
 
       %Action{
@@ -335,7 +344,7 @@ defmodule AWS.CodeGen.RestService do
         required_body_parameters: required_body_params,
         optional_body_parameters: opt_body_params,
         has_body?: has_body?,
-        body_required?: not send_body_as_binary? and Enum.empty?(required_body_params),
+        body_required?: has_body? and not Enum.empty?(required_body_params),
         required_query_parameters: required_query_params,
         optional_query_parameters: opt_query_params,
         request_header_parameters: request_header_parameters,
@@ -372,10 +381,12 @@ defmodule AWS.CodeGen.RestService do
   end
 
   defp collect_body_parameters(language, api_spec, operation) do
-    url_params =
-      collect_parameters(language, api_spec, operation, "input", "smithy.api#httpPayload")
-
-    url_params
+    [
+      collect_parameters(language, api_spec, operation, "input", "smithy.api#httpPayload"),
+      collect_parameters(language, api_spec, operation, "input", "smithy.api#jsonName")
+      # collect_parameters(language, api_spec, operation, "members", "smithy.api#jsonName")
+    ]
+    |> Enum.concat()
   end
 
   defp collect_query_parameters(language, api_spec, operation) do
@@ -418,7 +429,8 @@ defmodule AWS.CodeGen.RestService do
           |> Enum.map(fn {name, x} ->
             required = Enum.member?(required_members, name)
 
-            tynfo = get_type_info(x, api_spec)
+            tynfo =
+              get_type_info(x, api_spec)
 
             docs = get_in(x, ["traits", "smithy.api#documentation"])
 
@@ -429,7 +441,11 @@ defmodule AWS.CodeGen.RestService do
                 extract_param_docs_snippet(docs)
               end
 
-            build_parameter(language, {name, x["traits"][param_type]}, required, tynfo, docs)
+            if is_nil(tynfo) do
+              build_parameter(language, {name, x["traits"][param_type]}, required, "string", docs)
+            else
+              build_parameter(language, {name, x["traits"][param_type]}, required, tynfo, docs)
+            end
           end)
       end
     else
@@ -478,6 +494,11 @@ defmodule AWS.CodeGen.RestService do
     t = x["target"]
     type = api_spec["shapes"][t]
 
+    # if is_nil(type) do
+    #   # THIS IS SOMETIMES INCORRECT! t is not guaranteed to exist in api_spec["shapes"]...
+    #   dbg({x, t, type})
+    # end
+
     build_type_details(type, api_spec)
   end
 
@@ -508,6 +529,11 @@ defmodule AWS.CodeGen.RestService do
     "list[#{deets}]"
   end
 
+  # TODO: Should raise here on unknown types, but handling it elsewhere for now.
+  # def build_type_details(nil, api_spec) do
+  #   "string"
+  # end
+
   def build_type_details(type, api_spec) do
     type["type"]
   end
@@ -516,6 +542,11 @@ defmodule AWS.CodeGen.RestService do
     fn {_name, member_spec} ->
       not is_nil(member_spec["traits"][location])
     end
+  end
+
+  defp build_parameter(_, a, required, nil, docs) do
+    dbg()
+    raise "build_parameter type is nil"
   end
 
   defp build_parameter(language, {name, %{}}, required, type, docs) do

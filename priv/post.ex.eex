@@ -68,7 +68,7 @@ defmodule <%= context.module_name %> do
   end
 <%= for action <- context.actions do %>
   <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context, types) %>
-  @spec <%= action.function_name %>(AWS.Client.t(), <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
+  <%= AWS.CodeGen.ElixirHelpers.render_spec(:other, context, action) %>
   def <%= action.function_name %>(%Client{} = client, input<%= AWS.CodeGen.RestService.required_function_parameters(action) %>, options \\ []) <%= AWS.CodeGen.ElixirHelpers.render_guards(action) %> do
     meta =
       <%= if action.host_prefix do %>

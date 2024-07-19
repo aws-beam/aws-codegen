@@ -52,9 +52,9 @@ defmodule AWS.CodeGen.ElixirHelpers do
     %><%= for parameter <- action.required_request_header_parameters do %>
     <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
     %><%= if action.send_body_as_binary? do %>
-    * `:input` (`t:binary<%= if action.body_required? do %> | nil<% end %>`)
+    * `:input` (`t:binary<%= if not action.body_required? do %> | nil<% end %>`)
     <% else %><%= if action.has_body? do %>
-    * `:input` (`t:map<%= if action.body_required? do %> | nil<% end %>`):<%= for parameter <- action.required_body_parameters do %>
+    * `:input` (`t:map<%= if not action.body_required? do %> | nil<% end %>`):<%= for parameter <- action.required_body_parameters do %>
       <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
       %><%= for parameter <- action.optional_body_parameters do %>
       <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
@@ -80,17 +80,24 @@ defmodule AWS.CodeGen.ElixirHelpers do
     [API Reference](<%= action.docs_url %>)
 
      ## Parameters:
-     * `:input` (`t:<%= input_type %>`):
+     * `:input` (`t:<%= input_type %>`)<%= if not is_nil(type_fields) do %>
        %{
          <%= AWS.CodeGen.ElixirHelpers.render_type_fields(input_type, type_fields, 9) %>
-       }
+       }<% end %>
      """<% end %>/)
   def render_docstring(%PostService.Action{} = action, context, types) do
     input_type =
       AWS.CodeGen.Types.function_argument_type(:elixir, action)
       # TODO: This is dirty.
-      |> String.split("(")
-      |> hd()
+      |> then(fn x ->
+        if String.contains?(x, "(") do
+          x
+          |> String.split("(")
+          |> hd()
+        else
+          x
+        end
+      end)
 
     type_fields =
       types[input_type]
@@ -115,10 +122,7 @@ defmodule AWS.CodeGen.ElixirHelpers do
           "is_binary(input)"
 
         action.send_body_as_binary? and not action.body_required? ->
-          "is_binary(input)"
-
-        action.has_body? ->
-          "is_map(input) or is_nil(input)"
+          "is_binary(input) or is_nil(input)"
 
         action.has_body? and action.body_required? ->
           "is_map(input)"
@@ -134,17 +138,29 @@ defmodule AWS.CodeGen.ElixirHelpers do
       required_params
       |> Enum.map(fn param ->
         case param.type do
+          "string" ->
+            "is_binary(#{param.code_name})"
+
           "integer" ->
             "is_integer(#{param.code_name})"
 
           "long" ->
             "is_integer(#{param.code_name})"
 
-          "string" ->
-            "is_binary(#{param.code_name})"
+          "boolean" ->
+            "is_boolean(#{param.code_name})"
 
           "list[" <> _ ->
             "is_binary(#{param.code_name})"
+
+          "enum[" <> _ ->
+            "is_binary(#{param.code_name})"
+
+          "timestamp" <> _ ->
+            "is_binary(#{param.code_name})"
+
+          nil ->
+            raise "UNKNOWN TYPE"
         end
       end)
       |> Enum.join(" and ")
@@ -162,5 +178,79 @@ defmodule AWS.CodeGen.ElixirHelpers do
       true ->
         "when (" <> body_guard <> ") and " <> req_guards
     end
+  end
+
+  def maybe_render_stage(context) do
+    if context.module_name == "AWS.ApiGatewayManagementApi" do
+      ", stage"
+    else
+      ""
+    end
+  end
+
+  def maybe_render_stage_spec(context) do
+    if context.module_name == "AWS.ApiGatewayManagementApi" do
+      ", any()"
+    else
+      ""
+    end
+  end
+
+  @render_spec_get EEx.compile_string(~s/
+    @spec <%= action.function_name %>(AWS.Client.t()<%= maybe_stage
+    %><%= required_param_types %>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
+  /)
+  def render_spec(:get, context, action) do
+    maybe_stage = maybe_render_stage_spec(context)
+    required_param_types = AWS.CodeGen.Types.required_function_parameter_types(action)
+
+    {res, _} =
+      Code.eval_quoted(@render_spec_get,
+        action: action,
+        context: context,
+        maybe_stage: maybe_stage,
+        required_param_types: required_param_types
+      )
+
+    res
+  end
+
+  @render_spec_other EEx.compile_string(~s/
+    @spec <%= action.function_name %>(AWS.Client.t()<%= maybe_stage
+    %><%= required_param_types %><%= body_type %>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
+  /)
+  def render_spec(_, context, action) do
+    maybe_stage = maybe_render_stage_spec(context)
+
+    required_param_types = AWS.CodeGen.Types.required_function_parameter_types(action)
+
+    body_type =
+      cond do
+        action.send_body_as_binary? and action.body_required? ->
+          ", input :: binary()"
+
+        action.send_body_as_binary? and not action.body_required? ->
+          ", input :: binary() | nil"
+
+        action.has_body? and action.body_required? ->
+          ", input :: map()"
+
+        action.has_body? and not action.body_required? ->
+          ", input :: map() | nil"
+
+        true ->
+          ""
+      end
+
+    {res, _} =
+      Code.eval_quoted(@render_spec_other,
+        action: action,
+        context: context,
+        body_type: body_type,
+        maybe_stage: maybe_stage,
+        required_param_types: required_param_types
+      )
+
+    res
   end
 end

@@ -67,10 +67,10 @@ defmodule <%= context.module_name %> do
     }
   end<%= for action <- context.actions do %>
 
-  <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context, types)
-  %><%= if action.method == "GET" do %>
-  @spec <%= action.function_name %>(AWS.Client.t()<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, String.t()<% end %><%= AWS.CodeGen.Types.required_function_parameter_types(action) %>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
-  def <%= action.function_name %>(%Client{} = client<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, stage<% end %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>, options \\ []) <%= AWS.CodeGen.ElixirHelpers.render_guards(action) %> do
+<%= if action.method == "GET" do %>
+  <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context, types) %>
+  <%= AWS.CodeGen.ElixirHelpers.render_spec(:get, context, action) %>
+  def <%= action.function_name %>(%Client{} = client <%= AWS.CodeGen.ElixirHelpers.maybe_render_stage(context) %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>, options \\ []) <%= AWS.CodeGen.ElixirHelpers.render_guards(action) %> do
     url_path = "<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>/#{stage}<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"
 
     <%= AWS.CodeGen.ElixirHelpers.define_and_validate_optionals(action) %>
@@ -125,10 +125,14 @@ defmodule <%= context.module_name %> do
 
     <%= AWS.CodeGen.ElixirHelpers.drop_optionals(action) %>
 
-    Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, <%= inspect(action.success_status_code) %>)<% else %>
-def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.required_function_parameters(action)
-%>, <%= if context.module_name == "AWS.ApiGatewayManagementApi" do %> stage, <% end
-%><%= if action.has_body?, do: "input,", else: "" %> options \\ []) <%= AWS.CodeGen.ElixirHelpers.render_guards(action) %> do
+    Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, <%= inspect(action.success_status_code) %>)<%
+else %>
+
+  <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context, types) %>
+  <%= AWS.CodeGen.ElixirHelpers.render_spec(:other, context, action) %>
+def <%= action.function_name %>(%Client{} = client <%= AWS.CodeGen.ElixirHelpers.maybe_render_stage(context)
+%><%= AWS.CodeGen.RestService.required_function_parameters(action)
+%>, <%= if action.has_body?, do: "input,", else: "" %> options \\ []) <%= AWS.CodeGen.ElixirHelpers.render_guards(action) %> do
     url_path = "<%= if context.module_name == ~s(AWS.ApiGatewayManagementApi) do %>/#{stage}<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"
 
     <%= AWS.CodeGen.ElixirHelpers.define_and_validate_optionals(action) %>

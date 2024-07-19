@@ -193,7 +193,6 @@ defmodule AWS.CodeGen.PostService do
 
       params =
         collect_params(language, api_spec, operation)
-        |> dbg()
 
       %Action{
         arity: 3,
