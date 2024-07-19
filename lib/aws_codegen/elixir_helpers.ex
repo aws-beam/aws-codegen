@@ -52,9 +52,9 @@ defmodule AWS.CodeGen.ElixirHelpers do
     %><%= for parameter <- action.required_request_header_parameters do %>
     <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
     %><%= if action.send_body_as_binary? do %>
-    * `:input` (`t:binary`)
+    * `:input` (`t:binary<%= if action.body_required? do %> | nil<% end %>`)
     <% else %><%= if action.has_body? do %>
-    * `:input` (`t:map`):<%= for parameter <- action.required_body_parameters do %>
+    * `:input` (`t:map<%= if action.body_required? do %> | nil<% end %>`):<%= for parameter <- action.required_body_parameters do %>
       <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
       %><%= for parameter <- action.optional_body_parameters do %>
       <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
@@ -111,12 +111,19 @@ defmodule AWS.CodeGen.ElixirHelpers do
 
     body_guard =
       cond do
-        action.send_body_as_binary? ->
-          # TODO: Distinguish between optional and required http bodies.
-          "is_binary(input) or is_nil(input)"
+        action.send_body_as_binary? and action.body_required? ->
+          "is_binary(input)"
+
+        action.send_body_as_binary? and not action.body_required? ->
+          "is_binary(input)"
 
         action.has_body? ->
-          # TODO: Distinguish between optional and required http bodies.
+          "is_map(input) or is_nil(input)"
+
+        action.has_body? and action.body_required? ->
+          "is_map(input)"
+
+        action.has_body? and not action.body_required? ->
           "is_map(input) or is_nil(input)"
 
         true ->
