@@ -328,6 +328,7 @@ defmodule AWS.CodeGen.RestService do
 
       has_body? = method != "GET" and not Enum.empty?(body_parameters)
       send_body_as_binary? = Shapes.body_as_binary?(shapes, input_shape)
+      body_required? = has_body? and not Enum.empty?(required_body_params)
 
       %Action{
         arity: length(url_parameters) + len_for_method,
@@ -344,7 +345,7 @@ defmodule AWS.CodeGen.RestService do
         required_body_parameters: required_body_params,
         optional_body_parameters: opt_body_params,
         has_body?: has_body?,
-        body_required?: has_body? and not Enum.empty?(required_body_params),
+        body_required?: body_required?,
         required_query_parameters: required_query_params,
         optional_query_parameters: opt_query_params,
         request_header_parameters: request_header_parameters,
@@ -534,7 +535,7 @@ defmodule AWS.CodeGen.RestService do
   #   "string"
   # end
 
-  def build_type_details(type, api_spec) do
+  def build_type_details(type, _api_spec) do
     type["type"]
   end
 

@@ -70,7 +70,7 @@ defmodule <%= context.module_name %> do
 <%= if action.method == "GET" do %>
   <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context, types) %>
   <%= AWS.CodeGen.ElixirHelpers.render_spec(:get, context, action) %>
-  def <%= action.function_name %>(%Client{} = client <%= AWS.CodeGen.ElixirHelpers.maybe_render_stage(context) %><%= AWS.CodeGen.RestService.required_function_parameters(action) %>, options \\ []) <%= AWS.CodeGen.ElixirHelpers.render_guards(action) %> do
+  <%= AWS.CodeGen.ElixirHelpers.render_def(context, action) %> do
     url_path = "<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>/#{stage}<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"
 
     <%= AWS.CodeGen.ElixirHelpers.define_and_validate_optionals(action) %>
@@ -130,9 +130,7 @@ else %>
 
   <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context, types) %>
   <%= AWS.CodeGen.ElixirHelpers.render_spec(:other, context, action) %>
-def <%= action.function_name %>(%Client{} = client <%= AWS.CodeGen.ElixirHelpers.maybe_render_stage(context)
-%><%= AWS.CodeGen.RestService.required_function_parameters(action)
-%>, <%= if action.has_body?, do: "input,", else: "" %> options \\ []) <%= AWS.CodeGen.ElixirHelpers.render_guards(action) %> do
+  <%= AWS.CodeGen.ElixirHelpers.render_def(context, action) %> do
     url_path = "<%= if context.module_name == ~s(AWS.ApiGatewayManagementApi) do %>/#{stage}<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"
 
     <%= AWS.CodeGen.ElixirHelpers.define_and_validate_optionals(action) %>

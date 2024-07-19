@@ -253,4 +253,25 @@ defmodule AWS.CodeGen.ElixirHelpers do
 
     res
   end
+
+  @render_def EEx.compile_string(~s/
+def <%= action.function_name %>(%Client{} = client <%= maybe_stage
+%><%= required_params
+%>, <%= if action.has_body?, do: "input,", else: "" %> options \\\\ []) <%= AWS.CodeGen.ElixirHelpers.render_guards(action) %>
+  /)
+  def render_def(context, action) do
+    maybe_stage = maybe_render_stage(context)
+
+    required_params = AWS.CodeGen.RestService.required_function_parameters(action)
+
+    {res, _} =
+      Code.eval_quoted(@render_def,
+        action: action,
+        context: context,
+        maybe_stage: maybe_stage,
+        required_params: required_params
+      )
+
+    res
+  end
 end
