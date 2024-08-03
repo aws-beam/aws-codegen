@@ -280,11 +280,7 @@ defmodule AWS.CodeGen.RestService do
       body_parameters =
         collect_body_parameters(language, api_spec, operation)
 
-      # if operation in [
-      #      "com.amazonaws.apigatewayv2#ReimportApi"
-      #    ] do
-      #   dbg({url_parameters, body_parameters})
-      # end
+      body_required? = get_body_required?(api_spec, operation_spec)
 
       query_parameters = collect_query_parameters(language, api_spec, operation)
       function_name = AWS.CodeGen.Name.to_snake_case(operation)
@@ -328,7 +324,6 @@ defmodule AWS.CodeGen.RestService do
 
       has_body? = method != "GET" and not Enum.empty?(body_parameters)
       send_body_as_binary? = Shapes.body_as_binary?(shapes, input_shape)
-      body_required? = has_body? and not Enum.empty?(required_body_params)
 
       %Action{
         arity: length(url_parameters) + len_for_method,
@@ -452,6 +447,37 @@ defmodule AWS.CodeGen.RestService do
     else
       []
     end
+  end
+
+  def get_body_required?(api_spec, operation_spec) do
+    body_req_name = get_in(operation_spec, ["input", "target"])
+
+      if is_nil(body_req_name) do
+        false
+      else
+        members = api_spec["shapes"][body_req_name]["members"]
+
+        if is_nil(members) do
+          false
+        else
+          payloads =
+            members
+            |> Enum.filter(filter_fn("smithy.api#httpPayload"))
+
+          jsons =
+            members
+            |> Enum.filter(filter_fn("smithy.api#jsonName"))
+
+          Enum.concat(payloads, jsons)
+          |> Enum.map(fn {_name, x} ->
+            required? = get_in(x, ["traits", "smithy.api#required"])
+            default = get_in(x, ["traits", "smithy.api#default"])
+
+            required? || default == ""
+          end)
+          |> Enum.any?()
+        end
+      end
   end
 
   def extract_param_docs_snippet(docs) do
