@@ -143,7 +143,7 @@ defmodule AWS.CodeGen do
   end
 
   @body_param_quoted EEx.compile_string(
-    ~s|* `"<%= parameter.location_name %>" => t:<%= parameter.type %>`<%= if parameter.required do %> required<% end %> <%= parameter.docs %>|
+    ~s|* `"<%= parameter.location_name %>" => t:<%= parameter.type %>`<%= if parameter.required do %> (required)<% end %> <%= parameter.docs %>|
   )
   def render_body_parameter(%Parameter{} = parameter) do
     Code.eval_quoted(@body_param_quoted, parameter: parameter)
