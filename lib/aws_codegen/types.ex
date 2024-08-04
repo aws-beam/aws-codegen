@@ -17,6 +17,7 @@ defmodule AWS.CodeGen.Types do
 
   defp process_structure_shape(context, shape, acc) do
     type = normalize_type_name(shape.name)
+
     types = process_shape_members(context, shape)
     update_acc_with_types(acc, type, types, context)
   end
@@ -194,7 +195,8 @@ defmodule AWS.CodeGen.Types do
   end
 
   defp reserved_type(type) do
-    type == "node" || type == "term" || type == "function" || type == "reference"
+    type == "node" || type == "term" || type == "function" || type == "reference" ||
+      type == "identifier"
   end
 
   def function_argument_type(:elixir, action) do
@@ -302,7 +304,12 @@ defmodule AWS.CodeGen.Types do
 
   def function_parameter_types(_method, action, _required_only) do
     language = action.language
-    join_parameter_types(action.url_parameters, language)
+
+    Enum.join([
+      join_parameter_types(action.url_parameters, language),
+      join_parameter_types(action.required_query_parameters, language),
+      join_parameter_types(action.required_request_header_parameters, language)
+    ])
   end
 
   defp join_parameter_types(parameters, :elixir) do
@@ -310,8 +317,10 @@ defmodule AWS.CodeGen.Types do
       parameters,
       fn parameter ->
         if not parameter.required do
+          # TODO: map the types to elixir types here: ", #{parameter.type} | nil"
           ", String.t() | nil"
         else
+          # TODO: map the types to elixir types here: ", #{parameter.type}"
           ", String.t()"
         end
       end

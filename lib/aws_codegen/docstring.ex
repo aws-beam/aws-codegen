@@ -10,18 +10,33 @@ defmodule AWS.CodeGen.Docstring do
   heredoc in generated Elixir or Erlang code.
   """
   def format(:elixir, text) do
-    text
-    |> html_to_markdown()
-    |> split_first_sentence_in_one_line()
-    |> split_paragraphs()
-    |> Enum.map(&justify_line(&1, @max_elixir_line_length))
-    |> Enum.join("\n")
-    |> fix_broken_markdown_links()
-    |> fix_elixir_lookalike_format_strings()
-    |> fix_html_spaces()
-    |> fix_long_break_lines()
-    |> transform_subtitles()
-    |> String.trim_trailing()
+    docstring =
+      text
+      |> html_to_markdown()
+      |> fix_broken_markdown_links()
+      |> fix_elixir_lookalike_format_strings()
+      |> fix_html_spaces()
+      |> fix_long_break_lines()
+      |> transform_subtitles()
+      |> String.trim_trailing()
+
+    # Split off the beginning of the docs.
+    [docstring_header, _docstring_rest] =
+      case String.split(docstring, "\n", parts: 3, trim: true) do
+        [a, b, rest] ->
+          [a <> "\n" <> b, rest]
+
+        [a, b] ->
+          [a, b]
+
+        [a] ->
+          [a, ""]
+
+        [] ->
+          ["", ""]
+      end
+
+    docstring_header |> Excribe.format(width: 80, hanging: 2)
   end
 
   def format(:erlang, nil), do: ""
@@ -149,7 +164,7 @@ defmodule AWS.CodeGen.Docstring do
   defp update_nodes({tag, _, children}) when tag in ~w(i em), do: "*#{Floki.text(children)}*"
 
   defp update_nodes({tag, _, children}) when tag in ~w(p fullname note important),
-    do: Floki.text(children) <> @two_break_lines
+    do: (Floki.text(children) |> String.replace("\n", " ")) <> @two_break_lines
 
   defp update_nodes({"a", attrs, children}) do
     case Enum.find(attrs, fn {attr, _} -> attr == "href" end) do
@@ -366,5 +381,23 @@ defmodule AWS.CodeGen.Docstring do
       end)
 
     List.flatten(lines ++ [current])
+  end
+
+  def docs_url(shapes, operation) do
+    service_name =
+      shapes
+      |> Map.keys()
+      |> List.first()
+      |> then(fn name ->
+        name
+        |> String.split("#")
+        |> hd()
+        |> String.split(".")
+        |> List.last()
+      end)
+
+    op_name = operation |> String.split("#") |> List.last()
+
+    "https://docs.aws.amazon.com/search/doc-search.html?searchPath=documentation&searchQuery=#{service_name}%20#{op_name}&this_doc_guide=API%2520Reference"
   end
 end

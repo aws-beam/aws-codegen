@@ -11,19 +11,19 @@ defmodule <%= context.module_name %> do
   alias AWS.Client
   alias AWS.Request
 
- <%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
+<% types = AWS.CodeGen.Types.types(context) %>
+
+<%= for {type_name, type_fields} <- types do %>
 @typedoc """
 
 ## Example:
-<%= if Enum.empty?(type_fields) do %>
-    <%= "#{type_name}() :: %{}" %>
-<% else %>
-    <%= "#{type_name}() :: %{" %>
-    <%= Enum.map_join(type_fields, ",\n    ", fn {field_name, field_type} ->
-      ~s{  #{field_name}#{field_type}}
-    end) %>
+    <%= if Enum.empty?(type_fields) do %>
+    <%= type_name %>() :: %{}
+    <% else %>
+    <%= type_name %>() :: %{
+      <%= AWS.CodeGen.ElixirHelpers.render_type_fields(type_name, type_fields, 6) %>
     }
-<% end %>
+    <% end %>
 """
 @type <%= if Enum.empty?(type_fields) do "#{type_name}() :: %{}" else "#{type_name}() :: %{String.t => any()}" end %>
 <% end %>
@@ -67,22 +67,30 @@ defmodule <%= context.module_name %> do
     }
   end<%= for action <- context.actions do %>
 
-  <%= if String.trim(action.docstring) != "" do %>
-  @doc """
-<%= action.docstring %>
-  """<% end %><%= if action.method == "GET" do %>
-  @spec <%= action.function_name %>(map()<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, String.t()<% end %><%= AWS.CodeGen.Types.function_parameter_types(action.method, action, false)%>, list()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
-  def <%= action.function_name %>(%Client{} = client<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>, stage<% end %><%= AWS.CodeGen.RestService.function_parameters(action) %>, options \\ []) do
+<%= if action.method == "GET" do %>
+  <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context, types) %>
+  <%= AWS.CodeGen.ElixirHelpers.render_spec(:get, context, action) %>
+  <%= AWS.CodeGen.ElixirHelpers.render_def(context, action) %> do
     url_path = "<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>/#{stage}<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"
-    headers = []<%= for parameter <- action.request_header_parameters do %>
-    headers = if !is_nil(<%= parameter.code_name %>) do
-      [{"<%= parameter.location_name %>", <%= parameter.code_name %>} | headers]
+
+    <%= AWS.CodeGen.ElixirHelpers.define_and_validate_optionals(action) %>
+
+    # Required headers
+    headers = [<%= action.required_request_header_parameters |> Enum.map(fn parameter -> ~s|{"#{parameter.location_name}", #{parameter.code_name}}| end) |> Enum.join(",") %>]
+
+    # Optional headers<%= for parameter <- Enum.reverse(action.optional_request_header_parameters) do %>
+    headers = if opt_val = Keyword.get(options, :<%= parameter.code_name %>) do
+      [{"<%= parameter.location_name %>", opt_val} | headers]
     else
       headers
     end<% end %>
-    query_params = []<%= for parameter <- Enum.reverse(action.query_parameters) do %>
-    query_params = if !is_nil(<%= parameter.code_name %>) do
-      [{"<%= parameter.location_name %>", <%= parameter.code_name %>} | query_params]
+
+    # Required query params
+    query_params = [<%= action.required_query_parameters |> Enum.map(fn parameter -> ~s|{"#{parameter.location_name}", #{parameter.code_name}}| end) |> Enum.join(",") %>]
+
+    # Optional query params<%= for parameter <- Enum.reverse(action.optional_query_parameters) do %>
+    query_params = if opt_val = Keyword.get(options, :<%= parameter.code_name %>) do
+      [{"<%= parameter.location_name %>", opt_val} | query_params]
     else
       query_params
     end<% end %><%= if length(action.response_header_parameters) > 0 do %>
@@ -115,22 +123,37 @@ defmodule <%= context.module_name %> do
         metadata()
       <% end %>
 
-    Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, <%= inspect(action.success_status_code) %>)<% else %>
-@spec <%= action.function_name %>(map()<%= AWS.CodeGen.Types.function_parameter_types(action.method, action, false)%>, <%= if context.module_name == "AWS.ApiGatewayManagementApi" do %> String.t(), <% end %><%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, list()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
-def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.function_parameters(action) %>, <%= if context.module_name == "AWS.ApiGatewayManagementApi" do %> stage, <% end %>input, options \\ []) do
-    url_path = "<%= if context.module_name == "AWS.ApiGatewayManagementApi" do %>/#{stage}<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"<%= if length(action.request_header_parameters) > 0 do %>
-    {headers, input} =
-      [<%= for parameter <- action.request_header_parameters do %>
-        {"<%= parameter.name %>", "<%= parameter.location_name %>"},<% end %>
-      ]
-      |> Request.build_params(input)<% else %>
-    headers = []<% end %><%= if length(action.query_parameters) > 0 do %>
-    {query_params, input} =
-      [<%= for parameter <- action.query_parameters do %>
-        {"<%= parameter.name %>", "<%= parameter.location_name %>"},<% end %>
-      ]
-      |> Request.build_params(input)<% else %>
-    query_params = []<% end %><%= if length(action.response_header_parameters) > 0 do %>
+    <%= AWS.CodeGen.ElixirHelpers.drop_optionals(action) %>
+
+    Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, <%= inspect(action.success_status_code) %>)<%
+else %>
+
+  <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context, types) %>
+  <%= AWS.CodeGen.ElixirHelpers.render_spec(:other, context, action) %>
+  <%= AWS.CodeGen.ElixirHelpers.render_def(context, action) %> do
+    url_path = "<%= if context.module_name == ~s(AWS.ApiGatewayManagementApi) do %>/#{stage}<% end %><%= AWS.CodeGen.RestService.Action.url_path(action) %>"
+
+    <%= AWS.CodeGen.ElixirHelpers.define_and_validate_optionals(action) %>
+
+    # Required headers
+    headers = [<%= action.required_request_header_parameters |> Enum.map(fn parameter -> ~s|{"#{parameter.location_name}", #{parameter.code_name}}| end) |> Enum.join(",") %>]
+
+    # Optional headers<%= for parameter <- Enum.reverse(action.optional_request_header_parameters) do %>
+    headers = if opt_val = Keyword.get(options, :<%= parameter.code_name %>) do
+      [{"<%= parameter.location_name %>", opt_val} | headers]
+    else
+      headers
+    end<% end %>
+
+    # Required query params
+    query_params = [<%= action.required_query_parameters |> Enum.map(fn parameter -> ~s|{"#{parameter.location_name}", #{parameter.code_name}}| end) |> Enum.join(",") %>]
+
+    # Optional query params<%= for parameter <- Enum.reverse(action.optional_query_parameters) do %>
+    query_params = if opt_val = Keyword.get(options, :<%= parameter.code_name %>) do
+      [{"<%= parameter.location_name %>", opt_val} | query_params]
+    else
+      query_params
+    end<% end %><%= if length(action.response_header_parameters) > 0 do %>
     options = Keyword.put(
       options,
       :response_header_parameters,
@@ -168,6 +191,10 @@ def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.fu
         metadata()
       <% end %>
 
-    Request.request_rest(client, meta, <%= AWS.CodeGen.RestService.Action.method(action) %>, url_path, query_params, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
+    <%= AWS.CodeGen.ElixirHelpers.drop_optionals(action) %>
+
+    body = <%= if action.has_body? do %>input<% else %>nil<% end %>
+
+    Request.request_rest(client, meta, <%= AWS.CodeGen.RestService.Action.method(action) %>, url_path, query_params, headers, body, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% end %>
 end

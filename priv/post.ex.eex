@@ -11,17 +11,17 @@ defmodule <%= context.module_name %> do
   alias AWS.Client
   alias AWS.Request
 
- <%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
+<% types = AWS.CodeGen.Types.types(context) %>
+
+<%= for {type_name, type_fields} <- types do %>
 @typedoc """
 
 ## Example:
     <%= if map_size(type_fields) == 0 do %>
-    <%= "#{type_name}() :: %{}" %>
+    <%= type_name %>() :: %{}
     <% else %>
-    <%= "#{type_name}() :: %{" %>
-    <%= Enum.map_join(type_fields, ",\n    ", fn {field_name, field_type} ->
-      ~s{  #{field_name}#{field_type}}
-    end) %>
+    <%= type_name %>() :: %{
+      <%= AWS.CodeGen.ElixirHelpers.render_type_fields(type_name, type_fields, 6) %>
     }
     <% end %>
 """
@@ -33,7 +33,7 @@ defmodule <%= context.module_name %> do
                 errors = action.errors
                 if not is_nil(errors) do
                     errors_snakecased = Enum.map(errors, fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.amazonaws\.[^#]+#/, "")) end)
-                    all_types = AWS.CodeGen.Types.types(context)
+                    all_types = types
                     error_types = Enum.reduce(all_types,
                                              [],
                                              fn {type_name, _type_fields}, acc ->
@@ -67,12 +67,9 @@ defmodule <%= context.module_name %> do
     }
   end
 <%= for action <- context.actions do %>
-  <%= if String.trim(action.docstring) != "" do %>
-  @doc """
-<%= action.docstring %>
-  """<% end %>
-  @spec <%= action.function_name %>(map(), <%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, list()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
-  def <%= action.function_name %>(%Client{} = client, input, options \\ []) do
+  <%= AWS.CodeGen.ElixirHelpers.render_docstring(action, context, types) %>
+  <%= AWS.CodeGen.ElixirHelpers.render_spec(:other, context, action) %>
+  <%= AWS.CodeGen.ElixirHelpers.render_def(context, action) %> do
     meta =
       <%= if action.host_prefix do %>
         metadata() |> Map.put_new(:host_prefix, <%= inspect(action.host_prefix) %>)

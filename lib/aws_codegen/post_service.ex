@@ -6,12 +6,29 @@ defmodule AWS.CodeGen.PostService do
   defmodule Action do
     defstruct arity: nil,
               docstring: nil,
+              docs_url: nil,
               function_name: nil,
               input: nil,
               output: nil,
+              url_parameters: [],
+              has_body?: true,
+              body_required?: true,
+              body_parameters: [],
+              required_body_parameters: [],
+              optional_body_parameters: [],
+              query_parameters: [],
+              required_query_parameters: [],
+              optional_query_parameters: [],
+              request_header_parameters: [],
+              request_headers_parameters: [],
+              required_request_header_parameters: [],
+              optional_request_header_parameters: [],
               errors: %{},
               host_prefix: nil,
-              name: nil
+              name: nil,
+              send_body_as_binary?: false,
+              language: nil,
+              method: :post
   end
 
   @configuration %{
@@ -127,6 +144,16 @@ defmodule AWS.CodeGen.PostService do
     end
   end
 
+  defp collect_params(language, api_spec, operation) do
+    AWS.CodeGen.RestService.collect_parameters(
+      language,
+      api_spec,
+      operation,
+      "members",
+      "smithy.api#input"
+    )
+  end
+
   defp collect_actions(language, api_spec) do
     shapes = api_spec["shapes"]
 
@@ -160,6 +187,14 @@ defmodule AWS.CodeGen.PostService do
     Enum.map(operations, fn operation ->
       operation_spec = shapes[operation]
 
+      # The AWS Docs sometimes use an arbitrary service name, so we cannot build direct urls. Instead we just link to a search
+      docs_url = Docstring.docs_url(shapes, operation)
+
+      # input_shape = Shapes.get_input_shape(operation_spec)
+
+      params =
+        collect_params(language, api_spec, operation)
+
       %Action{
         arity: 3,
         docstring:
@@ -167,12 +202,14 @@ defmodule AWS.CodeGen.PostService do
             language,
             operation_spec["traits"]["smithy.api#documentation"]
           ),
+        docs_url: docs_url,
         function_name: AWS.CodeGen.Name.to_snake_case(operation),
         host_prefix: operation_spec["traits"]["smithy.api#endpoint"]["hostPrefix"],
         name: String.replace(operation, ~r/com\.amazonaws\.[^#]+#/, ""),
         input: operation_spec["input"],
         output: operation_spec["output"],
-        errors: operation_spec["errors"]
+        errors: operation_spec["errors"],
+        language: language
       }
     end)
     |> Enum.sort(fn a, b -> a.function_name < b.function_name end)
