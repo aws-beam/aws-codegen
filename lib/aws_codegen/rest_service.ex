@@ -440,7 +440,14 @@ defmodule AWS.CodeGen.RestService do
             if is_nil(tynfo) do
               build_parameter(language, {name, x["traits"][param_type]}, required, "string", docs)
             else
-              build_parameter(language, {name, x["traits"][param_type]}, required, tynfo, docs)
+              traits = x["traits"]
+              xml_name = traits["smithy.api#xmlName"]
+              json_name = traits["smithy.api#jsonName"]
+
+              # If the parameter is a body parameter use the xml/json name instead of the smithy name.
+              location_name = xml_name || json_name || x["traits"][param_type]
+
+              build_parameter(language, {name, location_name}, required, tynfo, docs)
             end
           end)
       end

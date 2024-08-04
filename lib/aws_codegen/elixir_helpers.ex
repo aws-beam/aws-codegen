@@ -54,9 +54,9 @@ defmodule AWS.CodeGen.ElixirHelpers do
   * `:input` (`t:binary<%= if not action.body_required? do %> | nil<% end %>`<%= if action.body_required? do %> required<% end %>)
   <% else %><%= if action.has_body? do %>
   * `:input` (`t:map<%= if not action.body_required? do %> | nil<% end %>`<% if action.body_required? do %> required<% end %>):<%= for parameter <- action.required_body_parameters do %>
-    <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
+    <%= AWS.CodeGen.render_body_parameter(parameter) %><% end
     %><%= for parameter <- action.optional_body_parameters do %>
-    <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
+    <%= AWS.CodeGen.render_body_parameter(parameter) %><% end
   %><% end
   %><% end
   %><%= AWS.CodeGen.ElixirHelpers.render_keyword_parameters(action) %>

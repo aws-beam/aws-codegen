@@ -134,10 +134,19 @@ defmodule AWS.CodeGen do
   end
 
   @param_quoted_elixir EEx.compile_string(
-                         ~s|* `:<%= parameter.code_name %>` (`t:<%= parameter.type %>`<%= if parameter.required do %> required<% end %>) <%= parameter.docs %>|
-                       )
+    ~s|* `:<%= parameter.code_name %>` (`t:<%= parameter.type %>`<%= if parameter.required do %> required<% end %>) <%= parameter.docs %>|
+  )
   def render_parameter(:elixir, %Parameter{} = parameter) do
     Code.eval_quoted(@param_quoted_elixir, parameter: parameter)
+    |> then(&elem(&1, 0))
+    |> Excribe.format(width: 80, hanging: 4, pretty: true)
+  end
+
+  @body_param_quoted EEx.compile_string(
+    ~s|* `"<%= parameter.location_name %>" => t:<%= parameter.type %>`<%= if parameter.required do %> required<% end %> <%= parameter.docs %>|
+  )
+  def render_body_parameter(%Parameter{} = parameter) do
+    Code.eval_quoted(@body_param_quoted, parameter: parameter)
     |> then(&elem(&1, 0))
     |> Excribe.format(width: 80, hanging: 4, pretty: true)
   end
