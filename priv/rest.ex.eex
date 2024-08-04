@@ -160,13 +160,6 @@ else %>
       <%= inspect((for param <- action.response_header_parameters, do: {param.location_name, param.name}), pretty: true) %>
     )<% end %>
 
-    <%= if length(action.response_header_parameters) > 0 do %>
-    options = Keyword.put(
-      options,
-      :response_header_parameters,
-      <%= inspect((for param <- action.response_header_parameters, do: {param.location_name, param.name}), pretty: true) %>
-    )<% end %>
-
     <%= if action.send_body_as_binary? do %>
       options = Keyword.put(
         options,
