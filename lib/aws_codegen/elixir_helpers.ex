@@ -38,10 +38,9 @@ defmodule AWS.CodeGen.ElixirHelpers do
     end)
   end
 
-  @docstring_rest_quoted EEx.compile_string(~s{
-  <%= if String.trim(action.docstring) != "" do %>
-    @doc """
-    <%= action.docstring %>
+  @docstring_rest_quoted EEx.compile_string(~s{@doc """
+    <%= if String.trim(action.docstring) != "" do
+    %><%= action.docstring %><% end %>
 
     [API Reference](<%= action.docs_url %>)
 
@@ -52,39 +51,37 @@ defmodule AWS.CodeGen.ElixirHelpers do
     %><%= for parameter <- action.required_request_header_parameters do %>
     <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
     %><%= if action.send_body_as_binary? do %>
-    * `:input` (`t:binary<%= if not action.body_required? do %> | nil<% end %>`)
+    * `:input` (`t:binary<%= if not action.body_required? do %> | nil<% end %>`<%= if action.body_required? do %> required<% end %>)
     <% else %><%= if action.has_body? do %>
-    * `:input` (`t:map<%= if not action.body_required? do %> | nil<% end %>`):<%= for parameter <- action.required_body_parameters do %>
+    * `:input` (`t:map<%= if not action.body_required? do %> | nil<% end %>`<% if action.body_required? do %> required<% end %>):<%= for parameter <- action.required_body_parameters do %>
       <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
       %><%= for parameter <- action.optional_body_parameters do %>
       <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
     %><% end
-    %><% end %>
-
-    ## Optional parameters:<%= for parameter <- action.optional_query_parameters do %>
+    %><% end
+    %>
+    ## Keyword parameters:<%= for parameter <- action.optional_query_parameters do %>
     <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
     %><%= for parameter <- action.optional_request_header_parameters do %>
     <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end %>
-    """<% end %>
-  })
+    """})
   def render_docstring(%RestService.Action{} = action, _context, _types) do
     {res, _} = Code.eval_quoted(@docstring_rest_quoted, action: action)
     res
   end
 
-  @docstring_post_quoted EEx.compile_string(~s/
-  <%= if String.trim(action.docstring) != "" do %>
-     @doc """
-     <%= action.docstring %>
+  @docstring_post_quoted EEx.compile_string(~s/@doc """
+      <%= if String.trim(action.docstring) != "" do %>
+     <%= action.docstring %><% end %>
 
     [API Reference](<%= action.docs_url %>)
 
      ## Parameters:
-     * `:input` (`t:<%= input_type %>`)<%= if not is_nil(type_fields) do %>
+     * `:input` (`t:<%= input_type %>`<% if action.body_required? do %> required<% end %>)<%= if not is_nil(type_fields) do %>
        %{
          <%= AWS.CodeGen.ElixirHelpers.render_type_fields(input_type, type_fields, 9) %>
        }<% end %>
-     """<% end %>/)
+     """/)
   def render_docstring(%PostService.Action{} = action, context, types) do
     input_type =
       AWS.CodeGen.Types.function_argument_type(:elixir, action)
@@ -196,10 +193,10 @@ defmodule AWS.CodeGen.ElixirHelpers do
     end
   end
 
-  @render_spec_get EEx.compile_string(~s/
-    @spec <%= action.function_name %>(AWS.Client.t()<%= maybe_stage
-    %><%= required_param_types %>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
-  /)
+  @render_spec_get EEx.compile_string(
+  ~s/@spec <%= action.function_name %>(AWS.Client.t()<%= maybe_stage
+    %><%= required_param_types %>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)
+  %>/)
   def render_spec(:get, context, action) do
     maybe_stage = maybe_render_stage_spec(context)
     required_param_types = AWS.CodeGen.Types.required_function_parameter_types(action)
@@ -215,10 +212,10 @@ defmodule AWS.CodeGen.ElixirHelpers do
     res
   end
 
-  @render_spec_other EEx.compile_string(~s/
-    @spec <%= action.function_name %>(AWS.Client.t()<%= maybe_stage
-    %><%= required_param_types %><%= body_type %>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
-  /)
+  @render_spec_other EEx.compile_string(
+  ~s/@spec <%= action.function_name %>(AWS.Client.t()<%= maybe_stage
+    %><%= required_param_types %><%= body_type %>, Keyword.t()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)
+  %>/)
   def render_spec(_, context, action) do
     maybe_stage = maybe_render_stage_spec(context)
 
@@ -254,8 +251,8 @@ defmodule AWS.CodeGen.ElixirHelpers do
     res
   end
 
-  @render_def EEx.compile_string(~s/
-def <%= action.function_name %>(%Client{} = client <%= maybe_stage
+  @render_def EEx.compile_string(
+~s/def <%= action.function_name %>(%Client{} = client <%= maybe_stage
 %><%= required_params
 %>, <%= if action.has_body?, do: "input,", else: "" %> options \\\\ []) <%= AWS.CodeGen.ElixirHelpers.render_guards(action) %>
   /)

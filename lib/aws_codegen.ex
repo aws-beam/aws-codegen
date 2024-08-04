@@ -134,7 +134,7 @@ defmodule AWS.CodeGen do
   end
 
   @param_quoted_elixir EEx.compile_string(
-                         ~s|* `:<%= parameter.code_name %>` (`t:<%= parameter.type %>`) <%= parameter.docs %>|
+                         ~s|* `:<%= parameter.code_name %>` (`t:<%= parameter.type %>`<%= if parameter.required do %> required<% end %>) <%= parameter.docs %>|
                        )
   def render_parameter(:elixir, %Parameter{} = parameter) do
     Code.eval_quoted(@param_quoted_elixir, parameter: parameter)

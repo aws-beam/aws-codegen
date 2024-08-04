@@ -464,6 +464,8 @@ defmodule AWS.CodeGen.RestService do
             members
             |> Enum.filter(filter_fn("smithy.api#httpPayload"))
 
+          # This is necessary to detect e.g. APIGatewayV2 create_api/3 input as
+          # required.
           jsons =
             members
             |> Enum.filter(filter_fn("smithy.api#jsonName"))
