@@ -39,35 +39,46 @@ defmodule AWS.CodeGen.ElixirHelpers do
   end
 
   @docstring_rest_quoted EEx.compile_string(~s{@doc """
-    <%= if String.trim(action.docstring) != "" do
-    %><%= action.docstring %><% end %>
+  <%= if String.trim(action.docstring) != "" do
+  %><%= action.docstring %><% end %>
 
-    [API Reference](<%= action.docs_url %>)
+  [API Reference](<%= action.docs_url %>)
 
-    ## Parameters:<%= for parameter <- action.url_parameters do %>
+  ## Parameters:<%= for parameter <- action.url_parameters do %>
+  <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
+  %><%= for parameter <- action.required_query_parameters do %>
+  <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
+  %><%= for parameter <- action.required_request_header_parameters do %>
+  <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
+  %><%= if action.send_body_as_binary? do %>
+  * `:input` (`t:binary<%= if not action.body_required? do %> | nil<% end %>`<%= if action.body_required? do %> required<% end %>)
+  <% else %><%= if action.has_body? do %>
+  * `:input` (`t:map<%= if not action.body_required? do %> | nil<% end %>`<% if action.body_required? do %> required<% end %>):<%= for parameter <- action.required_body_parameters do %>
     <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
-    %><%= for parameter <- action.required_query_parameters do %>
+    %><%= for parameter <- action.optional_body_parameters do %>
     <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
-    %><%= for parameter <- action.required_request_header_parameters do %>
-    <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
-    %><%= if action.send_body_as_binary? do %>
-    * `:input` (`t:binary<%= if not action.body_required? do %> | nil<% end %>`<%= if action.body_required? do %> required<% end %>)
-    <% else %><%= if action.has_body? do %>
-    * `:input` (`t:map<%= if not action.body_required? do %> | nil<% end %>`<% if action.body_required? do %> required<% end %>):<%= for parameter <- action.required_body_parameters do %>
-      <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
-      %><%= for parameter <- action.optional_body_parameters do %>
-      <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
-    %><% end
-    %><% end
-    %>
-    ## Keyword parameters:<%= for parameter <- action.optional_query_parameters do %>
-    <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
-    %><%= for parameter <- action.optional_request_header_parameters do %>
-    <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end %>
-    """})
+  %><% end
+  %><% end
+  %><%= AWS.CodeGen.ElixirHelpers.render_keyword_parameters(action) %>
+  """})
   def render_docstring(%RestService.Action{} = action, _context, _types) do
     {res, _} = Code.eval_quoted(@docstring_rest_quoted, action: action)
     res
+  end
+
+  @keyword_params EEx.compile_string(~s{
+
+  ## Keyword parameters:<%= for parameter <- action.optional_query_parameters do %>
+  <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end
+  %><%= for parameter <- action.optional_request_header_parameters do %>
+  <%= AWS.CodeGen.render_parameter(:elixir, parameter) %><% end %>})
+  def render_keyword_parameters(action) do
+    if Enum.empty?(action.optional_query_parameters) and Enum.empty?(action.optional_request_header_parameters) do
+      ""
+    else
+      {res, _} = Code.eval_quoted(@keyword_params, action: action)
+      res
+    end
   end
 
   @docstring_post_quoted EEx.compile_string(~s/@doc """
