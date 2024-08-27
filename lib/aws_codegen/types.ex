@@ -53,7 +53,7 @@ defmodule AWS.CodeGen.Types do
 
   defp update_acc_with_types(acc, type, types, context) do
     if reserved_type(type) do
-      module_name = String.downcase(String.replace(context.module_name, "AWS.", ""))
+      module_name = String.downcase(String.replace(context.module_name, ["aws_", "AWS."], ""))
       Map.put(acc, "#{module_name}_#{type}", types)
     else
       Map.put(acc, type, types)
@@ -194,7 +194,7 @@ defmodule AWS.CodeGen.Types do
   end
 
   defp reserved_type(type) do
-    type == "node" || type == "term" || type == "function" || type == "reference"
+    type == "node" || type == "term" || type == "function" || type == "reference" || type == "identifier"
   end
 
   def function_argument_type(:elixir, action) do
