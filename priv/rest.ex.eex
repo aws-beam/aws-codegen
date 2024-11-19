@@ -123,7 +123,13 @@ def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.fu
         {"<%= parameter.name %>", "<%= parameter.location_name %>"},<% end %>
       ]
       |> Request.build_params(input)<% else %>
-    headers = []<% end %><%= if length(action.query_parameters) > 0 do %>
+    headers = []<% end %><%= if length(action.request_headers_parameters) > 0 do %>
+    {custom_headers, input} =
+      [<%= for parameter <- action.request_headers_parameters do %>
+        {"<%= parameter.name %>", "<%= parameter.location_name %>"},<% end %>
+      ]
+      |> Request.build_params(input)<% else %>
+    custom_headers = []<% end %><%= if length(action.query_parameters) > 0 do %>
     {query_params, input} =
       [<%= for parameter <- action.query_parameters do %>
         {"<%= parameter.name %>", "<%= parameter.location_name %>"},<% end %>
@@ -166,6 +172,6 @@ def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.fu
       meta = metadata()
     <% end %>
 
-    Request.request_rest(client, meta, <%= AWS.CodeGen.RestService.Action.method(action) %>, url_path, query_params, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
+    Request.request_rest(client, meta, <%= AWS.CodeGen.RestService.Action.method(action) %>, url_path, query_params, custom_headers ++ headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% end %>
 end
