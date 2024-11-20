@@ -108,12 +108,11 @@ defmodule <%= context.module_name %> do
       )
     <% end %>
 
-    meta =
-      <%= if action.host_prefix do %>
-        metadata() |> Map.put_new(:host_prefix, <%= inspect(action.host_prefix) %>)
-      <% else %>
-        metadata()
-      <% end %>
+    <%= if action.host_prefix do %>
+      meta = metadata() |> Map.put_new(:host_prefix, <%= inspect(action.host_prefix) %>)
+    <% else %>
+      meta = metadata()
+    <% end %>
 
     Request.request_rest(client, meta, :get, url_path, query_params, headers, nil, options, <%= inspect(action.success_status_code) %>)<% else %>
 @spec <%= action.function_name %>(map()<%= AWS.CodeGen.Types.function_parameter_types(action.method, action, false)%>, <%= if context.module_name == "AWS.ApiGatewayManagementApi" do %> String.t(), <% end %><%= AWS.CodeGen.Types.function_argument_type(context.language, action)%>, list()) :: <%= AWS.CodeGen.Types.return_type(context.language, action)%>
@@ -161,12 +160,11 @@ def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.fu
       )
     <% end %>
 
-    meta =
-      <%= if action.host_prefix do %>
-        metadata() |> Map.put_new(:host_prefix, <%= inspect(action.host_prefix) %>)
-      <% else %>
-        metadata()
-      <% end %>
+    <%= if action.host_prefix do %>
+      meta = metadata() |> Map.put_new(:host_prefix, <%= inspect(action.host_prefix) %>)
+    <% else %>
+      meta = metadata()
+    <% end %>
 
     Request.request_rest(client, meta, <%= AWS.CodeGen.RestService.Action.method(action) %>, url_path, query_params, headers, input, options, <%= inspect(action.success_status_code) %>)<% end %>
   end<% end %>
