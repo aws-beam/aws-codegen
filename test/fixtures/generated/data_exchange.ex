@@ -48,257 +48,6 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      l_f_tag_policy_details() :: %{
-        "CatalogId" => String.t(),
-        "ResourceDetails" => l_f_resource_details(),
-        "ResourceType" => String.t()
-      }
-
-  """
-  @type l_f_tag_policy_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      database_l_f_tag_policy_and_permissions() :: %{
-        "Expression" => list(l_f_tag()()),
-        "Permissions" => list(String.t()())
-      }
-
-  """
-  @type database_l_f_tag_policy_and_permissions() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      revoke_revision_response() :: %{
-        optional("Arn") => String.t(),
-        optional("Comment") => String.t(),
-        optional("CreatedAt") => non_neg_integer(),
-        optional("DataSetId") => String.t(),
-        optional("Finalized") => boolean(),
-        optional("Id") => String.t(),
-        optional("RevocationComment") => String.t(),
-        optional("Revoked") => boolean(),
-        optional("RevokedAt") => non_neg_integer(),
-        optional("SourceId") => String.t(),
-        optional("UpdatedAt") => non_neg_integer()
-      }
-
-  """
-  @type revoke_revision_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      received_data_grant_summaries_entry() :: %{
-        "AcceptanceState" => String.t(),
-        "AcceptedAt" => non_neg_integer(),
-        "Arn" => String.t(),
-        "CreatedAt" => non_neg_integer(),
-        "DataSetId" => String.t(),
-        "EndsAt" => non_neg_integer(),
-        "Id" => String.t(),
-        "Name" => String.t(),
-        "ReceiverPrincipal" => String.t(),
-        "SenderPrincipal" => String.t(),
-        "UpdatedAt" => non_neg_integer()
-      }
-
-  """
-  @type received_data_grant_summaries_entry() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      auto_export_revision_to_s3_request_details() :: %{
-        "Encryption" => export_server_side_encryption(),
-        "RevisionDestination" => auto_export_revision_destination_entry()
-      }
-
-  """
-  @type auto_export_revision_to_s3_request_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      send_data_set_notification_response() :: %{}
-
-  """
-  @type send_data_set_notification_response() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      list_received_data_grants_response() :: %{
-        "DataGrantSummaries" => list(received_data_grant_summaries_entry()()),
-        "NextToken" => String.t()
-      }
-
-  """
-  @type list_received_data_grants_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      send_api_asset_request() :: %{
-        optional("Body") => String.t(),
-        optional("Method") => String.t(),
-        optional("Path") => String.t(),
-        optional("QueryStringParameters") => map(),
-        optional("RequestHeaders") => map(),
-        required("AssetId") => String.t(),
-        required("DataSetId") => String.t(),
-        required("RevisionId") => String.t()
-      }
-
-  """
-  @type send_api_asset_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      s3_data_access_details() :: %{
-        "KeyPrefixes" => list(String.t()()),
-        "Keys" => list(String.t()())
-      }
-
-  """
-  @type s3_data_access_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      get_event_action_request() :: %{}
-
-  """
-  @type get_event_action_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      throttling_exception() :: %{
-        "Message" => String.t()
-      }
-
-  """
-  @type throttling_exception() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      import_asset_from_api_gateway_api_request_details() :: %{
-        "ApiDescription" => String.t(),
-        "ApiId" => String.t(),
-        "ApiKey" => String.t(),
-        "ApiName" => String.t(),
-        "ApiSpecificationMd5Hash" => String.t(),
-        "DataSetId" => String.t(),
-        "ProtocolType" => String.t(),
-        "RevisionId" => String.t(),
-        "Stage" => String.t()
-      }
-
-  """
-  @type import_asset_from_api_gateway_api_request_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      create_revision_request() :: %{
-        optional("Comment") => String.t(),
-        optional("Tags") => map()
-      }
-
-  """
-  @type create_revision_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      access_denied_exception() :: %{
-        "Message" => String.t()
-      }
-
-  """
-  @type access_denied_exception() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      deprecation_request_details() :: %{
-        "DeprecationAt" => non_neg_integer()
-      }
-
-  """
-  @type deprecation_request_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      data_update_request_details() :: %{
-        "DataUpdatedAt" => non_neg_integer()
-      }
-
-  """
-  @type data_update_request_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      table_l_f_tag_policy_and_permissions() :: %{
-        "Expression" => list(l_f_tag()()),
-        "Permissions" => list(String.t()())
-      }
-
-  """
-  @type table_l_f_tag_policy_and_permissions() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      import_assets_from_s3_response_details() :: %{
-        "AssetSources" => list(asset_source_entry()()),
-        "DataSetId" => String.t(),
-        "RevisionId" => String.t()
-      }
-
-  """
-  @type import_assets_from_s3_response_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      list_data_grants_request() :: %{
-        optional("MaxResults") => integer(),
-        optional("NextToken") => String.t()
-      }
-
-  """
-  @type list_data_grants_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
       redshift_data_share_details() :: %{
         "Arn" => String.t(),
         "Database" => String.t(),
@@ -315,382 +64,60 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      delete_asset_request() :: %{}
-
-  """
-  @type delete_asset_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      s3_data_access_asset() :: %{
-        "Bucket" => String.t(),
-        "KeyPrefixes" => list(String.t()()),
-        "Keys" => list(String.t()()),
-        "KmsKeysToGrant" => list(kms_key_to_grant()()),
-        "S3AccessPointAlias" => String.t(),
-        "S3AccessPointArn" => String.t()
-      }
-
-  """
-  @type s3_data_access_asset() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      start_job_response() :: %{}
-
-  """
-  @type start_job_response() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      create_data_set_response() :: %{
-        optional("Arn") => String.t(),
-        optional("AssetType") => String.t(),
-        optional("CreatedAt") => non_neg_integer(),
-        optional("Description") => String.t(),
-        optional("Id") => String.t(),
-        optional("Name") => String.t(),
-        optional("Origin") => String.t(),
-        optional("OriginDetails") => origin_details(),
-        optional("SourceId") => String.t(),
-        optional("Tags") => map(),
-        optional("UpdatedAt") => non_neg_integer()
-      }
-
-  """
-  @type create_data_set_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      import_assets_from_lake_formation_tag_policy_request_details() :: %{
-        "CatalogId" => String.t(),
+      import_asset_from_api_gateway_api_response_details() :: %{
+        "ApiDescription" => String.t(),
+        "ApiId" => String.t(),
+        "ApiKey" => String.t(),
+        "ApiName" => String.t(),
+        "ApiSpecificationMd5Hash" => String.t(),
+        "ApiSpecificationUploadUrl" => String.t(),
+        "ApiSpecificationUploadUrlExpiresAt" => non_neg_integer(),
         "DataSetId" => String.t(),
-        "Database" => database_l_f_tag_policy_and_permissions(),
+        "ProtocolType" => String.t(),
         "RevisionId" => String.t(),
-        "RoleArn" => String.t(),
-        "Table" => table_l_f_tag_policy_and_permissions()
+        "Stage" => String.t()
       }
 
   """
-  @type import_assets_from_lake_formation_tag_policy_request_details() :: %{String.t() => any()}
+  @type import_asset_from_api_gateway_api_response_details() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      create_data_set_request() :: %{
-        optional("Tags") => map(),
-        required("AssetType") => String.t(),
-        required("Description") => String.t(),
-        required("Name") => String.t()
-      }
+      cancel_job_request() :: %{}
 
   """
-  @type create_data_set_request() :: %{String.t() => any()}
+  @type cancel_job_request() :: %{}
 
   @typedoc """
 
   ## Example:
 
-      create_revision_response() :: %{
-        optional("Arn") => String.t(),
-        optional("Comment") => String.t(),
-        optional("CreatedAt") => non_neg_integer(),
-        optional("DataSetId") => String.t(),
-        optional("Finalized") => boolean(),
-        optional("Id") => String.t(),
-        optional("RevocationComment") => String.t(),
-        optional("Revoked") => boolean(),
-        optional("RevokedAt") => non_neg_integer(),
-        optional("SourceId") => String.t(),
-        optional("Tags") => map(),
-        optional("UpdatedAt") => non_neg_integer()
-      }
-
-  """
-  @type create_revision_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      list_data_sets_request() :: %{
-        optional("MaxResults") => integer(),
-        optional("NextToken") => String.t(),
-        optional("Origin") => String.t()
-      }
-
-  """
-  @type list_data_sets_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      lake_formation_data_permission_asset() :: %{
-        "LakeFormationDataPermissionDetails" => lake_formation_data_permission_details(),
-        "LakeFormationDataPermissionType" => String.t(),
-        "Permissions" => list(String.t()()),
-        "RoleArn" => String.t()
-      }
-
-  """
-  @type lake_formation_data_permission_asset() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      import_assets_from_redshift_data_shares_request_details() :: %{
-        "AssetSources" => list(redshift_data_share_asset_source_entry()()),
-        "DataSetId" => String.t(),
-        "RevisionId" => String.t()
-      }
-
-  """
-  @type import_assets_from_redshift_data_shares_request_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      get_data_grant_response() :: %{
-        "AcceptanceState" => String.t(),
-        "AcceptedAt" => non_neg_integer(),
+      event_action_entry() :: %{
+        "Action" => action(),
         "Arn" => String.t(),
         "CreatedAt" => non_neg_integer(),
-        "DataSetId" => String.t(),
-        "Description" => String.t(),
-        "EndsAt" => non_neg_integer(),
-        "GrantDistributionScope" => String.t(),
+        "Event" => event(),
         "Id" => String.t(),
-        "Name" => String.t(),
-        "ReceiverPrincipal" => String.t(),
-        "SenderPrincipal" => String.t(),
-        "SourceDataSetId" => String.t(),
-        "Tags" => map(),
         "UpdatedAt" => non_neg_integer()
       }
 
   """
-  @type get_data_grant_response() :: %{String.t() => any()}
+  @type event_action_entry() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      export_server_side_encryption() :: %{
-        "KmsKeyArn" => String.t(),
-        "Type" => String.t()
+      scope_details() :: %{
+        "LakeFormationTagPolicies" => list(lake_formation_tag_policy_details()()),
+        "RedshiftDataShares" => list(redshift_data_share_details()()),
+        "S3DataAccesses" => list(s3_data_access_details()())
       }
 
   """
-  @type export_server_side_encryption() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      create_event_action_response() :: %{
-        optional("Action") => action(),
-        optional("Arn") => String.t(),
-        optional("CreatedAt") => non_neg_integer(),
-        optional("Event") => event(),
-        optional("Id") => String.t(),
-        optional("UpdatedAt") => non_neg_integer()
-      }
-
-  """
-  @type create_event_action_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      update_data_set_request() :: %{
-        optional("Description") => String.t(),
-        optional("Name") => String.t()
-      }
-
-  """
-  @type update_data_set_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      notification_details() :: %{
-        "DataUpdate" => data_update_request_details(),
-        "Deprecation" => deprecation_request_details(),
-        "SchemaChange" => schema_change_request_details()
-      }
-
-  """
-  @type notification_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      export_revisions_to_s3_request_details() :: %{
-        "DataSetId" => String.t(),
-        "Encryption" => export_server_side_encryption(),
-        "RevisionDestinations" => list(revision_destination_entry()())
-      }
-
-  """
-  @type export_revisions_to_s3_request_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      get_asset_request() :: %{}
-
-  """
-  @type get_asset_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      validation_exception() :: %{
-        "ExceptionCause" => String.t(),
-        "Message" => String.t()
-      }
-
-  """
-  @type validation_exception() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      delete_event_action_request() :: %{}
-
-  """
-  @type delete_event_action_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      job_error() :: %{
-        "Code" => String.t(),
-        "Details" => details(),
-        "LimitName" => String.t(),
-        "LimitValue" => float(),
-        "Message" => String.t(),
-        "ResourceId" => String.t(),
-        "ResourceType" => String.t()
-      }
-
-  """
-  @type job_error() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      get_data_grant_request() :: %{}
-
-  """
-  @type get_data_grant_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      send_data_set_notification_request() :: %{
-        optional("ClientToken") => String.t(),
-        optional("Comment") => String.t(),
-        optional("Details") => notification_details(),
-        optional("Scope") => scope_details(),
-        required("Type") => String.t()
-      }
-
-  """
-  @type send_data_set_notification_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      kms_key_to_grant() :: %{
-        "KmsKeyArn" => String.t()
-      }
-
-  """
-  @type kms_key_to_grant() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      create_s3_data_access_from_s3_bucket_request_details() :: %{
-        "AssetSource" => s3_data_access_asset_source_entry(),
-        "DataSetId" => String.t(),
-        "RevisionId" => String.t()
-      }
-
-  """
-  @type create_s3_data_access_from_s3_bucket_request_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      response_details() :: %{
-        "CreateS3DataAccessFromS3Bucket" => create_s3_data_access_from_s3_bucket_response_details(),
-        "ExportAssetToSignedUrl" => export_asset_to_signed_url_response_details(),
-        "ExportAssetsToS3" => export_assets_to_s3_response_details(),
-        "ExportRevisionsToS3" => export_revisions_to_s3_response_details(),
-        "ImportAssetFromApiGatewayApi" => import_asset_from_api_gateway_api_response_details(),
-        "ImportAssetFromSignedUrl" => import_asset_from_signed_url_response_details(),
-        "ImportAssetsFromLakeFormationTagPolicy" => import_assets_from_lake_formation_tag_policy_response_details(),
-        "ImportAssetsFromRedshiftDataShares" => import_assets_from_redshift_data_shares_response_details(),
-        "ImportAssetsFromS3" => import_assets_from_s3_response_details()
-      }
-
-  """
-  @type response_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      delete_data_set_request() :: %{}
-
-  """
-  @type delete_data_set_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      data_set_entry() :: %{
-        "Arn" => String.t(),
-        "AssetType" => String.t(),
-        "CreatedAt" => non_neg_integer(),
-        "Description" => String.t(),
-        "Id" => String.t(),
-        "Name" => String.t(),
-        "Origin" => String.t(),
-        "OriginDetails" => origin_details(),
-        "SourceId" => String.t(),
-        "UpdatedAt" => non_neg_integer()
-      }
-
-  """
-  @type data_set_entry() :: %{String.t() => any()}
+  @type scope_details() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -717,33 +144,121 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      details() :: %{
-        "ImportAssetFromSignedUrlJobErrorDetails" => import_asset_from_signed_url_job_error_details(),
-        "ImportAssetsFromS3JobErrorDetails" => list(asset_source_entry()())
-      }
-
-  """
-  @type details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      internal_server_exception() :: %{
-        "Message" => String.t()
-      }
-
-  """
-  @type internal_server_exception() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
       accept_data_grant_request() :: %{}
 
   """
   @type accept_data_grant_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      tag_resource_request() :: %{
+        required("Tags") => map()
+      }
+
+  """
+  @type tag_resource_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      update_revision_response() :: %{
+        optional("Arn") => String.t(),
+        optional("Comment") => String.t(),
+        optional("CreatedAt") => non_neg_integer(),
+        optional("DataSetId") => String.t(),
+        optional("Finalized") => boolean(),
+        optional("Id") => String.t(),
+        optional("RevocationComment") => String.t(),
+        optional("Revoked") => boolean(),
+        optional("RevokedAt") => non_neg_integer(),
+        optional("SourceId") => String.t(),
+        optional("UpdatedAt") => non_neg_integer()
+      }
+
+  """
+  @type update_revision_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      get_revision_response() :: %{
+        optional("Arn") => String.t(),
+        optional("Comment") => String.t(),
+        optional("CreatedAt") => non_neg_integer(),
+        optional("DataSetId") => String.t(),
+        optional("Finalized") => boolean(),
+        optional("Id") => String.t(),
+        optional("RevocationComment") => String.t(),
+        optional("Revoked") => boolean(),
+        optional("RevokedAt") => non_neg_integer(),
+        optional("SourceId") => String.t(),
+        optional("Tags") => map(),
+        optional("UpdatedAt") => non_neg_integer()
+      }
+
+  """
+  @type get_revision_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      list_received_data_grants_request() :: %{
+        optional("AcceptanceState") => list(String.t()()),
+        optional("MaxResults") => integer(),
+        optional("NextToken") => String.t()
+      }
+
+  """
+  @type list_received_data_grants_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      list_data_sets_response() :: %{
+        optional("DataSets") => list(data_set_entry()()),
+        optional("NextToken") => String.t()
+      }
+
+  """
+  @type list_data_sets_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      export_revisions_to_s3_response_details() :: %{
+        "DataSetId" => String.t(),
+        "Encryption" => export_server_side_encryption(),
+        "EventActionArn" => String.t(),
+        "RevisionDestinations" => list(revision_destination_entry()())
+      }
+
+  """
+  @type export_revisions_to_s3_response_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      create_job_response() :: %{
+        optional("Arn") => String.t(),
+        optional("CreatedAt") => non_neg_integer(),
+        optional("Details") => response_details(),
+        optional("Errors") => list(job_error()()),
+        optional("Id") => String.t(),
+        optional("State") => String.t(),
+        optional("Type") => String.t(),
+        optional("UpdatedAt") => non_neg_integer()
+      }
+
+  """
+  @type create_job_response() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -772,125 +287,97 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      update_event_action_request() :: %{
-        optional("Action") => action()
+      l_f_tag() :: %{
+        "TagKey" => [String.t()],
+        "TagValues" => list([String.t()]())
       }
 
   """
-  @type update_event_action_request() :: %{String.t() => any()}
+  @type l_f_tag() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      request_details() :: %{
-        "CreateS3DataAccessFromS3Bucket" => create_s3_data_access_from_s3_bucket_request_details(),
-        "ExportAssetToSignedUrl" => export_asset_to_signed_url_request_details(),
-        "ExportAssetsToS3" => export_assets_to_s3_request_details(),
-        "ExportRevisionsToS3" => export_revisions_to_s3_request_details(),
-        "ImportAssetFromApiGatewayApi" => import_asset_from_api_gateway_api_request_details(),
-        "ImportAssetFromSignedUrl" => import_asset_from_signed_url_request_details(),
-        "ImportAssetsFromLakeFormationTagPolicy" => import_assets_from_lake_formation_tag_policy_request_details(),
-        "ImportAssetsFromRedshiftDataShares" => import_assets_from_redshift_data_shares_request_details(),
-        "ImportAssetsFromS3" => import_assets_from_s3_request_details()
+      list_received_data_grants_response() :: %{
+        "DataGrantSummaries" => list(received_data_grant_summaries_entry()()),
+        "NextToken" => String.t()
       }
 
   """
-  @type request_details() :: %{String.t() => any()}
+  @type list_received_data_grants_response() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      list_received_data_grants_request() :: %{
-        optional("AcceptanceState") => list(String.t()()),
+      redshift_data_share_asset_source_entry() :: %{
+        "DataShareArn" => String.t()
+      }
+
+  """
+  @type redshift_data_share_asset_source_entry() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      create_event_action_request() :: %{
+        required("Action") => action(),
+        required("Event") => event()
+      }
+
+  """
+  @type create_event_action_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      send_data_set_notification_request() :: %{
+        optional("ClientToken") => String.t(),
+        optional("Comment") => String.t(),
+        optional("Details") => notification_details(),
+        optional("Scope") => scope_details(),
+        required("Type") => String.t()
+      }
+
+  """
+  @type send_data_set_notification_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      get_revision_request() :: %{}
+
+  """
+  @type get_revision_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      import_asset_from_signed_url_job_error_details() :: %{
+        "AssetName" => String.t()
+      }
+
+  """
+  @type import_asset_from_signed_url_job_error_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      list_jobs_request() :: %{
+        optional("DataSetId") => String.t(),
         optional("MaxResults") => integer(),
-        optional("NextToken") => String.t()
+        optional("NextToken") => String.t(),
+        optional("RevisionId") => String.t()
       }
 
   """
-  @type list_received_data_grants_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      export_assets_to_s3_response_details() :: %{
-        "AssetDestinations" => list(asset_destination_entry()()),
-        "DataSetId" => String.t(),
-        "Encryption" => export_server_side_encryption(),
-        "RevisionId" => String.t()
-      }
-
-  """
-  @type export_assets_to_s3_response_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      revision_entry() :: %{
-        "Arn" => String.t(),
-        "Comment" => String.t(),
-        "CreatedAt" => non_neg_integer(),
-        "DataSetId" => String.t(),
-        "Finalized" => boolean(),
-        "Id" => String.t(),
-        "RevocationComment" => String.t(),
-        "Revoked" => boolean(),
-        "RevokedAt" => non_neg_integer(),
-        "SourceId" => String.t(),
-        "UpdatedAt" => non_neg_integer()
-      }
-
-  """
-  @type revision_entry() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      resource_not_found_exception() :: %{
-        "Message" => String.t(),
-        "ResourceId" => String.t(),
-        "ResourceType" => String.t()
-      }
-
-  """
-  @type resource_not_found_exception() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      revision_destination_entry() :: %{
-        "Bucket" => String.t(),
-        "KeyPattern" => String.t(),
-        "RevisionId" => String.t()
-      }
-
-  """
-  @type revision_destination_entry() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      update_data_set_response() :: %{
-        optional("Arn") => String.t(),
-        optional("AssetType") => String.t(),
-        optional("CreatedAt") => non_neg_integer(),
-        optional("Description") => String.t(),
-        optional("Id") => String.t(),
-        optional("Name") => String.t(),
-        optional("Origin") => String.t(),
-        optional("OriginDetails") => origin_details(),
-        optional("SourceId") => String.t(),
-        optional("UpdatedAt") => non_neg_integer()
-      }
-
-  """
-  @type update_data_set_response() :: %{String.t() => any()}
+  @type list_jobs_request() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -921,90 +408,67 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      schema_change_details() :: %{
+      start_job_response() :: %{}
+
+  """
+  @type start_job_response() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      redshift_data_share_asset() :: %{
+        "Arn" => String.t()
+      }
+
+  """
+  @type redshift_data_share_asset() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      list_data_sets_request() :: %{
+        optional("MaxResults") => integer(),
+        optional("NextToken") => String.t(),
+        optional("Origin") => String.t()
+      }
+
+  """
+  @type list_data_sets_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      notification_details() :: %{
+        "DataUpdate" => data_update_request_details(),
+        "Deprecation" => deprecation_request_details(),
+        "SchemaChange" => schema_change_request_details()
+      }
+
+  """
+  @type notification_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      data_set_entry() :: %{
+        "Arn" => String.t(),
+        "AssetType" => String.t(),
+        "CreatedAt" => non_neg_integer(),
         "Description" => String.t(),
+        "Id" => String.t(),
         "Name" => String.t(),
-        "Type" => String.t()
+        "Origin" => String.t(),
+        "OriginDetails" => origin_details(),
+        "SourceId" => String.t(),
+        "UpdatedAt" => non_neg_integer()
       }
 
   """
-  @type schema_change_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      tag_resource_request() :: %{
-        required("Tags") => map()
-      }
-
-  """
-  @type tag_resource_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      export_asset_to_signed_url_response_details() :: %{
-        "AssetId" => String.t(),
-        "DataSetId" => String.t(),
-        "RevisionId" => String.t(),
-        "SignedUrl" => String.t(),
-        "SignedUrlExpiresAt" => non_neg_integer()
-      }
-
-  """
-  @type export_asset_to_signed_url_response_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      start_job_request() :: %{}
-
-  """
-  @type start_job_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      import_assets_from_s3_request_details() :: %{
-        "AssetSources" => list(asset_source_entry()()),
-        "DataSetId" => String.t(),
-        "RevisionId" => String.t()
-      }
-
-  """
-  @type import_assets_from_s3_request_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      import_assets_from_redshift_data_shares_response_details() :: %{
-        "AssetSources" => list(redshift_data_share_asset_source_entry()()),
-        "DataSetId" => String.t(),
-        "RevisionId" => String.t()
-      }
-
-  """
-  @type import_assets_from_redshift_data_shares_response_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      asset_details() :: %{
-        "ApiGatewayApiAsset" => api_gateway_api_asset(),
-        "LakeFormationDataPermissionAsset" => lake_formation_data_permission_asset(),
-        "RedshiftDataShareAsset" => redshift_data_share_asset(),
-        "S3DataAccessAsset" => s3_data_access_asset(),
-        "S3SnapshotAsset" => s3_snapshot_asset()
-      }
-
-  """
-  @type asset_details() :: %{String.t() => any()}
+  @type data_set_entry() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1022,221 +486,143 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      get_job_request() :: %{}
-
-  """
-  @type get_job_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      s3_snapshot_asset() :: %{
-        "Size" => float()
+      create_job_request() :: %{
+        required("Details") => request_details(),
+        required("Type") => String.t()
       }
 
   """
-  @type s3_snapshot_asset() :: %{String.t() => any()}
+  @type create_job_request() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      export_revisions_to_s3_response_details() :: %{
+      untag_resource_request() :: %{
+        required("TagKeys") => list(String.t()())
+      }
+
+  """
+  @type untag_resource_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      database_l_f_tag_policy_and_permissions() :: %{
+        "Expression" => list(l_f_tag()()),
+        "Permissions" => list(String.t()())
+      }
+
+  """
+  @type database_l_f_tag_policy_and_permissions() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      import_asset_from_api_gateway_api_request_details() :: %{
+        "ApiDescription" => String.t(),
+        "ApiId" => String.t(),
+        "ApiKey" => String.t(),
+        "ApiName" => String.t(),
+        "ApiSpecificationMd5Hash" => String.t(),
         "DataSetId" => String.t(),
-        "Encryption" => export_server_side_encryption(),
-        "EventActionArn" => String.t(),
-        "RevisionDestinations" => list(revision_destination_entry()())
+        "ProtocolType" => String.t(),
+        "RevisionId" => String.t(),
+        "Stage" => String.t()
       }
 
   """
-  @type export_revisions_to_s3_response_details() :: %{String.t() => any()}
+  @type import_asset_from_api_gateway_api_request_details() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      asset_source_entry() :: %{
-        "Bucket" => String.t(),
-        "Key" => String.t()
+      kms_key_to_grant() :: %{
+        "KmsKeyArn" => String.t()
       }
 
   """
-  @type asset_source_entry() :: %{String.t() => any()}
+  @type kms_key_to_grant() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      import_asset_from_signed_url_request_details() :: %{
-        "AssetName" => String.t(),
-        "DataSetId" => String.t(),
-        "Md5Hash" => String.t(),
-        "RevisionId" => String.t()
+      send_api_asset_response() :: %{
+        optional("Body") => String.t(),
+        optional("ResponseHeaders") => map()
       }
 
   """
-  @type import_asset_from_signed_url_request_details() :: %{String.t() => any()}
+  @type send_api_asset_response() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      get_job_response() :: %{
+      export_server_side_encryption() :: %{
+        "KmsKeyArn" => String.t(),
+        "Type" => String.t()
+      }
+
+  """
+  @type export_server_side_encryption() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      lake_formation_tag_policy_details() :: %{
+        "Database" => String.t(),
+        "Table" => String.t()
+      }
+
+  """
+  @type lake_formation_tag_policy_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      update_data_set_response() :: %{
         optional("Arn") => String.t(),
+        optional("AssetType") => String.t(),
         optional("CreatedAt") => non_neg_integer(),
-        optional("Details") => response_details(),
-        optional("Errors") => list(job_error()()),
+        optional("Description") => String.t(),
         optional("Id") => String.t(),
-        optional("State") => String.t(),
-        optional("Type") => String.t(),
-        optional("UpdatedAt") => non_neg_integer()
-      }
-
-  """
-  @type get_job_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      get_revision_response() :: %{
-        optional("Arn") => String.t(),
-        optional("Comment") => String.t(),
-        optional("CreatedAt") => non_neg_integer(),
-        optional("DataSetId") => String.t(),
-        optional("Finalized") => boolean(),
-        optional("Id") => String.t(),
-        optional("RevocationComment") => String.t(),
-        optional("Revoked") => boolean(),
-        optional("RevokedAt") => non_neg_integer(),
+        optional("Name") => String.t(),
+        optional("Origin") => String.t(),
+        optional("OriginDetails") => origin_details(),
         optional("SourceId") => String.t(),
-        optional("Tags") => map(),
         optional("UpdatedAt") => non_neg_integer()
       }
 
   """
-  @type get_revision_response() :: %{String.t() => any()}
+  @type update_data_set_response() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      list_data_set_revisions_response() :: %{
-        optional("NextToken") => String.t(),
-        optional("Revisions") => list(revision_entry()())
-      }
-
-  """
-  @type list_data_set_revisions_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      asset_entry() :: %{
+      revision_entry() :: %{
         "Arn" => String.t(),
-        "AssetDetails" => asset_details(),
-        "AssetType" => String.t(),
+        "Comment" => String.t(),
         "CreatedAt" => non_neg_integer(),
         "DataSetId" => String.t(),
+        "Finalized" => boolean(),
         "Id" => String.t(),
-        "Name" => String.t(),
-        "RevisionId" => String.t(),
+        "RevocationComment" => String.t(),
+        "Revoked" => boolean(),
+        "RevokedAt" => non_neg_integer(),
         "SourceId" => String.t(),
         "UpdatedAt" => non_neg_integer()
       }
 
   """
-  @type asset_entry() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      data_grant_summary_entry() :: %{
-        "AcceptanceState" => String.t(),
-        "AcceptedAt" => non_neg_integer(),
-        "Arn" => String.t(),
-        "CreatedAt" => non_neg_integer(),
-        "DataSetId" => String.t(),
-        "EndsAt" => non_neg_integer(),
-        "Id" => String.t(),
-        "Name" => String.t(),
-        "ReceiverPrincipal" => String.t(),
-        "SenderPrincipal" => String.t(),
-        "SourceDataSetId" => String.t(),
-        "UpdatedAt" => non_neg_integer()
-      }
-
-  """
-  @type data_grant_summary_entry() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      redshift_data_share_asset() :: %{
-        "Arn" => String.t()
-      }
-
-  """
-  @type redshift_data_share_asset() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      event_action_entry() :: %{
-        "Action" => action(),
-        "Arn" => String.t(),
-        "CreatedAt" => non_neg_integer(),
-        "Event" => event(),
-        "Id" => String.t(),
-        "UpdatedAt" => non_neg_integer()
-      }
-
-  """
-  @type event_action_entry() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      redshift_data_share_asset_source_entry() :: %{
-        "DataShareArn" => String.t()
-      }
-
-  """
-  @type redshift_data_share_asset_source_entry() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      update_event_action_response() :: %{
-        optional("Action") => action(),
-        optional("Arn") => String.t(),
-        optional("CreatedAt") => non_neg_integer(),
-        optional("Event") => event(),
-        optional("Id") => String.t(),
-        optional("UpdatedAt") => non_neg_integer()
-      }
-
-  """
-  @type update_event_action_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      create_event_action_request() :: %{
-        required("Action") => action(),
-        required("Event") => event()
-      }
-
-  """
-  @type create_event_action_request() :: %{String.t() => any()}
+  @type revision_entry() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1262,39 +648,80 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      conflict_exception() :: %{
-        "Message" => String.t(),
-        "ResourceId" => String.t(),
-        "ResourceType" => String.t()
+      schema_change_details() :: %{
+        "Description" => String.t(),
+        "Name" => String.t(),
+        "Type" => String.t()
       }
 
   """
-  @type conflict_exception() :: %{String.t() => any()}
+  @type schema_change_details() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      scope_details() :: %{
-        "LakeFormationTagPolicies" => list(lake_formation_tag_policy_details()()),
-        "RedshiftDataShares" => list(redshift_data_share_details()()),
-        "S3DataAccesses" => list(s3_data_access_details()())
+      create_data_grant_request() :: %{
+        optional("Description") => String.t(),
+        optional("EndsAt") => non_neg_integer(),
+        optional("Tags") => map(),
+        required("GrantDistributionScope") => String.t(),
+        required("Name") => String.t(),
+        required("ReceiverPrincipal") => String.t(),
+        required("SourceDataSetId") => String.t()
       }
 
   """
-  @type scope_details() :: %{String.t() => any()}
+  @type create_data_grant_request() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      l_f_resource_details() :: %{
-        "Database" => database_l_f_tag_policy(),
-        "Table" => table_l_f_tag_policy()
+      get_received_data_grant_request() :: %{}
+
+  """
+  @type get_received_data_grant_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      list_data_set_revisions_response() :: %{
+        optional("NextToken") => String.t(),
+        optional("Revisions") => list(revision_entry()())
       }
 
   """
-  @type l_f_resource_details() :: %{String.t() => any()}
+  @type list_data_set_revisions_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      export_asset_to_signed_url_response_details() :: %{
+        "AssetId" => String.t(),
+        "DataSetId" => String.t(),
+        "RevisionId" => String.t(),
+        "SignedUrl" => String.t(),
+        "SignedUrlExpiresAt" => non_neg_integer()
+      }
+
+  """
+  @type export_asset_to_signed_url_response_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      export_asset_to_signed_url_request_details() :: %{
+        "AssetId" => String.t(),
+        "DataSetId" => String.t(),
+        "RevisionId" => String.t()
+      }
+
+  """
+  @type export_asset_to_signed_url_request_details() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1312,112 +739,69 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      list_data_sets_response() :: %{
-        optional("DataSets") => list(data_set_entry()()),
-        optional("NextToken") => String.t()
+      conflict_exception() :: %{
+        "Message" => String.t(),
+        "ResourceId" => String.t(),
+        "ResourceType" => String.t()
       }
 
   """
-  @type list_data_sets_response() :: %{String.t() => any()}
+  @type conflict_exception() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      list_data_set_revisions_request() :: %{
-        optional("MaxResults") => integer(),
-        optional("NextToken") => String.t()
+      resource_not_found_exception() :: %{
+        "Message" => String.t(),
+        "ResourceId" => String.t(),
+        "ResourceType" => String.t()
       }
 
   """
-  @type list_data_set_revisions_request() :: %{String.t() => any()}
+  @type resource_not_found_exception() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      untag_resource_request() :: %{
-        required("TagKeys") => list(String.t()())
-      }
-
-  """
-  @type untag_resource_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      revoke_revision_request() :: %{
-        required("RevocationComment") => String.t()
-      }
-
-  """
-  @type revoke_revision_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      get_asset_response() :: %{
-        optional("Arn") => String.t(),
-        optional("AssetDetails") => asset_details(),
-        optional("AssetType") => String.t(),
-        optional("CreatedAt") => non_neg_integer(),
-        optional("DataSetId") => String.t(),
-        optional("Id") => String.t(),
-        optional("Name") => String.t(),
-        optional("RevisionId") => String.t(),
-        optional("SourceId") => String.t(),
-        optional("UpdatedAt") => non_neg_integer()
-      }
-
-  """
-  @type get_asset_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      import_asset_from_api_gateway_api_response_details() :: %{
-        "ApiDescription" => String.t(),
-        "ApiId" => String.t(),
-        "ApiKey" => String.t(),
-        "ApiName" => String.t(),
-        "ApiSpecificationMd5Hash" => String.t(),
-        "ApiSpecificationUploadUrl" => String.t(),
-        "ApiSpecificationUploadUrlExpiresAt" => non_neg_integer(),
+      import_assets_from_lake_formation_tag_policy_response_details() :: %{
+        "CatalogId" => String.t(),
         "DataSetId" => String.t(),
-        "ProtocolType" => String.t(),
+        "Database" => database_l_f_tag_policy_and_permissions(),
         "RevisionId" => String.t(),
-        "Stage" => String.t()
+        "RoleArn" => String.t(),
+        "Table" => table_l_f_tag_policy_and_permissions()
       }
 
   """
-  @type import_asset_from_api_gateway_api_response_details() :: %{String.t() => any()}
+  @type import_assets_from_lake_formation_tag_policy_response_details() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      update_asset_request() :: %{
-        required("Name") => String.t()
+      table_l_f_tag_policy_and_permissions() :: %{
+        "Expression" => list(l_f_tag()()),
+        "Permissions" => list(String.t()())
       }
 
   """
-  @type update_asset_request() :: %{String.t() => any()}
+  @type table_l_f_tag_policy_and_permissions() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      service_limit_exceeded_exception() :: %{
-        "LimitName" => String.t(),
-        "LimitValue" => float(),
-        "Message" => String.t()
+      export_assets_to_s3_request_details() :: %{
+        "AssetDestinations" => list(asset_destination_entry()()),
+        "DataSetId" => String.t(),
+        "Encryption" => export_server_side_encryption(),
+        "RevisionId" => String.t()
       }
 
   """
-  @type service_limit_exceeded_exception() :: %{String.t() => any()}
+  @type export_assets_to_s3_request_details() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1446,78 +830,53 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      cancel_job_request() :: %{}
-
-  """
-  @type cancel_job_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      send_api_asset_response() :: %{
-        optional("Body") => String.t(),
-        optional("ResponseHeaders") => map()
+      create_data_set_request() :: %{
+        optional("Tags") => map(),
+        required("AssetType") => String.t(),
+        required("Description") => String.t(),
+        required("Name") => String.t()
       }
 
   """
-  @type send_api_asset_response() :: %{String.t() => any()}
+  @type create_data_set_request() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      list_event_actions_request() :: %{
-        optional("EventSourceId") => String.t(),
-        optional("MaxResults") => integer(),
+      export_assets_to_s3_response_details() :: %{
+        "AssetDestinations" => list(asset_destination_entry()()),
+        "DataSetId" => String.t(),
+        "Encryption" => export_server_side_encryption(),
+        "RevisionId" => String.t()
+      }
+
+  """
+  @type export_assets_to_s3_response_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      list_revision_assets_response() :: %{
+        optional("Assets") => list(asset_entry()()),
         optional("NextToken") => String.t()
       }
 
   """
-  @type list_event_actions_request() :: %{String.t() => any()}
+  @type list_revision_assets_response() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      delete_data_grant_request() :: %{}
-
-  """
-  @type delete_data_grant_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      table_l_f_tag_policy() :: %{
-        "Expression" => list(l_f_tag()())
+      details() :: %{
+        "ImportAssetFromSignedUrlJobErrorDetails" => import_asset_from_signed_url_job_error_details(),
+        "ImportAssetsFromS3JobErrorDetails" => list(asset_source_entry()())
       }
 
   """
-  @type table_l_f_tag_policy() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      import_asset_from_signed_url_job_error_details() :: %{
-        "AssetName" => String.t()
-      }
-
-  """
-  @type import_asset_from_signed_url_job_error_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      create_job_request() :: %{
-        required("Details") => request_details(),
-        required("Type") => String.t()
-      }
-
-  """
-  @type create_job_request() :: %{String.t() => any()}
+  @type details() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1539,15 +898,92 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      export_assets_to_s3_request_details() :: %{
-        "AssetDestinations" => list(asset_destination_entry()()),
+      get_event_action_request() :: %{}
+
+  """
+  @type get_event_action_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      create_s3_data_access_from_s3_bucket_request_details() :: %{
+        "AssetSource" => s3_data_access_asset_source_entry(),
         "DataSetId" => String.t(),
-        "Encryption" => export_server_side_encryption(),
         "RevisionId" => String.t()
       }
 
   """
-  @type export_assets_to_s3_request_details() :: %{String.t() => any()}
+  @type create_s3_data_access_from_s3_bucket_request_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      delete_event_action_request() :: %{}
+
+  """
+  @type delete_event_action_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      schema_change_request_details() :: %{
+        "Changes" => list(schema_change_details()()),
+        "SchemaChangeAt" => non_neg_integer()
+      }
+
+  """
+  @type schema_change_request_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      create_data_set_response() :: %{
+        optional("Arn") => String.t(),
+        optional("AssetType") => String.t(),
+        optional("CreatedAt") => non_neg_integer(),
+        optional("Description") => String.t(),
+        optional("Id") => String.t(),
+        optional("Name") => String.t(),
+        optional("Origin") => String.t(),
+        optional("OriginDetails") => origin_details(),
+        optional("SourceId") => String.t(),
+        optional("Tags") => map(),
+        optional("UpdatedAt") => non_neg_integer()
+      }
+
+  """
+  @type create_data_set_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      database_l_f_tag_policy() :: %{
+        "Expression" => list(l_f_tag()())
+      }
+
+  """
+  @type database_l_f_tag_policy() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      s3_data_access_asset() :: %{
+        "Bucket" => String.t(),
+        "KeyPrefixes" => list(String.t()()),
+        "Keys" => list(String.t()()),
+        "KmsKeysToGrant" => list(kms_key_to_grant()()),
+        "S3AccessPointAlias" => String.t(),
+        "S3AccessPointArn" => String.t()
+      }
+
+  """
+  @type s3_data_access_asset() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1564,14 +1000,113 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      asset_destination_entry() :: %{
-        "AssetId" => String.t(),
-        "Bucket" => String.t(),
-        "Key" => String.t()
+      revoke_revision_request() :: %{
+        required("RevocationComment") => String.t()
       }
 
   """
-  @type asset_destination_entry() :: %{String.t() => any()}
+  @type revoke_revision_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      table_l_f_tag_policy() :: %{
+        "Expression" => list(l_f_tag()())
+      }
+
+  """
+  @type table_l_f_tag_policy() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      update_event_action_request() :: %{
+        optional("Action") => action()
+      }
+
+  """
+  @type update_event_action_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      delete_revision_request() :: %{}
+
+  """
+  @type delete_revision_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      lake_formation_data_permission_details() :: %{
+        "LFTagPolicy" => l_f_tag_policy_details()
+      }
+
+  """
+  @type lake_formation_data_permission_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      get_asset_response() :: %{
+        optional("Arn") => String.t(),
+        optional("AssetDetails") => asset_details(),
+        optional("AssetType") => String.t(),
+        optional("CreatedAt") => non_neg_integer(),
+        optional("DataSetId") => String.t(),
+        optional("Id") => String.t(),
+        optional("Name") => String.t(),
+        optional("RevisionId") => String.t(),
+        optional("SourceId") => String.t(),
+        optional("UpdatedAt") => non_neg_integer()
+      }
+
+  """
+  @type get_asset_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      start_job_request() :: %{}
+
+  """
+  @type start_job_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      update_event_action_response() :: %{
+        optional("Action") => action(),
+        optional("Arn") => String.t(),
+        optional("CreatedAt") => non_neg_integer(),
+        optional("Event") => event(),
+        optional("Id") => String.t(),
+        optional("UpdatedAt") => non_neg_integer()
+      }
+
+  """
+  @type update_event_action_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      s3_data_access_asset_source_entry() :: %{
+        "Bucket" => String.t(),
+        "KeyPrefixes" => list(String.t()()),
+        "Keys" => list(String.t()()),
+        "KmsKeysToGrant" => list(kms_key_to_grant()())
+      }
+
+  """
+  @type s3_data_access_asset_source_entry() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1590,22 +1125,12 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      update_revision_response() :: %{
-        optional("Arn") => String.t(),
-        optional("Comment") => String.t(),
-        optional("CreatedAt") => non_neg_integer(),
-        optional("DataSetId") => String.t(),
-        optional("Finalized") => boolean(),
-        optional("Id") => String.t(),
-        optional("RevocationComment") => String.t(),
-        optional("Revoked") => boolean(),
-        optional("RevokedAt") => non_neg_integer(),
-        optional("SourceId") => String.t(),
-        optional("UpdatedAt") => non_neg_integer()
+      data_update_request_details() :: %{
+        "DataUpdatedAt" => non_neg_integer()
       }
 
   """
-  @type update_revision_response() :: %{String.t() => any()}
+  @type data_update_request_details() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1630,88 +1155,134 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      revision_published() :: %{
-        "DataSetId" => String.t()
+      origin_details() :: %{
+        "DataGrantId" => String.t(),
+        "ProductId" => String.t()
       }
 
   """
-  @type revision_published() :: %{String.t() => any()}
+  @type origin_details() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      list_revision_assets_response() :: %{
-        optional("Assets") => list(asset_entry()()),
-        optional("NextToken") => String.t()
+      internal_server_exception() :: %{
+        "Message" => String.t()
       }
 
   """
-  @type list_revision_assets_response() :: %{String.t() => any()}
+  @type internal_server_exception() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      get_received_data_grant_request() :: %{}
+      send_data_set_notification_response() :: %{}
 
   """
-  @type get_received_data_grant_request() :: %{}
+  @type send_data_set_notification_response() :: %{}
 
   @typedoc """
 
   ## Example:
 
-      create_job_response() :: %{
+      delete_data_set_request() :: %{}
+
+  """
+  @type delete_data_set_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      l_f_resource_details() :: %{
+        "Database" => database_l_f_tag_policy(),
+        "Table" => table_l_f_tag_policy()
+      }
+
+  """
+  @type l_f_resource_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      create_revision_response() :: %{
         optional("Arn") => String.t(),
+        optional("Comment") => String.t(),
         optional("CreatedAt") => non_neg_integer(),
-        optional("Details") => response_details(),
-        optional("Errors") => list(job_error()()),
+        optional("DataSetId") => String.t(),
+        optional("Finalized") => boolean(),
         optional("Id") => String.t(),
-        optional("State") => String.t(),
-        optional("Type") => String.t(),
+        optional("RevocationComment") => String.t(),
+        optional("Revoked") => boolean(),
+        optional("RevokedAt") => non_neg_integer(),
+        optional("SourceId") => String.t(),
+        optional("Tags") => map(),
         optional("UpdatedAt") => non_neg_integer()
       }
 
   """
-  @type create_job_response() :: %{String.t() => any()}
+  @type create_revision_response() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      database_l_f_tag_policy() :: %{
-        "Expression" => list(l_f_tag()())
+      asset_entry() :: %{
+        "Arn" => String.t(),
+        "AssetDetails" => asset_details(),
+        "AssetType" => String.t(),
+        "CreatedAt" => non_neg_integer(),
+        "DataSetId" => String.t(),
+        "Id" => String.t(),
+        "Name" => String.t(),
+        "RevisionId" => String.t(),
+        "SourceId" => String.t(),
+        "UpdatedAt" => non_neg_integer()
       }
 
   """
-  @type database_l_f_tag_policy() :: %{String.t() => any()}
+  @type asset_entry() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      create_data_grant_request() :: %{
-        optional("Description") => String.t(),
-        optional("EndsAt") => non_neg_integer(),
-        optional("Tags") => map(),
-        required("GrantDistributionScope") => String.t(),
-        required("Name") => String.t(),
-        required("ReceiverPrincipal") => String.t(),
-        required("SourceDataSetId") => String.t()
+      s3_data_access_details() :: %{
+        "KeyPrefixes" => list(String.t()()),
+        "Keys" => list(String.t()())
       }
 
   """
-  @type create_data_grant_request() :: %{String.t() => any()}
+  @type s3_data_access_details() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      get_revision_request() :: %{}
+      asset_details() :: %{
+        "ApiGatewayApiAsset" => api_gateway_api_asset(),
+        "LakeFormationDataPermissionAsset" => lake_formation_data_permission_asset(),
+        "RedshiftDataShareAsset" => redshift_data_share_asset(),
+        "S3DataAccessAsset" => s3_data_access_asset(),
+        "S3SnapshotAsset" => s3_snapshot_asset()
+      }
 
   """
-  @type get_revision_request() :: %{}
+  @type asset_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      event() :: %{
+        "RevisionPublished" => revision_published()
+      }
+
+  """
+  @type event() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1723,6 +1294,452 @@ defmodule AWS.DataExchange do
 
   """
   @type action() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      import_assets_from_s3_response_details() :: %{
+        "AssetSources" => list(asset_source_entry()()),
+        "DataSetId" => String.t(),
+        "RevisionId" => String.t()
+      }
+
+  """
+  @type import_assets_from_s3_response_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      delete_asset_request() :: %{}
+
+  """
+  @type delete_asset_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      import_assets_from_redshift_data_shares_request_details() :: %{
+        "AssetSources" => list(redshift_data_share_asset_source_entry()()),
+        "DataSetId" => String.t(),
+        "RevisionId" => String.t()
+      }
+
+  """
+  @type import_assets_from_redshift_data_shares_request_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      revision_published() :: %{
+        "DataSetId" => String.t()
+      }
+
+  """
+  @type revision_published() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      access_denied_exception() :: %{
+        "Message" => String.t()
+      }
+
+  """
+  @type access_denied_exception() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      update_asset_request() :: %{
+        required("Name") => String.t()
+      }
+
+  """
+  @type update_asset_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      import_assets_from_redshift_data_shares_response_details() :: %{
+        "AssetSources" => list(redshift_data_share_asset_source_entry()()),
+        "DataSetId" => String.t(),
+        "RevisionId" => String.t()
+      }
+
+  """
+  @type import_assets_from_redshift_data_shares_response_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      auto_export_revision_destination_entry() :: %{
+        "Bucket" => String.t(),
+        "KeyPattern" => String.t()
+      }
+
+  """
+  @type auto_export_revision_destination_entry() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      asset_source_entry() :: %{
+        "Bucket" => String.t(),
+        "Key" => String.t()
+      }
+
+  """
+  @type asset_source_entry() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      data_grant_summary_entry() :: %{
+        "AcceptanceState" => String.t(),
+        "AcceptedAt" => non_neg_integer(),
+        "Arn" => String.t(),
+        "CreatedAt" => non_neg_integer(),
+        "DataSetId" => String.t(),
+        "EndsAt" => non_neg_integer(),
+        "Id" => String.t(),
+        "Name" => String.t(),
+        "ReceiverPrincipal" => String.t(),
+        "SenderPrincipal" => String.t(),
+        "SourceDataSetId" => String.t(),
+        "UpdatedAt" => non_neg_integer()
+      }
+
+  """
+  @type data_grant_summary_entry() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      get_job_response() :: %{
+        optional("Arn") => String.t(),
+        optional("CreatedAt") => non_neg_integer(),
+        optional("Details") => response_details(),
+        optional("Errors") => list(job_error()()),
+        optional("Id") => String.t(),
+        optional("State") => String.t(),
+        optional("Type") => String.t(),
+        optional("UpdatedAt") => non_neg_integer()
+      }
+
+  """
+  @type get_job_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      get_data_grant_request() :: %{}
+
+  """
+  @type get_data_grant_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      validation_exception() :: %{
+        "ExceptionCause" => String.t(),
+        "Message" => String.t()
+      }
+
+  """
+  @type validation_exception() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      list_tags_for_resource_request() :: %{}
+
+  """
+  @type list_tags_for_resource_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      auto_export_revision_to_s3_request_details() :: %{
+        "Encryption" => export_server_side_encryption(),
+        "RevisionDestination" => auto_export_revision_destination_entry()
+      }
+
+  """
+  @type auto_export_revision_to_s3_request_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      l_f_tag_policy_details() :: %{
+        "CatalogId" => String.t(),
+        "ResourceDetails" => l_f_resource_details(),
+        "ResourceType" => String.t()
+      }
+
+  """
+  @type l_f_tag_policy_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      deprecation_request_details() :: %{
+        "DeprecationAt" => non_neg_integer()
+      }
+
+  """
+  @type deprecation_request_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      service_limit_exceeded_exception() :: %{
+        "LimitName" => String.t(),
+        "LimitValue" => float(),
+        "Message" => String.t()
+      }
+
+  """
+  @type service_limit_exceeded_exception() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      get_asset_request() :: %{}
+
+  """
+  @type get_asset_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      list_data_grants_request() :: %{
+        optional("MaxResults") => integer(),
+        optional("NextToken") => String.t()
+      }
+
+  """
+  @type list_data_grants_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      get_job_request() :: %{}
+
+  """
+  @type get_job_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      throttling_exception() :: %{
+        "Message" => String.t()
+      }
+
+  """
+  @type throttling_exception() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      delete_data_grant_request() :: %{}
+
+  """
+  @type delete_data_grant_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      send_api_asset_request() :: %{
+        optional("Body") => String.t(),
+        optional("Method") => String.t(),
+        optional("Path") => String.t(),
+        optional("QueryStringParameters") => map(),
+        optional("RequestHeaders") => map(),
+        required("AssetId") => String.t(),
+        required("DataSetId") => String.t(),
+        required("RevisionId") => String.t()
+      }
+
+  """
+  @type send_api_asset_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      get_data_set_request() :: %{}
+
+  """
+  @type get_data_set_request() :: %{}
+
+  @typedoc """
+
+  ## Example:
+
+      create_revision_request() :: %{
+        optional("Comment") => String.t(),
+        optional("Tags") => map()
+      }
+
+  """
+  @type create_revision_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      import_assets_from_s3_request_details() :: %{
+        "AssetSources" => list(asset_source_entry()()),
+        "DataSetId" => String.t(),
+        "RevisionId" => String.t()
+      }
+
+  """
+  @type import_assets_from_s3_request_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      lake_formation_data_permission_asset() :: %{
+        "LakeFormationDataPermissionDetails" => lake_formation_data_permission_details(),
+        "LakeFormationDataPermissionType" => String.t(),
+        "Permissions" => list(String.t()()),
+        "RoleArn" => String.t()
+      }
+
+  """
+  @type lake_formation_data_permission_asset() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      list_event_actions_request() :: %{
+        optional("EventSourceId") => String.t(),
+        optional("MaxResults") => integer(),
+        optional("NextToken") => String.t()
+      }
+
+  """
+  @type list_event_actions_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      list_data_grants_response() :: %{
+        "DataGrantSummaries" => list(data_grant_summary_entry()()),
+        "NextToken" => String.t()
+      }
+
+  """
+  @type list_data_grants_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      list_data_set_revisions_request() :: %{
+        optional("MaxResults") => integer(),
+        optional("NextToken") => String.t()
+      }
+
+  """
+  @type list_data_set_revisions_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      asset_destination_entry() :: %{
+        "AssetId" => String.t(),
+        "Bucket" => String.t(),
+        "Key" => String.t()
+      }
+
+  """
+  @type asset_destination_entry() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      get_data_grant_response() :: %{
+        "AcceptanceState" => String.t(),
+        "AcceptedAt" => non_neg_integer(),
+        "Arn" => String.t(),
+        "CreatedAt" => non_neg_integer(),
+        "DataSetId" => String.t(),
+        "Description" => String.t(),
+        "EndsAt" => non_neg_integer(),
+        "GrantDistributionScope" => String.t(),
+        "Id" => String.t(),
+        "Name" => String.t(),
+        "ReceiverPrincipal" => String.t(),
+        "SenderPrincipal" => String.t(),
+        "SourceDataSetId" => String.t(),
+        "Tags" => map(),
+        "UpdatedAt" => non_neg_integer()
+      }
+
+  """
+  @type get_data_grant_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      list_event_actions_response() :: %{
+        optional("EventActions") => list(event_action_entry()()),
+        optional("NextToken") => String.t()
+      }
+
+  """
+  @type list_event_actions_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      request_details() :: %{
+        "CreateS3DataAccessFromS3Bucket" => create_s3_data_access_from_s3_bucket_request_details(),
+        "ExportAssetToSignedUrl" => export_asset_to_signed_url_request_details(),
+        "ExportAssetsToS3" => export_assets_to_s3_request_details(),
+        "ExportRevisionsToS3" => export_revisions_to_s3_request_details(),
+        "ImportAssetFromApiGatewayApi" => import_asset_from_api_gateway_api_request_details(),
+        "ImportAssetFromSignedUrl" => import_asset_from_signed_url_request_details(),
+        "ImportAssetsFromLakeFormationTagPolicy" => import_assets_from_lake_formation_tag_policy_request_details(),
+        "ImportAssetsFromRedshiftDataShares" => import_assets_from_redshift_data_shares_request_details(),
+        "ImportAssetsFromS3" => import_assets_from_s3_request_details()
+      }
+
+  """
+  @type request_details() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1746,47 +1763,15 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      event() :: %{
-        "RevisionPublished" => revision_published()
+      import_asset_from_signed_url_request_details() :: %{
+        "AssetName" => String.t(),
+        "DataSetId" => String.t(),
+        "Md5Hash" => String.t(),
+        "RevisionId" => String.t()
       }
 
   """
-  @type event() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      lake_formation_data_permission_details() :: %{
-        "LFTagPolicy" => l_f_tag_policy_details()
-      }
-
-  """
-  @type lake_formation_data_permission_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      l_f_tag() :: %{
-        "TagKey" => [String.t()],
-        "TagValues" => list([String.t()]())
-      }
-
-  """
-  @type l_f_tag() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      origin_details() :: %{
-        "DataGrantId" => String.t(),
-        "ProductId" => String.t()
-      }
-
-  """
-  @type origin_details() :: %{String.t() => any()}
+  @type import_asset_from_signed_url_request_details() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1808,111 +1793,57 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      export_asset_to_signed_url_request_details() :: %{
-        "AssetId" => String.t(),
+      response_details() :: %{
+        "CreateS3DataAccessFromS3Bucket" => create_s3_data_access_from_s3_bucket_response_details(),
+        "ExportAssetToSignedUrl" => export_asset_to_signed_url_response_details(),
+        "ExportAssetsToS3" => export_assets_to_s3_response_details(),
+        "ExportRevisionsToS3" => export_revisions_to_s3_response_details(),
+        "ImportAssetFromApiGatewayApi" => import_asset_from_api_gateway_api_response_details(),
+        "ImportAssetFromSignedUrl" => import_asset_from_signed_url_response_details(),
+        "ImportAssetsFromLakeFormationTagPolicy" => import_assets_from_lake_formation_tag_policy_response_details(),
+        "ImportAssetsFromRedshiftDataShares" => import_assets_from_redshift_data_shares_response_details(),
+        "ImportAssetsFromS3" => import_assets_from_s3_response_details()
+      }
+
+  """
+  @type response_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      import_assets_from_lake_formation_tag_policy_request_details() :: %{
+        "CatalogId" => String.t(),
         "DataSetId" => String.t(),
-        "RevisionId" => String.t()
+        "Database" => database_l_f_tag_policy_and_permissions(),
+        "RevisionId" => String.t(),
+        "RoleArn" => String.t(),
+        "Table" => table_l_f_tag_policy_and_permissions()
       }
 
   """
-  @type export_asset_to_signed_url_request_details() :: %{String.t() => any()}
+  @type import_assets_from_lake_formation_tag_policy_request_details() :: %{String.t() => any()}
 
   @typedoc """
 
   ## Example:
 
-      s3_data_access_asset_source_entry() :: %{
-        "Bucket" => String.t(),
-        "KeyPrefixes" => list(String.t()()),
-        "Keys" => list(String.t()()),
-        "KmsKeysToGrant" => list(kms_key_to_grant()())
+      received_data_grant_summaries_entry() :: %{
+        "AcceptanceState" => String.t(),
+        "AcceptedAt" => non_neg_integer(),
+        "Arn" => String.t(),
+        "CreatedAt" => non_neg_integer(),
+        "DataSetId" => String.t(),
+        "EndsAt" => non_neg_integer(),
+        "Id" => String.t(),
+        "Name" => String.t(),
+        "ReceiverPrincipal" => String.t(),
+        "SenderPrincipal" => String.t(),
+        "UpdatedAt" => non_neg_integer()
       }
 
   """
-  @type s3_data_access_asset_source_entry() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      list_data_grants_response() :: %{
-        "DataGrantSummaries" => list(data_grant_summary_entry()()),
-        "NextToken" => String.t()
-      }
-
-  """
-  @type list_data_grants_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      list_jobs_request() :: %{
-        optional("DataSetId") => String.t(),
-        optional("MaxResults") => integer(),
-        optional("NextToken") => String.t(),
-        optional("RevisionId") => String.t()
-      }
-
-  """
-  @type list_jobs_request() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      lake_formation_tag_policy_details() :: %{
-        "Database" => String.t(),
-        "Table" => String.t()
-      }
-
-  """
-  @type lake_formation_tag_policy_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      list_event_actions_response() :: %{
-        optional("EventActions") => list(event_action_entry()()),
-        optional("NextToken") => String.t()
-      }
-
-  """
-  @type list_event_actions_response() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      schema_change_request_details() :: %{
-        "Changes" => list(schema_change_details()()),
-        "SchemaChangeAt" => non_neg_integer()
-      }
-
-  """
-  @type schema_change_request_details() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      auto_export_revision_destination_entry() :: %{
-        "Bucket" => String.t(),
-        "KeyPattern" => String.t()
-      }
-
-  """
-  @type auto_export_revision_destination_entry() :: %{String.t() => any()}
-
-  @typedoc """
-
-  ## Example:
-
-      list_tags_for_resource_request() :: %{}
-
-  """
-  @type list_tags_for_resource_request() :: %{}
+  @type received_data_grant_summaries_entry() :: %{String.t() => any()}
 
   @typedoc """
 
@@ -1930,273 +1861,342 @@ defmodule AWS.DataExchange do
 
   ## Example:
 
-      get_data_set_request() :: %{}
-
-  """
-  @type get_data_set_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      delete_revision_request() :: %{}
-
-  """
-  @type delete_revision_request() :: %{}
-
-  @typedoc """
-
-  ## Example:
-
-      import_assets_from_lake_formation_tag_policy_response_details() :: %{
-        "CatalogId" => String.t(),
-        "DataSetId" => String.t(),
-        "Database" => database_l_f_tag_policy_and_permissions(),
-        "RevisionId" => String.t(),
-        "RoleArn" => String.t(),
-        "Table" => table_l_f_tag_policy_and_permissions()
+      s3_snapshot_asset() :: %{
+        "Size" => float()
       }
 
   """
-  @type import_assets_from_lake_formation_tag_policy_response_details() :: %{String.t() => any()}
+  @type s3_snapshot_asset() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      export_revisions_to_s3_request_details() :: %{
+        "DataSetId" => String.t(),
+        "Encryption" => export_server_side_encryption(),
+        "RevisionDestinations" => list(revision_destination_entry()())
+      }
+
+  """
+  @type export_revisions_to_s3_request_details() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      revoke_revision_response() :: %{
+        optional("Arn") => String.t(),
+        optional("Comment") => String.t(),
+        optional("CreatedAt") => non_neg_integer(),
+        optional("DataSetId") => String.t(),
+        optional("Finalized") => boolean(),
+        optional("Id") => String.t(),
+        optional("RevocationComment") => String.t(),
+        optional("Revoked") => boolean(),
+        optional("RevokedAt") => non_neg_integer(),
+        optional("SourceId") => String.t(),
+        optional("UpdatedAt") => non_neg_integer()
+      }
+
+  """
+  @type revoke_revision_response() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      job_error() :: %{
+        "Code" => String.t(),
+        "Details" => details(),
+        "LimitName" => String.t(),
+        "LimitValue" => float(),
+        "Message" => String.t(),
+        "ResourceId" => String.t(),
+        "ResourceType" => String.t()
+      }
+
+  """
+  @type job_error() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      update_data_set_request() :: %{
+        optional("Description") => String.t(),
+        optional("Name") => String.t()
+      }
+
+  """
+  @type update_data_set_request() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      revision_destination_entry() :: %{
+        "Bucket" => String.t(),
+        "KeyPattern" => String.t(),
+        "RevisionId" => String.t()
+      }
+
+  """
+  @type revision_destination_entry() :: %{String.t() => any()}
+
+  @typedoc """
+
+  ## Example:
+
+      create_event_action_response() :: %{
+        optional("Action") => action(),
+        optional("Arn") => String.t(),
+        optional("CreatedAt") => non_neg_integer(),
+        optional("Event") => event(),
+        optional("Id") => String.t(),
+        optional("UpdatedAt") => non_neg_integer()
+      }
+
+  """
+  @type create_event_action_response() :: %{String.t() => any()}
 
   @type accept_data_grant_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   @type cancel_job_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   @type create_data_grant_errors() ::
-          service_limit_exceeded_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
+          | service_limit_exceeded_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type create_data_set_errors() ::
-          service_limit_exceeded_exception()
-          | internal_server_exception()
+          throttling_exception()
+          | service_limit_exceeded_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
 
   @type create_event_action_errors() ::
-          service_limit_exceeded_exception()
-          | internal_server_exception()
+          throttling_exception()
+          | service_limit_exceeded_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
 
   @type create_job_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   @type create_revision_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type delete_asset_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   @type delete_data_grant_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type delete_data_set_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   @type delete_event_action_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type delete_revision_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   @type get_asset_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type get_data_grant_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type get_data_set_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type get_event_action_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type get_job_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type get_received_data_grant_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type get_revision_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type list_data_grants_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type list_data_set_revisions_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type list_data_sets_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type list_event_actions_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type list_jobs_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type list_received_data_grants_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type list_revision_assets_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type revoke_revision_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   @type send_api_asset_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type send_data_set_notification_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   @type start_job_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   @type update_asset_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   @type update_data_set_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type update_event_action_errors() ::
-          resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
 
   @type update_revision_errors() ::
-          conflict_exception()
-          | resource_not_found_exception()
-          | internal_server_exception()
+          throttling_exception()
           | validation_exception()
           | access_denied_exception()
-          | throttling_exception()
+          | internal_server_exception()
+          | resource_not_found_exception()
+          | conflict_exception()
 
   def metadata do
     %{
