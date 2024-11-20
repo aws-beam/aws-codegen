@@ -14,6 +14,9 @@ defmodule AWS.CodeGenTest do
     }
   }
 
+  @service_spec_custom_headers_file "test/fixtures/apis_specs/dataexchange.json"
+  @service_spec_custom_headers_generated "test/fixtures/generated/data_exchange.ex"
+
   setup do
     service_specs =
       @service_spec_file
@@ -24,7 +27,7 @@ defmodule AWS.CodeGenTest do
   end
 
   describe "render/2" do
-    defp setup_context(language, specs, docs \\ nil) do
+    defp setup_context(language, specs, _docs \\ nil) do
       spec = %AWS.CodeGen.Spec{
         api: specs,
         module_name: "AWS.CloudTrailData",
@@ -32,6 +35,19 @@ defmodule AWS.CodeGenTest do
         protocol: :rest_json,
         language: :elixir,
         shape_name: "com.amazonaws.cloudtraildata#CloudTrailDataService"
+      }
+
+      RestService.load_context(language, spec, @endpoints_spec)
+    end
+
+    defp setup_dataexchange_context(language, specs, _docs \\ nil) do
+      spec = %AWS.CodeGen.Spec{
+        api: specs,
+        module_name: "AWS.DataExchange",
+        filename: "data_exchange.ex",
+        protocol: :rest_json,
+        language: :elixir,
+        shape_name: "com.amazonaws.dataexchange#DataExchange"
       }
 
       RestService.load_context(language, spec, @endpoints_spec)
@@ -238,6 +254,7 @@ defmodule AWS.CodeGenTest do
                  def put_audit_events(%Client{} = client, input, options \\\\ []) do
                    url_path = \"/PutAuditEvents\"
                    headers = []
+                   custom_headers = []
 
                    {query_params, input} =
                      [
@@ -254,7 +271,7 @@ defmodule AWS.CodeGenTest do
                      :post,
                      url_path,
                      query_params,
-                     headers,
+                     custom_headers ++ headers,
                      input,
                      options,
                      200
@@ -717,6 +734,7 @@ defmodule AWS.CodeGenTest do
                  def put_audit_events(%Client{} = client, input, options \\\\ []) do
                    url_path = \"/PutAuditEvents\"
                    headers = []
+                   custom_headers = []
 
                    {query_params, input} =
                      [
@@ -733,7 +751,7 @@ defmodule AWS.CodeGenTest do
                      :post,
                      url_path,
                      query_params,
-                     headers,
+                     custom_headers ++ headers,
                      input,
                      options,
                      200
@@ -741,6 +759,23 @@ defmodule AWS.CodeGenTest do
                  end
                end
                """)
+    end
+
+    test "renders the Elixir module with custom headers" do
+      specs_file =
+        @service_spec_custom_headers_file
+        |> File.read!()
+        |> Poison.decode!()
+
+      context = setup_dataexchange_context(:elixir, specs_file)
+
+      result =
+        context
+        |> AWS.CodeGen.render("priv/rest.ex.eex")
+        |> IO.iodata_to_binary()
+
+      generated = File.read!(@service_spec_custom_headers_generated)
+      assert result == generated
     end
   end
 end
