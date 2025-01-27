@@ -231,7 +231,7 @@ do_request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusC
     Headers1 = aws_request:add_headers(AdditionalHeaders, Headers0),
 
     MethodBin = aws_request:method_to_binary(Method),
-    SignedHeaders = aws_request:sign_request(Client1, MethodBin, URL, Headers1, Payload<%= if context.module_name == "aws_apigatewaymanagementapi" do %>, [{uri_encode_path, true}]<% else %><% end %>),
+    SignedHeaders = aws_request:sign_request(Client1, MethodBin, URL, Headers1, Payload<%= if context.module_name == "aws_apigatewaymanagementapi" or String.contains?(context.module_name, "aws_bedrock") do %>, [{uri_encode_path, true}]<% else %><% end %>),
     Response = hackney:request(Method, URL, SignedHeaders, Payload, Options),
     DecodeBody = not proplists:get_value(receive_body_as_binary, Options),
     handle_response(Response, SuccessStatusCode, DecodeBody).

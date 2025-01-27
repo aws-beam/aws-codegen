@@ -90,7 +90,7 @@ request(Client, Action, Input, Options) ->
     Input = Input0,
 <% end %>
     Payload = <%= context.encode %>,
-    SignedHeaders = aws_request:sign_request(Client1, <<"POST">>, URL, Headers, Payload),
+    SignedHeaders = aws_request:sign_request(Client1, <<"POST">>, URL, Headers, Payload<%= if context.module_name == "aws_apigatewaymanagementapi" or String.contains?(context.module_name, "aws_bedrock") do %>, [{uri_encode_path, true}]<% else %><% end %>),
     Response = hackney:request(post, URL, SignedHeaders, Payload, Options),
     handle_response(Response).
 
