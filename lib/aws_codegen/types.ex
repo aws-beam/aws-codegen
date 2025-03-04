@@ -229,7 +229,7 @@ defmodule AWS.CodeGen.Types do
             []
           end
 
-        Enum.join([normal, "{:error, {:unexpected_response, any()}}" | errors], " | \n")
+        Enum.join([normal, "{:error, {:unexpected_response, any()}}", "{:error, term()}" | errors], " | \n")
 
       type ->
         normal =
@@ -242,7 +242,7 @@ defmodule AWS.CodeGen.Types do
             []
           end
 
-        Enum.join([normal, "{:error, {:unexpected_response, any()}}" | errors], " | \n")
+        Enum.join([normal, "{:error, {:unexpected_response, any()}}", "{:error, term()}" | errors], " | \n")
     end
   end
 
