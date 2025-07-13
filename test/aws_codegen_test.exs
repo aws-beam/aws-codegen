@@ -171,7 +171,7 @@ defmodule AWS.CodeGenTest do
 
                      put_audit_events_request() :: %{
                        optional(\"externalId\") => String.t(),
-                       required(\"auditEvents\") => list(audit_event()()),
+                       required(\"auditEvents\") => list(audit_event()),
                        required(\"channelArn\") => String.t()
                      }
 
@@ -183,8 +183,8 @@ defmodule AWS.CodeGenTest do
                  ## Example:
 
                      put_audit_events_response() :: %{
-                       required(\"failed\") => list(result_error_entry()()),
-                       required(\"successful\") => list(audit_event_result_entry()())
+                       required(\"failed\") => list(result_error_entry()),
+                       required(\"successful\") => list(audit_event_result_entry())
                      }
 
                  \"\"\"
@@ -409,7 +409,7 @@ defmodule AWS.CodeGenTest do
 
                      put_audit_events_request() :: %{
                        optional(\"externalId\") => String.t(),
-                       required(\"auditEvents\") => list(audit_event()()),
+                       required(\"auditEvents\") => list(audit_event()),
                        required(\"channelArn\") => String.t()
                      }
 
@@ -421,8 +421,8 @@ defmodule AWS.CodeGenTest do
                  ## Example:
 
                      put_audit_events_response() :: %{
-                       required(\"failed\") => list(result_error_entry()()),
-                       required(\"successful\") => list(audit_event_result_entry()())
+                       required(\"failed\") => list(result_error_entry()),
+                       required(\"successful\") => list(audit_event_result_entry())
                      }
 
                  \"\"\"
@@ -653,7 +653,7 @@ defmodule AWS.CodeGenTest do
 
                      put_audit_events_request() :: %{
                        optional(\"externalId\") => String.t(),
-                       required(\"auditEvents\") => list(audit_event()()),
+                       required(\"auditEvents\") => list(audit_event()),
                        required(\"channelArn\") => String.t()
                      }
 
@@ -665,8 +665,8 @@ defmodule AWS.CodeGenTest do
                  ## Example:
 
                      put_audit_events_response() :: %{
-                       required(\"failed\") => list(result_error_entry()()),
-                       required(\"successful\") => list(audit_event_result_entry()())
+                       required(\"failed\") => list(result_error_entry()),
+                       required(\"successful\") => list(audit_event_result_entry())
                      }
 
                  \"\"\"

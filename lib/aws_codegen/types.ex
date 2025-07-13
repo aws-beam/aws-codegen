@@ -103,20 +103,24 @@ defmodule AWS.CodeGen.Types do
           %Shape{type: "structure"} ->
             type =
               "#{AWS.CodeGen.Name.to_snake_case(String.replace(shape_name, ~r/com\.amazonaws\.[^#]+#/, ""))}"
+              |> AWS.CodeGen.Util.maybe_add_parens()
 
             if reserved_type(type) do
-              "#{String.downcase(String.replace(context.module_name, ["aws_", "AWS."], ""))}_#{type}()"
+              "#{String.downcase(String.replace(context.module_name, ["aws_", "AWS."], ""))}_#{type}"
             else
-              "#{type}()"
+              "#{type}"
             end
 
           %Shape{type: "list", member: member} ->
-            type = "#{shape_to_type(context, member["target"], module_name, all_shapes)}"
+            # this change alone gets us down to 1595
+            type =
+              "#{shape_to_type(context, member["target"], module_name, all_shapes)}"
+              |> AWS.CodeGen.Util.maybe_add_parens()
 
             if reserved_type(type) do
-              "list(#{String.downcase(String.replace(context.module_name, ["aws_", "AWS."], ""))}_#{type}())"
+              "list(#{String.downcase(String.replace(context.module_name, ["aws_", "AWS."], ""))}_#{type})"
             else
-              "list(#{type}())"
+              "list(#{type})"
             end
 
           nil ->
