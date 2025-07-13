@@ -62,4 +62,12 @@ defmodule AWS.CodeGen.Util do
         |> Enum.reverse()
     end
   end
+
+  def maybe_add_parens(string) do
+    if String.ends_with?(string, "()") do
+      string
+    else
+      string <> "()"
+    end
+  end
 end
