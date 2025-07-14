@@ -13,7 +13,7 @@ jobs:
       matrix:
         platform: [ubuntu-latest]
         elixir: ["1.18.3"]
-        erlang: ["27.3.3"]
+        erlang: ["26"]
         rebar3: ["3.25.0"]
     runs-on: ${{ matrix.platform }}
     services:
