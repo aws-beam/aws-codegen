@@ -58,7 +58,7 @@ jobs:
         run: rebar3 eunit
         working-directory: aws-beam/aws-erlang
       - name: Run Common Tests
-        run: DYNAMODB_HOST=ddb S3MOCK_HOST=s3mock rebar3 ct
+        run: rebar3 ct
         working-directory: aws-beam/aws-erlang
       - name: Produce Documentation
         run: rebar3 ex_doc
