@@ -16,6 +16,8 @@ jobs:
         erlang: ["27"]
         rebar3: ["3.25.0"]
     runs-on: ${{ matrix.platform }}
+    container:
+      image: erlang:${{ matrix.erlang }}
     services:
       ddb:
         image: amazon/dynamodb-local:1.21.0
@@ -61,8 +63,8 @@ jobs:
         run: rebar3 ct
         working-directory: aws-beam/aws-erlang
         env:
-          DYNAMODB_HOST: localhost
-          S3MOCK_HOST: localhost
+          DYNAMODB_HOST: ddb
+          S3MOCK_HOST: s3mock
       - name: Produce Documentation
         run: rebar3 ex_doc
         working-directory: aws-beam/aws-erlang
