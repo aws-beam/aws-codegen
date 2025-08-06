@@ -133,15 +133,15 @@ defmodule AWS.CodeGen.Types do
   end
 
   # Unfortunately, gotta patch over auto-defining types that already exist in Elixir
-  defp shape_to_type(:elixir, "String", _), do: "String.t()"
+  defp shape_to_type(:elixir, "String", _), do: "String.t() | atom()"
   defp shape_to_type(:erlang, "String", _), do: "string()"
-  defp shape_to_type(:elixir, "string", _), do: "String.t()"
+  defp shape_to_type(:elixir, "string", _), do: "String.t() | atom()"
   defp shape_to_type(:erlang, "string", _), do: "string()"
-  defp shape_to_type(:elixir, "Identifier", _), do: "String.t()"
+  defp shape_to_type(:elixir, "Identifier", _), do: "String.t() | atom()"
   defp shape_to_type(:erlang, "Identifier", _), do: "string()"
-  defp shape_to_type(:elixir, "identifier", _), do: "String.t()"
+  defp shape_to_type(:elixir, "identifier", _), do: "String.t() | atom()"
   defp shape_to_type(:erlang, "identifier", _), do: "string()"
-  defp shape_to_type(:elixir, "XmlString" <> _rest, _), do: "String.t()"
+  defp shape_to_type(:elixir, "XmlString" <> _rest, _), do: "String.t() | atom()"
   defp shape_to_type(:erlang, "XmlString" <> _rest, _), do: "string"
   defp shape_to_type(:elixir, "NullablePositiveInteger", _), do: "nil | non_neg_integer()"
   defp shape_to_type(:erlang, "NullablePositiveInteger", _), do: "undefined | non_neg_integer()"
@@ -153,7 +153,7 @@ defmodule AWS.CodeGen.Types do
   defp shape_to_type(_, %Shape{type: "timestamp"}, _module_name), do: "non_neg_integer()"
   defp shape_to_type(_, %Shape{type: "map"}, _module_name), do: "map()"
   defp shape_to_type(_, %Shape{type: "blob"}, _module_name), do: "binary()"
-  defp shape_to_type(:elixir, %Shape{type: "string"}, _module_name), do: "String.t()"
+  defp shape_to_type(:elixir, %Shape{type: "string"}, _module_name), do: "String.t() | atom()"
   defp shape_to_type(:erlang, %Shape{type: "string"}, _module_name), do: "string()"
   defp shape_to_type(_, %Shape{type: "integer"}, _module_name), do: "integer()"
   defp shape_to_type(_, %Shape{type: "boolean"}, _module_name), do: "boolean()"
@@ -314,9 +314,9 @@ defmodule AWS.CodeGen.Types do
       parameters,
       fn parameter ->
         if not parameter.required do
-          ", String.t() | nil"
+          ", String.t() | atom() | nil"
         else
-          ", String.t()"
+          ", String.t() | atom()"
         end
       end
     )

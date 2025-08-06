@@ -25,7 +25,7 @@ defmodule <%= context.module_name %> do
     }
     <% end %>
 """
-@type <%= if map_size(type_fields) == 0 do "#{type_name}() :: %{}" else "#{type_name}() :: %{String.t => any()}" end %>
+@type <%= if map_size(type_fields) == 0 do "#{type_name}() :: %{}" else "#{type_name}() :: %{(String.t() | atom()) => any()}" end %>
 <% end %>
 
 <%= Enum.map(context.actions,
