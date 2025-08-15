@@ -60,9 +60,6 @@ jobs:
       - name: Run Common Tests
         run: rebar3 ct
         working-directory: aws-beam/aws-erlang
-        env:
-          DYNAMODB_HOST: localhost
-          S3MOCK_HOST: localhost
       - name: Produce Documentation
         run: rebar3 ex_doc
         working-directory: aws-beam/aws-erlang
