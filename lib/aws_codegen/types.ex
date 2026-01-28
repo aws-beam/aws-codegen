@@ -104,7 +104,6 @@ defmodule AWS.CodeGen.Types do
             type =
               "#{AWS.CodeGen.Name.to_snake_case(String.replace(shape_name, ~r/com\.amazonaws\.[^#]+#/, ""))}"
               |> AWS.CodeGen.Util.maybe_add_parens()
-
             if reserved_type(type) do
               "#{String.downcase(String.replace(context.module_name, ["aws_", "AWS."], ""))}_#{type}"
             else
@@ -158,6 +157,7 @@ defmodule AWS.CodeGen.Types do
   defp shape_to_type(_, %Shape{type: "integer"}, _module_name), do: "integer()"
   defp shape_to_type(_, %Shape{type: "boolean"}, _module_name), do: "boolean()"
   defp shape_to_type(_, %Shape{type: "enum"}, _module_name), do: "list(any())"
+  defp shape_to_type(_, %Shape{type: "intEnum"}, _module_name), do: "list(integer())"
   defp shape_to_type(_, %Shape{type: "union"}, _module_name), do: "list()"
   defp shape_to_type(_, %Shape{type: "document"}, _module_name), do: "any()"
 
@@ -198,7 +198,7 @@ defmodule AWS.CodeGen.Types do
   end
 
   defp reserved_type(type) do
-    type == "node" || type == "term" || type == "function" || type == "reference" || type == "identifier"
+    type == "node" || type == "term" || type == "function" || type == "reference" || type == "identifier" || type == "none" || type == "none()"
   end
 
   def function_argument_type(:elixir, action) do

@@ -26,6 +26,7 @@ defmodule AWS.CodeGen.Util do
 
     case signature do
       ["aws.auth#sig" <> version] -> version
+      ["aws.auth#sigv4", "aws.auth#sigv4a"] -> "aws.auth#sigv4"
       [] -> nil
     end
   end
