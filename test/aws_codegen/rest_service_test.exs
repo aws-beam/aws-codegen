@@ -51,6 +51,7 @@ defmodule AWS.CodeGen.RestServiceTest do
                module_name: "AWS.CloudTrailData",
                protocol: "rest-json",
                service_id: "CloudTrail Data",
+               endpoint_url_env_var: "AWS_ENDPOINT_URL_CLOUDTRAIL_DATA",
                signature_version: "v4",
                signing_name: "cloudtrail-data",
                target_prefix: nil

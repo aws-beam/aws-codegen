@@ -111,6 +111,7 @@ defmodule AWS.CodeGen.PostService do
       signing_name: signing_name,
       signature_version: AWS.CodeGen.Util.get_signature_version(service),
       service_id: AWS.CodeGen.Util.get_service_id(service),
+      endpoint_url_env_var: AWS.CodeGen.Util.endpoint_url_env_var(service),
       target_prefix: target_prefix(spec.api)
     }
   end

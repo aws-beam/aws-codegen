@@ -35,6 +35,36 @@ defmodule AWS.CodeGen.Util do
     service["traits"]["aws.api#service"]["sdkId"]
   end
 
+  @doc """
+  Derive the AWS-canonical service-specific endpoint env var name from the
+  service's `sdkId` (a.k.a. `service_id`).
+
+  Per https://docs.aws.amazon.com/cli/v1/userguide/cli-configure-endpoints.html
+  the env var suffix is the `sdkId` with spaces replaced by `_` and the
+  whole string uppercased. The generic prefix is `AWS_ENDPOINT_URL_`.
+
+  Examples:
+
+      iex> AWS.CodeGen.Util.endpoint_url_env_var(%{"traits" => %{"aws.api#service" => %{"sdkId" => "DynamoDB"}}})
+      "AWS_ENDPOINT_URL_DYNAMODB"
+
+      iex> AWS.CodeGen.Util.endpoint_url_env_var(%{"traits" => %{"aws.api#service" => %{"sdkId" => "Elastic Beanstalk"}}})
+      "AWS_ENDPOINT_URL_ELASTIC_BEANSTALK"
+
+      iex> AWS.CodeGen.Util.endpoint_url_env_var(%{"traits" => %{"aws.api#service" => %{"sdkId" => "CloudTrail Data"}}})
+      "AWS_ENDPOINT_URL_CLOUDTRAIL_DATA"
+  """
+  def endpoint_url_env_var(service) do
+    case get_service_id(service) do
+      nil ->
+        nil
+
+      service_id ->
+        suffix = service_id |> String.replace(" ", "_") |> String.upcase()
+        "AWS_ENDPOINT_URL_" <> suffix
+    end
+  end
+
   def input_keys(action, context) do
     shapes = context.shapes
     input_shape = action.input["target"]

@@ -26,6 +26,11 @@ defmodule AWS.CodeGen do
               decode: nil,
               encode: nil,
               endpoint_prefix: nil,
+              # Name of the AWS-canonical service-specific endpoint env var
+              # (e.g. "AWS_ENDPOINT_URL_DYNAMODB"). Derived from `service_id`
+              # per the AWS CLI/SDK convention: spaces -> "_", uppercased.
+              # See https://docs.aws.amazon.com/cli/v1/userguide/cli-configure-endpoints.html
+              endpoint_url_env_var: nil,
               is_global: false,
               hostname: nil,
               json_version: nil,
