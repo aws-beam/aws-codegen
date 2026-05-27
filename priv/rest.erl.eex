@@ -212,9 +212,7 @@ do_request(Client, Method, Path, Query, Headers0, Input, Options, SuccessStatusC
     DefaultHost = build_host(AccountId, <<"<%= context.endpoint_prefix %>">>, Client1),<% else %><%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>DefaultHost = build_host(<<"<%= context.endpoint_prefix %>">>, Client1, Bucket),<%else %>DefaultHost = build_host(<<"<%= context.endpoint_prefix %>">>, Client1),<% end %><% end %>
     URL0 = build_url(DefaultHost, Path, Client1<%= if AWS.CodeGen.RestService.Context.s3_context?(context) do %>, Bucket<% end %>),
     PathBin = erlang:iolist_to_binary(Path),
-    {URL1, Host} = aws_util:apply_endpoint_url_override(
-        URL0, DefaultHost, PathBin,
-        <<"<%= context.endpoint_url_env_var %>">>),
+    {URL1, Host} = aws_util:apply_endpoint_url_override(URL0, DefaultHost, PathBin, <<"<%= context.endpoint_url_env_var %>">>),
     URL = aws_request:add_query(URL1, Query),
     AdditionalHeaders1 = [ {<<"Host">>, Host}
                          , {<<"Content-Type">>, <<"<%= context.content_type %>">>}
