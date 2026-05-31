@@ -43,6 +43,9 @@ defmodule AWS.CodeGen.Docstring do
     |> String.replace("`AVAILABLE`", "`AVAILABLE'")
     # aws-sdk-go docs are broken for this, hack it to make the edocs work
     |> String.replace("`PENDING`", "`PENDING'")
+    # aws-sdk-go docs are broken for this, hack it to make the edocs work
+    |> String.replace("`datasetVersion`", "`datasetVersion'")
+    |> String.replace("`?datasetVersion=1`", "`?datasetVersion=1'")
   end
 
   defp split_first_sentence_in_one_line(doc) do
