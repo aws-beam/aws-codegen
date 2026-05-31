@@ -75,8 +75,8 @@ request(Client, Action, Input, Options) ->
 <% else %>do_request(Client, Action, Input0, Options) ->
 <% end %>    Client1 = Client#{service => <<"<%= context.signing_name %>">><%= if context.is_global do %>,
                       region => <<"<%= context.credential_scope %>">><% end %>},
-    Host = build_host(<<"<%= context.endpoint_prefix %>">>, Client1),
-    URL = build_url(Host, Client1),
+    DefaultHost = build_host(<<"<%= context.endpoint_prefix %>">>, Client1),
+    {URL, Host} = aws_util:apply_endpoint_url_override(build_url(DefaultHost, Client1), DefaultHost, <<"/">>, <<"<%= context.endpoint_url_env_var %>">>),
     Headers = [
         {<<"Host">>, Host},
         {<<"Content-Type">>, <<"<%= context.content_type %>">>}<%= if context.protocol == "json" do %>,

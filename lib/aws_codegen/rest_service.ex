@@ -157,6 +157,7 @@ defmodule AWS.CodeGen.RestService do
       signing_name: signing_name,
       signature_version: AWS.CodeGen.Util.get_signature_version(service),
       service_id: AWS.CodeGen.Util.get_service_id(service),
+      endpoint_url_env_var: "AWS_ENDPOINT_URL_" <> spec.module_name |> String.upcase(),
       ## TODO: metadata["targetPrefix"],
       target_prefix: nil,
       shapes: Shapes.collect_shapes(language, spec.api)
