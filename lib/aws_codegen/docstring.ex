@@ -46,6 +46,8 @@ defmodule AWS.CodeGen.Docstring do
     # aws-sdk-go docs are broken for this, hack it to make the edocs work
     |> String.replace("`datasetVersion`", "`datasetVersion'")
     |> String.replace("`?datasetVersion=1`", "`?datasetVersion=1'")
+    |> String.replace("`nextToken`", "`nextToken'")
+
   end
 
   defp split_first_sentence_in_one_line(doc) do
