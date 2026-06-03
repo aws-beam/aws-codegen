@@ -33,7 +33,7 @@ defmodule AWS.CodeGen.RestService do
       "#{if action.language == :elixir, do: ":", else: ""}#{result}"
     end
 
-    def url_path(action) do
+    def url_path(context, action) do
       Enum.reduce(action.url_parameters, action.request_uri, fn parameter, acc ->
         multi_segment = Parameter.multi_segment?(parameter, acc)
 
@@ -54,7 +54,11 @@ defmodule AWS.CodeGen.RestService do
             if multi_segment do
               Enum.join(["\", aws_util:encode_multi_segment_uri(", parameter.code_name, "), \""])
             else
-              Enum.join(["\", aws_util:encode_uri(", parameter.code_name, "), \""])
+              if context.module_name == "aws_cloudfront_keyvaluestore" do
+                Enum.join(["\", aws_util:encode_uri(", parameter.code_name, ", full), \""])
+              else
+                Enum.join(["\", aws_util:encode_uri(", parameter.code_name, "), \""])
+              end
             end
           end
 
