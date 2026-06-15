@@ -89,7 +89,7 @@ defmodule <%= context.module_name %> do
     options = Keyword.put(
       options,
       :response_header_parameters,
-      <%= inspect((for param <- action.response_header_parameters, do: {param.location_name, param.name}), pretty: true) %>
+      <%= inspect((for param <- action.response_header_parameters, do: {param.location_name, param.name}), [limit: :infinity, printable_limit: :infinity, pretty: true]) %>
     )<% end %>
 
     <%= if action.send_body_as_binary? do %>
@@ -139,7 +139,7 @@ def <%= action.function_name %>(%Client{} = client<%= AWS.CodeGen.RestService.fu
     options = Keyword.put(
       options,
       :response_header_parameters,
-      <%= inspect((for param <- action.response_header_parameters, do: {param.location_name, param.name}), pretty: true) %>
+      <%= inspect((for param <- action.response_header_parameters, do: {param.location_name, param.name}), [limit: :infinity, printable_limit: :infinity, pretty: true]) %>
     )<% end %>
 
     <%= if action.send_body_as_binary? do %>
