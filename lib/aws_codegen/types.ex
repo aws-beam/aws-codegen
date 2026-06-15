@@ -198,7 +198,7 @@ defmodule AWS.CodeGen.Types do
   end
 
   defp reserved_type(type) do
-    type == "node" || type == "term" || type == "function" || type == "reference" || type == "identifier" || type == "none" || type == "none()"
+    type == "node" || type == "term" || type == "function" || type == "reference" || type == "identifier" || type == "none" || type == "none()" || type == "record"
   end
 
   def function_argument_type(:elixir, action) do
