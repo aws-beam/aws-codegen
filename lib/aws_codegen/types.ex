@@ -2,7 +2,7 @@ defmodule AWS.CodeGen.Types do
   alias AWS.CodeGen.Shapes.Shape
 
   def types(context) do
-    Enum.reduce(context.shapes, %{}, fn {_name, shape}, acc ->
+    Enum.reduce(context.shapes, [], fn {_name, shape}, acc ->
       process_shape(context, shape, acc)
     end)
   end
@@ -23,12 +23,12 @@ defmodule AWS.CodeGen.Types do
 
   defp normalize_type_name(name) do
     name
-    |> String.replace(~r/com\.amazonaws\.[^#]+#/, "")
+    |> String.replace(~r/com\.(amazonaws|amazon)\.[^#]+#/, "")
     |> AWS.CodeGen.Name.to_snake_case()
   end
 
   defp process_shape_members(context, shape) do
-    Enum.reduce(shape.members, %{}, fn {name, shape_member}, a ->
+    Enum.reduce(shape.members, [], fn {name, shape_member}, a ->
       process_shape_member(context, shape, name, shape_member, a)
     end)
   end
@@ -41,11 +41,7 @@ defmodule AWS.CodeGen.Types do
     else
       shape_member_type = shape_to_type(context, target, context.module_name, context.shapes)
 
-      Map.put(
-        a,
-        is_required(context.language, shape.is_input, shape_member, name),
-        shape_member_type
-      )
+      [({is_required(context.language, shape.is_input, shape_member, name), shape_member_type}) | a]
     end
   end
 
@@ -54,9 +50,9 @@ defmodule AWS.CodeGen.Types do
   defp update_acc_with_types(acc, type, types, context) do
     if reserved_type(type) do
       module_name = String.downcase(String.replace(context.module_name, ["aws_", "AWS."], ""))
-      Map.put(acc, "#{module_name}_#{type}", types)
+      [{ "#{module_name}_#{type}", types } | acc]
     else
-      Map.put(acc, type, types)
+      [{ type, types } | acc]
     end
   end
 
@@ -99,10 +95,10 @@ defmodule AWS.CodeGen.Types do
         "[#{shape_to_type(context.language, %Shape{type: "blob"}, module_name)}]"
 
       _ ->
-        case all_shapes[shape_name] do
-          %Shape{type: "structure"} ->
+        case List.keyfind(all_shapes, shape_name, 0) do
+          {_, %Shape{type: "structure"}} ->
             type =
-              "#{AWS.CodeGen.Name.to_snake_case(String.replace(shape_name, ~r/com\.amazonaws\.[^#]+#/, ""))}"
+              "#{AWS.CodeGen.Name.to_snake_case(String.replace(shape_name, ~r/com\.(amazonaws|amazon)\.[^#]+#/, ""))}"
               |> AWS.CodeGen.Util.maybe_add_parens()
             if reserved_type(type) do
               "#{String.downcase(String.replace(context.module_name, ["aws_", "AWS."], ""))}_#{type}"
@@ -110,7 +106,7 @@ defmodule AWS.CodeGen.Types do
               "#{type}"
             end
 
-          %Shape{type: "list", member: member} ->
+          {_, %Shape{type: "list", member: member}} ->
             # this change alone gets us down to 1595
             type =
               "#{shape_to_type(context, member["target"], module_name, all_shapes)}"
@@ -125,7 +121,7 @@ defmodule AWS.CodeGen.Types do
           nil ->
             raise "Tried to reference an undefined shape for #{shape_name}"
 
-          shape ->
+          {_, shape} ->
             shape_to_type(context.language, shape, module_name)
         end
     end
@@ -162,7 +158,7 @@ defmodule AWS.CodeGen.Types do
   defp shape_to_type(_, %Shape{type: "document"}, _module_name), do: "any()"
 
   defp is_required(:elixir, is_input, shape, target) do
-    trimmed_name = String.replace(target, ~r/com\.amazonaws\.[^#]+#/, "")
+    trimmed_name = String.replace(target, ~r/com\.(amazonaws|amazon)\.[^#]+#/, "")
 
     if is_input do
       if Map.has_key?(shape, "traits") do
@@ -180,7 +176,7 @@ defmodule AWS.CodeGen.Types do
   end
 
   defp is_required(:erlang, is_input, shape, target) do
-    trimmed_name = String.replace(target, ~r/com\.amazonaws\.[^#]+#/, "")
+    trimmed_name = String.replace(target, ~r/com\.(amazonaws|amazon)\.[^#]+#/, "")
 
     if is_input do
       if Map.has_key?(shape, "traits") do
@@ -207,7 +203,7 @@ defmodule AWS.CodeGen.Types do
         "%{}"
 
       type ->
-        "#{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}()"
+        "#{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.(amazonaws|amazon)\.[^#]+#/, ""))}()"
     end
   end
 
@@ -217,7 +213,7 @@ defmodule AWS.CodeGen.Types do
         "\#{}"
 
       type ->
-        "#{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}()"
+        "#{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.(amazonaws|amazon)\.[^#]+#/, ""))}()"
     end
   end
 
@@ -237,7 +233,7 @@ defmodule AWS.CodeGen.Types do
 
       type ->
         normal =
-          "{:ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), any()}"
+          "{:ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.(amazonaws|amazon)\.[^#]+#/, ""))}(), any()}"
 
         errors =
           if is_list(action.errors) do
@@ -266,7 +262,7 @@ defmodule AWS.CodeGen.Types do
 
       type ->
         normal =
-          "{ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.amazonaws\.[^#]+#/, ""))}(), tuple()}"
+          "{ok, #{AWS.CodeGen.Name.to_snake_case(String.replace(type, ~r/com\.(amazonaws|amazon)\.[^#]+#/, ""))}(), tuple()}"
 
         errors =
           if is_list(action.errors) do

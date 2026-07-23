@@ -11,7 +11,7 @@ defmodule <%= context.module_name %> do
   alias AWS.Client
   alias AWS.Request
 
- <%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
+ <%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) |> Enum.sort(fn {type_a, _}, {type_b, _} -> type_a < type_b end) do %>
 @typedoc """
 
 ## Example:
@@ -19,7 +19,7 @@ defmodule <%= context.module_name %> do
     <%= "#{type_name}() :: %{}" %>
 <% else %>
     <%= "#{type_name}() :: %{" %>
-    <%= Enum.map_join(type_fields, ",\n    ", fn {field_name, field_type} ->
+    <%= Enum.map_join(type_fields |> Enum.sort(fn {field_a, _}, {field_b, _} -> field_a < field_b end), ",\n    ", fn {field_name, field_type} ->
       ~s{  #{field_name}#{field_type}}
     end) %>
     }
@@ -32,8 +32,8 @@ defmodule <%= context.module_name %> do
              fn action ->
                 errors = action.errors
                 if not is_nil(errors) do
-                    errors_snakecased = errors |> Enum.map(fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.amazonaws\.[^#]+#/, "")) end)
-                    all_types = AWS.CodeGen.Types.types(context)
+                    errors_snakecased = errors |> Enum.map(fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.(amazonaws|amazon)\.[^#]+#/, "")) end)
+                    all_types = AWS.CodeGen.Types.types(context) |> Enum.sort(fn {type_a, _}, {type_b, _} -> type_a < type_b end)
                     error_types = Enum.reduce(all_types,
                                              [],
                                              fn {type_name, _type_fields}, acc ->
@@ -80,7 +80,7 @@ defmodule <%= context.module_name %> do
     else
       headers
     end<% end %>
-    query_params = []<%= for parameter <- Enum.reverse(action.query_parameters) do %>
+    query_params = []<%= for parameter <- action.query_parameters do %>
     query_params = if !is_nil(<%= parameter.code_name %>) do
       [{"<%= parameter.location_name %>", <%= parameter.code_name %>} | query_params]
     else

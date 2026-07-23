@@ -95,15 +95,18 @@ defmodule AWS.CodeGen do
       Enum.map(
         api_specs(spec_base_path, language),
         fn spec ->
-          output_path = Path.join(output_base_path, spec.filename)
-
-          Task.async(fn ->
-            generate_code(spec, language, endpoints_spec, template_base_path, output_path)
-          end)
+          if spec == :error do
+            IO.puts("Skipping due to error")
+            Task.async(fn -> :ok end)
+          else
+            output_path = Path.join(output_base_path, spec.filename)
+            Task.async(fn ->
+              generate_code(spec, language, endpoints_spec, template_base_path, output_path)
+            end)
+          end
         end
       )
-
-    Enum.each(tasks, fn task -> Task.await(task, 120_000) end)
+    Enum.each(tasks, fn task -> Task.await(task, :infinity) end)
   end
 
   defp generate_code(spec, language, endpoints_spec, template_base_path, output_path) do

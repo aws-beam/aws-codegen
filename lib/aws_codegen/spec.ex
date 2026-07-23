@@ -32,42 +32,49 @@ defmodule AWS.CodeGen.Spec do
     service_name =
       api
       |> find_service()
-      |> String.replace("com.amazonaws.#{api_name}#", "")
+      |> String.replace(~r/com\.(amazonaws|amazon)\.[^#]+#/, "")
 
     traits = api["shapes"]["com.amazonaws." <> api_name <> "#" <> service_name]["traits"]
-
-    protocol =
+    protocol0 =
       Enum.find_value(traits, fn {k, _v} ->
         case String.split(k, "#") do
           ["aws.protocols", protocol] -> protocol
-          _ -> nil
+          _ ->
+            nil
         end
       end)
-      |> String.replace("restJson1", "rest_json")
-      |> String.replace(["awsJson1_0", "awsJson1_1"], "json")
-      |> String.replace("awsQuery", "query")
-      |> String.replace("restXml", "rest_xml")
-      |> String.replace("ec2Query", "ec2")
-      |> then(fn value ->
-        if value in ~w(rest_json json query rest_xml ec2) do
-          value
-        else
-          raise "the protocol #{value} is not valid"
-        end
-      end)
-      |> String.to_atom()
+    if is_nil(protocol0) do
+      IO.puts("Unhandled protocol (nil) for #{api_filename} with service #{service_name}")
+      :error
+    else
+      protocol =
+        protocol0
+        |> String.replace("restJson1", "rest_json")
+        |> String.replace(["awsJson1_0", "awsJson1_1"], "json")
+        |> String.replace("awsQuery", "query")
+        |> String.replace("restXml", "rest_xml")
+        |> String.replace("ec2Query", "ec2")
+        |> then(fn value ->
+          if value in ~w(rest_json json query rest_xml ec2) do
+            value
+          else
+            raise "the protocol #{value} is not valid"
+          end
+        end)
+        |> String.to_atom()
 
-    module_name = module_name(traits, language)
-    filename = filename(module_name, language)
+      module_name = module_name(traits, language)
+      filename = filename(module_name, language)
 
-    %AWS.CodeGen.Spec{
-      protocol: protocol,
-      module_name: module_name,
-      filename: filename,
-      api: api,
-      language: language,
-      shape_name: "com.amazonaws." <> api_name <> "#" <> service_name
-    }
+      %AWS.CodeGen.Spec{
+        protocol: protocol,
+        module_name: module_name,
+        filename: filename,
+        api: api,
+        language: language,
+        shape_name: "com.amazonaws." <> api_name <> "#" <> service_name
+      }
+    end
   end
 
   def find_service(api) do

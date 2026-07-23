@@ -298,7 +298,7 @@ defmodule AWS.CodeGenTest do
         %{context | actions: [action]}
         |> AWS.CodeGen.render("priv/rest.ex.eex")
         |> IO.iodata_to_binary()
-
+      IO.puts(inspect(result))
       assert result ==
                String.trim_leading("""
                # WARNING: DO NOT EDIT, AUTO-GENERATED CODE!
@@ -496,15 +496,15 @@ defmodule AWS.CodeGenTest do
                    query_params = []
 
                    query_params =
-                     if !is_nil(external_id) do
-                       [{\"externalId\", external_id} | query_params]
+                     if !is_nil(channel_arn) do
+                       [{\"channelArn\", channel_arn} | query_params]
                      else
                        query_params
                      end
 
                    query_params =
-                     if !is_nil(channel_arn) do
-                       [{\"channelArn\", channel_arn} | query_params]
+                     if !is_nil(external_id) do
+                       [{\"externalId\", external_id} | query_params]
                      else
                        query_params
                      end

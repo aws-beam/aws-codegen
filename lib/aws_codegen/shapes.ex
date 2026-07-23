@@ -20,7 +20,7 @@ defmodule AWS.CodeGen.Shapes do
 
   def collect_shapes(_language, api_spec) do
     api_spec["shapes"]
-    |> Map.new(fn {name, shape} ->
+    |> Enum.map(fn {name, shape} ->
       {name,
        %Shape{
          name: name,
