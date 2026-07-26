@@ -90,7 +90,6 @@ defmodule AWS.CodeGen do
   @spec generate(:elixir | :erlang, binary(), binary(), binary()) :: :ok
   def generate(language, spec_base_path, template_base_path, output_base_path) do
     endpoints_spec = get_endpoints_spec(spec_base_path)
-
     tasks =
       Enum.map(
         api_specs(spec_base_path, language),
@@ -99,10 +98,15 @@ defmodule AWS.CodeGen do
             IO.puts("Skipping due to error")
             Task.async(fn -> :ok end)
           else
-            output_path = Path.join(output_base_path, spec.filename)
-            Task.async(fn ->
-              generate_code(spec, language, endpoints_spec, template_base_path, output_path)
-            end)
+            if spec.filename == "health_lake.ex" or spec.filename == "aws_healthlake.erl" do
+              IO.puts("Skipping health_lake due to known issues with the spec since it has another frontend service wrapped in the same spec")
+              Task.async(fn -> :ok end)
+            else
+              output_path = Path.join(output_base_path, spec.filename)
+              Task.async(fn ->
+                generate_code(spec, language, endpoints_spec, template_base_path, output_path)
+              end)
+            end
           end
         end
       )
