@@ -11,29 +11,29 @@ defmodule <%= context.module_name %> do
   alias AWS.Client
   alias AWS.Request
 
- <%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
-@typedoc """
+ <%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) |> Enum.sort(fn {type_a, _}, {type_b, _} -> type_a < type_b end) do %>
+<%= if length(type_fields) == 0 and context.module_name == "AWS.HealthLake" and type_name == "list_tags_for_resource_request" do %><% else %>@typedoc """
 
 ## Example:
-    <%= if map_size(type_fields) == 0 do %>
+    <%= if length(type_fields) == 0 do %>
     <%= "#{type_name}() :: %{}" %>
     <% else %>
     <%= "#{type_name}() :: %{" %>
-    <%= Enum.map_join(type_fields, ",\n    ", fn {field_name, field_type} ->
+    <%= Enum.map_join(type_fields |> Enum.sort(fn {field_a, _}, {field_b, _} -> field_a < field_b end), ",\n    ", fn {field_name, field_type} ->
       ~s{  #{field_name}#{field_type}}
     end) %>
     }
     <% end %>
 """
-@type <%= if map_size(type_fields) == 0 do "#{type_name}() :: %{}" else "#{type_name}() :: %{(String.t() | atom()) => any()}" end %>
-<% end %>
+@type <%= if length(type_fields) == 0 do "#{type_name}() :: %{}" else "#{type_name}() :: %{(String.t() | atom()) => any()}" end %>
+<% end %><% end %>
 
 <%= Enum.map(context.actions,
              fn action ->
                 errors = action.errors
                 if not is_nil(errors) do
-                    errors_snakecased = Enum.map(errors, fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.amazonaws\.[^#]+#/, "")) end)
-                    all_types = AWS.CodeGen.Types.types(context)
+                    errors_snakecased = Enum.map(errors, fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.(amazonaws|amazon)\.[^#]+#/, "")) end)
+                    all_types = AWS.CodeGen.Types.types(context) |> Enum.sort(fn {type_a, _}, {type_b, _} -> type_a < type_b end)
                     error_types = Enum.reduce(all_types,
                                              [],
                                              fn {type_name, _type_fields}, acc ->

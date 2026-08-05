@@ -91,7 +91,6 @@ defmodule AWS.CodeGen.PostService do
         endpoint_prefix
       end
     signing_name = traits["aws.auth#sigv4"]["name"] || maybe_signing_name
-
     %Service{
       actions: actions,
       api_version: service["version"],
@@ -155,7 +154,6 @@ defmodule AWS.CodeGen.PostService do
             ]
             |> Enum.reject(&is_nil/1)
             |> Kernel.++(acc)
-
           _ ->
             acc
         end
@@ -175,7 +173,7 @@ defmodule AWS.CodeGen.PostService do
           ),
         function_name: AWS.CodeGen.Name.to_snake_case(operation),
         host_prefix: operation_spec["traits"]["smithy.api#endpoint"]["hostPrefix"],
-        name: String.replace(operation, ~r/com\.amazonaws\.[^#]+#/, ""),
+        name: String.replace(operation, ~r/com\.(amazonaws|amazon)\.[^#]+#/, ""),
         input: operation_spec["input"],
         output: operation_spec["output"],
         errors: operation_spec["errors"]

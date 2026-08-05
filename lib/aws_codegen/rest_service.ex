@@ -257,6 +257,7 @@ defmodule AWS.CodeGen.RestService do
       end)
       |> List.flatten()
       |> Enum.map(fn %{"target" => target} -> target end)
+      |> Enum.reverse()
 
     Enum.map(operations, fn operation ->
       operation_spec = shapes[operation]
@@ -337,7 +338,6 @@ defmodule AWS.CodeGen.RestService do
   defp collect_url_parameters(language, api_spec, operation) do
     url_params =
       collect_parameters(language, api_spec, operation, "input", "smithy.api#httpLabel")
-
     url_params
   end
 
@@ -377,10 +377,12 @@ defmodule AWS.CodeGen.RestService do
 
           shape["members"]
           |> Enum.filter(filter_fn(param_type))
-          |> Enum.map(fn {name, x} ->
+          |> Enum.reduce([], fn {name, x}, acc ->
             required = Enum.member?(required_members, name)
-            build_parameter(language, {name, x["traits"][param_type]}, required)
+            acc ++ [build_parameter(language, {name, x["traits"][param_type]}, required)]
           end)
+          |> Enum.sort(fn a, b -> a.code_name < b.code_name end)
+
       end
     else
       []

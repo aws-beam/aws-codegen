@@ -45,22 +45,19 @@ defmodule AWS.CodeGen.Util do
         []
 
       [{_name, shape}] ->
-        Enum.reduce(
+        Enum.map(
           shape.members,
-          [],
           fn
-            {name, %{"traits" => traits}}, acc ->
+            {name, %{"traits" => traits}} ->
               if Map.has_key?(traits, "smithy.api#required") do
-                [name <> " Required: true" | acc]
+                name <> " Required: true"
               else
-                [name <> " Required: false" | acc]
+                name <> " Required: false"
               end
-
-            {name, _shape}, acc ->
-              [name <> " Required: false" | acc]
+            {name, _shape} ->
+              name <> " Required: false"
           end
         )
-        |> Enum.reverse()
     end
   end
 

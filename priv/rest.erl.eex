@@ -10,13 +10,13 @@
 <% end %>
 -include_lib("hackney/include/hackney_lib.hrl").
 
-<%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) do %>
+<%= for {type_name, type_fields} <- AWS.CodeGen.Types.types(context) |> Enum.sort(fn {type_a, _}, {type_b, _} -> type_a < type_b end) do %>
 <%= if Enum.empty?(type_fields) do %>%% Example:
 %% <%= type_name %>() :: #{}
 -type <%= "#{type_name}()" %> :: #{}.<% else %>
 %% Example:
 %% <%= type_name %>() :: #{
-<%= Enum.map_join(type_fields, ",\n", fn {field_name, field_type} ->
+<%= Enum.map_join(type_fields |> Enum.sort(fn {field_a, _}, {field_b, _} -> field_a < field_b end), ",\n", fn {field_name, field_type} ->
   ~s{%%   #{field_name}#{field_type}}
 end) %>
 %% }
@@ -26,8 +26,8 @@ end) %>
              fn action ->
                 errors = action.errors
                 if not is_nil(errors) do
-                    errors_snakecased = errors |> Enum.map(fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.amazonaws\.[^#]+#/, "")) end)
-                    all_types = AWS.CodeGen.Types.types(context)
+                    errors_snakecased = errors |> Enum.map(fn error -> AWS.CodeGen.Name.to_snake_case(String.replace(error["target"], ~r/com\.(amazonaws|amazon)\.[^#]+#/, "")) end)
+                    all_types = AWS.CodeGen.Types.types(context) |> Enum.sort(fn {type_a, _}, {type_b, _} -> type_a < type_b end)
                     error_types = Enum.reduce(all_types,
                                              [],
                                              fn {type_name, _type_fields}, acc ->
